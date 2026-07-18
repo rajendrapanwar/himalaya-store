@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -25,10 +25,10 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255|unique:categories,name',
+            'name' => 'required|string|max:255|unique:categories,name',
             'description' => 'nullable|string',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'      => 'required|boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status' => 'required|boolean',
         ]);
 
         $imagePath = null;
@@ -38,11 +38,11 @@ class CategoryController extends Controller
         }
 
         Category::create([
-            'name'        => $request->name,
-            'slug'        => Str::slug($request->name),
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
             'description' => $request->description,
-            'image'       => $imagePath,
-            'status'      => $request->status,
+            'image' => $imagePath,
+            'status' => $request->status,
         ]);
 
         return redirect()
@@ -58,10 +58,10 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name'        => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
             'description' => 'nullable|string',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'      => 'required|boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status' => 'required|boolean',
         ]);
 
         $imagePath = $category->image;
@@ -76,11 +76,11 @@ class CategoryController extends Controller
         }
 
         $category->update([
-            'name'        => $request->name,
-            'slug'        => Str::slug($request->name),
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
             'description' => $request->description,
-            'image'       => $imagePath,
-            'status'      => $request->status,
+            'image' => $imagePath,
+            'status' => $request->status,
         ]);
 
         return redirect()
@@ -90,6 +90,13 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        if ($category->products()->exists()) {
+            return back()->with('error', 'Move or delete this category’s products before deleting the category.');
+        }
+
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
         $category->delete();
 
         return redirect()

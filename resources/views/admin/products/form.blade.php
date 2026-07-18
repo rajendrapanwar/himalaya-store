@@ -1,125 +1,26 @@
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <div class="lg:col-span-2 space-y-6">
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Product Name</label>
-            <input type="text" name="name" value="{{ old('name', $product->name ?? '') }}"
-                   class="w-full rounded-xl border-gray-300 px-4 py-3">
-            @error('name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Short Description</label>
-            <textarea name="short_description" rows="3"
-                      class="w-full rounded-xl border-gray-300 px-4 py-3">{{ old('short_description', $product->short_description ?? '') }}</textarea>
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Full Description</label>
-            <textarea name="description" rows="8"
-                      class="w-full rounded-xl border-gray-300 px-4 py-3">{{ old('description', $product->description ?? '') }}</textarea>
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Product Images</label>
-            <input type="file" name="images[]" multiple accept="image/*"
-                   class="w-full rounded-xl border border-gray-300 p-3">
-
-            @if(!empty($product) && $product->images && $product->images->count())
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                    @foreach($product->images as $image)
-                        <div class="relative">
-                            <img src="{{ asset('storage/' . $image->image) }}"
-                                class="w-full h-28 object-cover rounded-xl border">
-
-                            @if($image->is_main)
-                                <span class="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
-                                    Main
-                                </span>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-    </div>
-
+<div class="grid gap-6 xl:grid-cols-[1fr_340px]">
     <div class="space-y-6">
+        <section class="rounded-xl border border-stone-200 p-5 sm:p-6"><div class="mb-5"><p class="text-xs font-black uppercase tracking-wider text-brand-700">Product information</p><h2 class="mt-1 text-lg font-black">Name and description</h2></div><div class="space-y-5"><div><label for="productName">Product name</label><input id="productName" name="name" value="{{ old('name',$product->name ?? '') }}" maxlength="255" class="mt-2 w-full rounded-xl px-4 py-3" required>@error('name')<p class="field-error">{{ $message }}</p>@enderror</div><div><label for="shortDescription">Short description</label><textarea id="shortDescription" name="short_description" rows="3" maxlength="500" class="mt-2 w-full rounded-xl px-4 py-3" placeholder="A concise benefit-led summary for product cards">{{ old('short_description',$product->short_description ?? '') }}</textarea><p class="field-help">Up to 500 characters.</p></div><div><label for="fullDescription">Full description</label><textarea id="fullDescription" name="description" rows="8" class="mt-2 w-full rounded-xl px-4 py-3" placeholder="Describe quality, taste, use, sourcing and care">{{ old('description',$product->description ?? '') }}</textarea></div><div><label for="ingredients">Ingredients or materials</label><textarea id="ingredients" name="ingredients" rows="3" class="mt-2 w-full rounded-xl px-4 py-3">{{ old('ingredients',$product->ingredients ?? '') }}</textarea></div></div></section>
 
-        <div>
-            <label class="block text-sm font-semibold mb-2">Category</label>
-            <select name="category_id" class="w-full rounded-xl border-gray-300 px-4 py-3">
-                <option value="">Select Category</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category->id }}"
-                        {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
-                @endforeach
-            </select>
-            @error('category_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-        </div>
+        <section class="rounded-xl border border-stone-200 p-5 sm:p-6"><div class="mb-5"><p class="text-xs font-black uppercase tracking-wider text-brand-700">Media</p><h2 class="mt-1 text-lg font-black">Product gallery</h2><p class="mt-1 text-xs text-stone-500">Drag existing images to reorder them. Choose one primary image for listings.</p></div><label for="productImages" class="block rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 p-6 text-center hover:border-brand-400"><span class="block font-bold">Upload product images</span><span class="mt-1 block text-xs text-stone-500">JPG, PNG or WebP · maximum 2 MB each</span><input id="productImages" type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" class="mt-4 w-full"></label><div id="newImagePreview" class="mt-4 hidden grid-cols-2 gap-3 sm:grid-cols-4"></div>
+        @if(!empty($product) && $product->images->isNotEmpty())<input type="hidden" name="image_order" id="imageOrder" value="{{ $product->images->pluck('id')->join(',') }}"><div id="existingImages" class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">@foreach($product->images as $image)<article draggable="true" data-image-id="{{ $image->id }}" class="image-sort-item cursor-move rounded-xl border border-stone-200 bg-white p-2"><img src="{{ asset('storage/'.$image->image) }}" alt="Product image {{ $loop->iteration }}" class="aspect-square w-full rounded-lg object-cover"><label class="mt-2 flex items-center gap-2 text-xs"><input type="radio" name="main_image_id" value="{{ $image->id }}" @checked($image->is_main)> Primary</label><label class="mt-2 flex items-center gap-2 text-xs text-red-700"><input type="checkbox" name="remove_image_ids[]" value="{{ $image->id }}"> Remove</label></article>@endforeach</div>@endif</section>
 
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-semibold mb-2">Price</label>
-                <input type="number" step="0.01" name="price"
-                       value="{{ old('price', $product->price ?? '') }}"
-                       class="w-full rounded-xl border-gray-300 px-4 py-3">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold mb-2">Sale Price</label>
-                <input type="number" step="0.01" name="sale_price"
-                       value="{{ old('sale_price', $product->sale_price ?? '') }}"
-                       class="w-full rounded-xl border-gray-300 px-4 py-3">
-            </div>
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">SKU</label>
-            <input type="text" name="sku" value="{{ old('sku', $product->sku ?? '') }}"
-                   class="w-full rounded-xl border-gray-300 px-4 py-3">
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Stock Quantity</label>
-            <input type="number" name="stock_quantity"
-                   value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}"
-                   class="w-full rounded-xl border-gray-300 px-4 py-3">
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Weight</label>
-            <input type="number" step="0.01" name="weight"
-                   value="{{ old('weight', $product->weight ?? '') }}"
-                   class="w-full rounded-xl border-gray-300 px-4 py-3">
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Origin Region</label>
-            <input type="text" name="origin_region"
-                   placeholder="Himachal, Garhwal, Uttarakhand..."
-                   value="{{ old('origin_region', $product->origin_region ?? '') }}"
-                   class="w-full rounded-xl border-gray-300 px-4 py-3">
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold mb-2">Status</label>
-            <select name="status" class="w-full rounded-xl border-gray-300 px-4 py-3">
-                <option value="1" {{ old('status', $product->status ?? 1) == 1 ? 'selected' : '' }}>Active</option>
-                <option value="0" {{ old('status', $product->status ?? 1) == 0 ? 'selected' : '' }}>Inactive</option>
-            </select>
-        </div>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="is_featured" value="1"
-                   {{ old('is_featured', $product->is_featured ?? false) ? 'checked' : '' }}>
-            <span class="font-medium">Featured Product</span>
-        </label>
-
+        <section class="rounded-xl border border-stone-200 p-5 sm:p-6"><div class="mb-5"><p class="text-xs font-black uppercase tracking-wider text-brand-700">Traceability</p><h2 class="mt-1 text-lg font-black">Producer, origin and batch</h2></div><div class="grid gap-5 sm:grid-cols-2"><div><label for="producerName">Producer or artisan</label><input id="producerName" name="producer_name" value="{{ old('producer_name',$product->producer_name ?? '') }}" maxlength="255" class="mt-2 w-full rounded-xl px-4 py-3"></div><div><label for="producerLocation">Producer location</label><input id="producerLocation" name="producer_location" value="{{ old('producer_location',$product->producer_location ?? '') }}" maxlength="255" class="mt-2 w-full rounded-xl px-4 py-3"></div><div><label for="originRegion">Origin region</label><input id="originRegion" name="origin_region" value="{{ old('origin_region',$product->origin_region ?? '') }}" maxlength="255" placeholder="Garhwal, Kumaon, Uttarakhand…" class="mt-2 w-full rounded-xl px-4 py-3"></div><div><label for="batchNumber">Batch number</label><input id="batchNumber" name="batch_number" value="{{ old('batch_number',$product->batch_number ?? '') }}" maxlength="100" class="mt-2 w-full rounded-xl px-4 py-3"></div><div><label for="harvestedAt">Harvested or made date</label><input id="harvestedAt" name="harvested_at" type="date" value="{{ old('harvested_at',isset($product->harvested_at) ? \Carbon\Carbon::parse($product->harvested_at)->format('Y-m-d') : '') }}" class="mt-2 w-full rounded-xl px-4 py-3"></div></div></section>
     </div>
 
+    <aside class="space-y-6 xl:sticky xl:top-28 xl:self-start"><section class="rounded-xl border border-stone-200 bg-stone-50 p-5"><p class="text-xs font-black uppercase tracking-wider text-brand-700">Publishing</p><div class="mt-4 space-y-5"><div><label for="category">Category</label><select id="category" name="category_id" class="mt-2 w-full rounded-xl px-4 py-3" required><option value="">Select category</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string)old('category_id',$product->category_id ?? '') === (string)$category->id)>{{ $category->name }}</option>@endforeach</select>@error('category_id')<p class="field-error">{{ $message }}</p>@enderror</div><div><label for="status">Store visibility</label><select id="status" name="status" class="mt-2 w-full rounded-xl px-4 py-3" required><option value="1" @selected((int)old('status',$product->status ?? 1)===1)>Active</option><option value="0" @selected((int)old('status',$product->status ?? 1)===0)>Hidden</option></select></div><label class="flex items-center gap-3 rounded-lg bg-white p-3 ring-1 ring-stone-200"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured',$product->is_featured ?? false))><span><strong class="block text-sm">Featured product</strong><small class="text-stone-500">Prioritise on the homepage</small></span></label></div></section>
+        <section class="rounded-xl border border-stone-200 p-5"><p class="text-xs font-black uppercase tracking-wider text-brand-700">Pricing and stock</p><div class="mt-4 space-y-5"><div class="grid grid-cols-2 gap-3"><div><label for="price">Price (₹)</label><input id="price" type="number" step="0.01" min="0" name="price" value="{{ old('price',$product->price ?? '') }}" class="mt-2 w-full rounded-xl px-3" required></div><div><label for="salePrice">Sale price (₹)</label><input id="salePrice" type="number" step="0.01" min="0" name="sale_price" value="{{ old('sale_price',$product->sale_price ?? '') }}" class="mt-2 w-full rounded-xl px-3"></div></div><div><label for="sku">SKU</label><input id="sku" name="sku" value="{{ old('sku',$product->sku ?? '') }}" maxlength="100" class="mt-2 w-full rounded-xl px-4"></div><div><label for="stockQuantity">Stock quantity</label><input id="stockQuantity" type="number" min="0" name="stock_quantity" value="{{ old('stock_quantity',$product->stock_quantity ?? 0) }}" class="mt-2 w-full rounded-xl px-4" required></div><div><label for="weight">Weight (grams)</label><input id="weight" type="number" step="1" min="0" name="weight" value="{{ old('weight',$product->weight ?? '') }}" class="mt-2 w-full rounded-xl px-4"><p class="mt-1 text-xs text-stone-500">Enter 1000 for a 1 kg pack.</p></div></div></section>
+    </aside>
 </div>
+
+@push('scripts')
+<script>
+(() => {
+ const input=document.getElementById('productImages'),preview=document.getElementById('newImagePreview');
+ input?.addEventListener('change',()=>{preview.innerHTML='';preview.classList.toggle('hidden',!input.files.length);preview.classList.toggle('grid',input.files.length>0);Array.from(input.files).forEach(file=>{const img=document.createElement('img');img.className='aspect-square w-full rounded-xl border border-stone-200 object-cover';img.alt='New image preview';img.src=URL.createObjectURL(file);preview.appendChild(img)})});
+ const list=document.getElementById('existingImages'),order=document.getElementById('imageOrder');let dragged=null;
+ const updateOrder=()=>{if(order&&list)order.value=Array.from(list.children).map(item=>item.dataset.imageId).join(',')};
+ list?.querySelectorAll('.image-sort-item').forEach(item=>{item.addEventListener('dragstart',()=>{dragged=item;item.classList.add('opacity-50')});item.addEventListener('dragend',()=>{item.classList.remove('opacity-50');dragged=null;updateOrder()});item.addEventListener('dragover',event=>event.preventDefault());item.addEventListener('drop',event=>{event.preventDefault();if(dragged&&dragged!==item)list.insertBefore(dragged,item);updateOrder()})});
+})();
+</script>
+@endpush

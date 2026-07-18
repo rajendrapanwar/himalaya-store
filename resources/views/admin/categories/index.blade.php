@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Create Category')
+@section('title', 'Categories')
 
 @section('content')
 
@@ -20,7 +20,7 @@
 
         <a
             href="{{ route('admin.categories.create') }}"
-            class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
+            class="rounded-xl bg-brand-800 px-5 py-3 font-bold text-white hover:bg-brand-900"
         >
             + Add Category
         </a>
@@ -79,7 +79,7 @@
                     <td class="p-4">
 
                         @if($category->status)
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                            <span class="rounded-full bg-brand-100 px-3 py-1 text-sm font-bold text-brand-700">
                                 Active
                             </span>
                         @else

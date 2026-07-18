@@ -1,503 +1,235 @@
 @extends('layouts.app')
 
+@section('title', 'Pahadi Roots · Traceable produce from Uttarakhand')
+@section('meta_description', 'Shop traceable mountain honey, herbal teas, pulses, grains, spices and handmade gifts sourced across Uttarakhand and Himachal Pradesh.')
+@section('og_image', $heroSlides->first()->image_url)
+@section('og_image_alt', $heroSlides->first()->image_alt)
+
+@push('head')
+<link rel="preload" as="image" href="{{ $heroSlides->first()->image_url }}" fetchpriority="high">
+<script type="application/ld+json">{!! json_encode([
+    '@@context' => 'https://schema.org',
+    '@graph' => [array_filter([
+        '@type' => 'OnlineStore',
+        '@id' => route('home').'#organization',
+        'name' => config('seo.organization.name'),
+        'url' => route('home'),
+        'logo' => ['@type' => 'ImageObject', 'url' => asset('assets/img/logo.png'), 'contentUrl' => asset('assets/img/logo.png'), 'width' => 1642, 'height' => 395],
+        'image' => $heroSlides->first()->image_url,
+        'description' => config('seo.default_description'),
+        'email' => config('seo.organization.email'),
+        'telephone' => config('seo.organization.telephone'),
+        'address' => ['@type' => 'PostalAddress', 'streetAddress' => config('seo.organization.street_address'), 'addressLocality' => config('seo.organization.locality'), 'addressRegion' => config('seo.organization.region'), 'postalCode' => config('seo.organization.postal_code'), 'addressCountry' => config('seo.organization.country')],
+        'areaServed' => [['@type' => 'AdministrativeArea', 'name' => 'Uttarakhand'], ['@type' => 'Country', 'name' => 'India']],
+        'contactPoint' => array_filter(['@type' => 'ContactPoint', 'contactType' => 'customer support', 'email' => config('seo.organization.email'), 'telephone' => config('seo.organization.telephone'), 'availableLanguage' => ['English', 'Hindi']]),
+        'hasMerchantReturnPolicy' => ['@type' => 'MerchantReturnPolicy', 'applicableCountry' => 'IN', 'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow', 'merchantReturnDays' => 30, 'returnMethod' => 'https://schema.org/ReturnByMail', 'returnFees' => 'https://schema.org/ReturnFeesCustomerResponsibility', 'merchantReturnLink' => route('returns.policy')],
+    ]), [
+        '@type' => 'WebSite',
+        '@id' => route('home').'#website',
+        'url' => route('home'),
+        'name' => config('seo.site_name'),
+        'publisher' => ['@id' => route('home').'#organization'],
+        'inLanguage' => config('seo.language'),
+    ]],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
+
 @section('content')
-
-<div class="space-y-24">
-
-    {{-- Hero Section --}}
-    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 text-white shadow-2xl">
-        <!-- Animated Background -->
-        <div class="absolute inset-0 opacity-20">
-            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center animate-slow-zoom"></div>
-        </div>
-        <div class="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
-
-        <!-- Floating Mountain SVG -->
-        <div class="absolute top-20 right-10 animate-float-slow opacity-20">
-            <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2Z"/>
-            </svg>
-        </div>
-
-        <div class="relative z-20 px-8 py-20 md:px-12 lg:px-16 md:py-28 max-w-5xl">
-            <div class="animate-fade-in-up">
-                <div class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-5 py-2.5 text-sm font-semibold ring-1 ring-white/30 shadow-lg mb-6">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Authentic Himalayan Marketplace
-                </div>
-
-                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-tight tracking-tight">
-                    Pure mountain
-                    <span class="bg-gradient-to-r from-emerald-400 via-teal-400 to-amber-400 bg-clip-text text-transparent">
-                        goodness
-                    </span>
-                    <br>delivered to you.
-                </h1>
-
-                <p class="mt-8 max-w-2xl text-lg md:text-xl text-stone-200 leading-relaxed">
-                    Discover natural honey, herbal teas, organic spices, premium grains, and handmade treasures sourced directly from Himachal, Garhwal, Uttarakhand, and the Himalayas.
-                </p>
-
-                <div class="mt-10 flex flex-wrap gap-4">
-                    <a href="{{ route('products.index') }}"
-                       class="group relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 overflow-hidden">
-                        <span class="relative z-10">Shop Now</span>
-                        <svg class="relative z-10 w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
-                        <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-
-                    <a href="#categories"
-                       class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-8 py-4 font-semibold text-white ring-1 ring-white/30 transition-all duration-300 hover:bg-white/20 hover:scale-105">
-                        Explore Categories
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- Customer Stats with SVGs -->
-                <div class="mt-12 flex flex-wrap gap-8 pt-8 border-t border-white/20">
-                    <div class="flex items-center gap-3">
-                        <div class="text-2xl">
-                            <svg class="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="font-bold">4.9/5</div>
-                            <div class="text-sm text-stone-300">Customer Rating</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <div>
-                            <div class="font-bold">50+</div>
-                            <div class="text-sm text-stone-300">Himalayan Products</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <div>
-                            <div class="font-bold">Free Shipping</div>
-                            <div class="text-sm text-stone-300">On orders ₹500+</div>
-                        </div>
+<section class="home-hero relative overflow-hidden rounded-2xl bg-brand-950 shadow-sm" data-hero-slider aria-roledescription="carousel" aria-label="Featured Pahadi Roots campaigns">
+    <div class="relative min-h-[560px] sm:min-h-[600px] lg:min-h-[640px]" aria-live="off">
+        @foreach($heroSlides as $slide)
+            @php
+                $isFirst = $loop->first;
+                $isDarkText = $slide->text_theme === 'dark';
+                $positionClasses = match($slide->text_position) {
+                    'center' => 'mx-auto items-center text-center',
+                    'right' => 'ml-auto items-end text-right',
+                    default => 'mr-auto items-start text-left',
+                };
+                $primaryUrl = str_starts_with((string) $slide->primary_url, '/') ? url($slide->primary_url) : $slide->primary_url;
+                $secondaryUrl = str_starts_with((string) $slide->secondary_url, '/') ? url($slide->secondary_url) : $slide->secondary_url;
+            @endphp
+            <article class="absolute inset-0 transition-opacity duration-700 {{ $isFirst ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0' }}" data-hero-slide aria-hidden="{{ $isFirst ? 'false' : 'true' }}" @if(!$isFirst) inert @endif aria-roledescription="slide" aria-label="Slide {{ $loop->iteration }} of {{ $heroSlides->count() }}">
+                <img src="{{ $slide->image_url }}" data-image-fallback alt="{{ $slide->image_alt }}" class="absolute inset-0 h-full w-full object-cover" width="1920" height="900" @if($isFirst) fetchpriority="high" @else loading="lazy" decoding="async" @endif>
+                <div class="absolute inset-0 {{ $isDarkText ? 'bg-gradient-to-r from-white/95 via-white/75 to-white/10' : 'bg-gradient-to-r from-brand-950/95 via-brand-950/68 to-brand-950/10' }}"></div>
+                <div class="relative flex min-h-[560px] items-center px-6 pb-24 pt-16 sm:min-h-[600px] sm:px-10 lg:min-h-[640px] lg:px-16">
+                    <div class="flex w-full max-w-2xl flex-col {{ $positionClasses }} {{ $isDarkText ? 'text-brand-950' : 'text-white' }}">
+                        @if($slide->eyebrow)<p class="text-[11px] font-black uppercase tracking-[.18em] {{ $isDarkText ? 'text-brand-700' : 'text-amber-300' }}">{{ $slide->eyebrow }}</p>@endif
+                        @if($isFirst)<h1 class="font-display mt-5 text-4xl font-semibold leading-[1.02] sm:text-5xl lg:text-6xl">{{ $slide->title }}</h1>@else<h2 class="font-display mt-5 text-4xl font-semibold leading-[1.02] sm:text-5xl lg:text-6xl">{{ $slide->title }}</h2>@endif
+                        @if($slide->description)<p class="mt-6 max-w-xl text-base leading-8 {{ $isDarkText ? 'text-stone-700' : 'text-stone-100' }} sm:text-lg">{{ $slide->description }}</p>@endif
+                        @if($slide->primary_label || $slide->secondary_label)<div class="mt-8 flex flex-wrap gap-3 {{ $slide->text_position === 'center' ? 'justify-center' : ($slide->text_position === 'right' ? 'justify-end' : '') }}">@if($slide->primary_label && $primaryUrl)<a href="{{ $primaryUrl }}" class="button-primary {{ $isDarkText ? '' : '!bg-white !text-brand-950 hover:!bg-brand-50' }}">{{ $slide->primary_label }} <span aria-hidden="true">→</span></a>@endif @if($slide->secondary_label && $secondaryUrl)<a href="{{ $secondaryUrl }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border px-5 py-3 text-sm font-black {{ $isDarkText ? 'border-brand-800/25 text-brand-950 hover:bg-white/60' : 'border-white/30 text-white hover:bg-white/10' }}">{{ $slide->secondary_label }}</a>@endif</div>@endif
                     </div>
                 </div>
-            </div>
+            </article>
+        @endforeach
+    </div>
+    @if($heroSlides->count() > 1)
+        <div class="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-5 border-t border-white/15 bg-brand-950/45 px-5 py-4 text-white backdrop-blur-sm sm:px-8">
+            <div class="flex gap-2" role="tablist" aria-label="Choose a featured slide">@foreach($heroSlides as $slide)<button type="button" class="h-1.5 rounded-full transition-all {{ $loop->first ? 'w-9 bg-amber-400' : 'w-5 bg-white/50 hover:bg-white' }}" data-hero-dot aria-label="Show slide {{ $loop->iteration }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}"></button>@endforeach</div>
+            <div class="flex items-center gap-2"><button type="button" class="grid h-10 w-10 place-items-center rounded-full border border-white/25 hover:bg-white/10" data-hero-previous aria-label="Previous slide"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18-6-6 6-6"/></svg></button><p class="min-w-12 text-center text-xs font-black"><span data-hero-current>01</span> / {{ str_pad((string) $heroSlides->count(), 2, '0', STR_PAD_LEFT) }}</p><button type="button" class="grid h-10 w-10 place-items-center rounded-full border border-white/25 hover:bg-white/10" data-hero-next aria-label="Next slide"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 6 6 6-6 6"/></svg></button></div>
         </div>
-    </section>
+    @endif
+</section>
 
-    {{-- Trust Badges with SVGs --}}
-    <section class="grid grid-cols-1 gap-6 md:grid-cols-4">
-        <div class="group rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-stone-100">
-            <div class="mb-3 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-12 h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                </svg>
-            </div>
-            <h3 class="font-black text-lg text-stone-900">100% Natural</h3>
-            <p class="mt-2 text-sm text-stone-500 leading-relaxed">No artificial additives, just pure mountain goodness.</p>
+<section class="mt-5 grid overflow-hidden rounded-xl border border-stone-200 bg-white sm:grid-cols-3" aria-label="Store offers and benefits">
+    <a href="{{ route('products.index', ['sale' => 1]) }}" class="group flex items-center gap-4 p-5 hover:bg-amber-50"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-amber-100 text-saffron" aria-hidden="true">%</span><span><strong class="block text-sm text-stone-900">Current offers</strong><small class="mt-1 block text-xs text-stone-500">Browse reduced-price products</small></span><span class="ml-auto text-brand-700 transition group-hover:translate-x-1" aria-hidden="true">→</span></a>
+    <a href="{{ route('bundles.index') }}" class="group flex items-center gap-4 border-y border-stone-200 p-5 hover:bg-brand-50 sm:border-x sm:border-y-0"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700" aria-hidden="true">◇</span><span><strong class="block text-sm text-stone-900">Gift-ready bundles</strong><small class="mt-1 block text-xs text-stone-500">Thoughtful collections from the hills</small></span><span class="ml-auto text-brand-700 transition group-hover:translate-x-1" aria-hidden="true">→</span></a>
+    <a href="{{ route('rewards') }}" class="group flex items-center gap-4 p-5 hover:bg-brand-50"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700" aria-hidden="true">★</span><span><strong class="block text-sm text-stone-900">Rewards and referrals</strong><small class="mt-1 block text-xs text-stone-500">Learn how to earn and redeem</small></span><span class="ml-auto text-brand-700 transition group-hover:translate-x-1" aria-hidden="true">→</span></a>
+</section>
+
+<section class="section-space">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div><p class="eyebrow">Browse the range</p><h2 class="section-title mt-3">Shop by category</h2></div>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+            <button type="button" class="category-carousel-control" data-carousel-previous aria-label="Show previous categories">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button type="button" class="category-carousel-control" data-carousel-next aria-label="Show next categories">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <a href="{{ route('products.index') }}" class="button-quiet">See everything <span aria-hidden="true">→</span></a>
         </div>
-
-        <div class="group rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-stone-100">
-            <div class="mb-3 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-12 h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <h3 class="font-black text-lg text-stone-900">Himalayan Origin</h3>
-            <p class="mt-2 text-sm text-stone-500 leading-relaxed">Directly sourced from local Himalayan communities.</p>
-        </div>
-
-        <div class="group rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-stone-100">
-            <div class="mb-3 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-12 h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                </svg>
-            </div>
-            <h3 class="font-black text-lg text-stone-900">Freshly Packed</h3>
-            <p class="mt-2 text-sm text-stone-500 leading-relaxed">Packed with care to ensure premium quality.</p>
-        </div>
-
-        <div class="group rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-stone-100">
-            <div class="mb-3 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-12 h-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-            </div>
-            <h3 class="font-black text-lg text-stone-900">Support Local</h3>
-            <p class="mt-2 text-sm text-stone-500 leading-relaxed">Every purchase supports Himalayan families.</p>
-        </div>
-    </section>
-
-    {{-- Featured Categories --}}
-    <section id="categories">
-        <div class="mb-10 text-center md:text-left">
-            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 mb-4">
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                </svg>
-                <span class="text-sm font-bold text-emerald-700 uppercase tracking-wider">Shop by Category</span>
-            </div>
-            <h2 class="text-4xl md:text-5xl font-black text-stone-900">
-                Explore <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">mountain favourites</span>
-            </h2>
-            <p class="mt-3 text-stone-500 max-w-2xl mx-auto md:mx-0">Discover authentic products from the heart of the Himalayas</p>
-        </div>
-
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            @forelse($categories as $category)
-                <a href="{{ route('products.index', ['category' => $category->slug]) }}"
-                   class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-stone-800 to-stone-900 shadow-xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-
-                    <div class="aspect-[16/10] relative">
-                        @if($category->image)
-                            <img src="{{ asset('storage/' . $category->image) }}"
-                                 class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:opacity-30"
-                                 alt="{{ $category->name }}">
-                        @else
-                            <div class="h-full w-full bg-gradient-to-br from-emerald-600 to-teal-700"></div>
-                        @endif
-                        
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                        
-                        <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                        <h3 class="text-2xl font-black mb-2">
-                            {{ $category->name }}
-                        </h3>
-
-                        @if($category->description)
-                            <p class="line-clamp-2 text-sm text-stone-200 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
-                                {{ $category->description }}
-                            </p>
-                        @endif
-                        
-                        <div class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-emerald-400 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                            Shop Now
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </a>
-            @empty
-                <div class="col-span-full rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 p-16 text-center">
-                    <svg class="w-16 h-16 text-stone-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-stone-500">Categories coming soon!</p>
+    </div>
+    <div class="category-carousel mt-7" data-carousel aria-label="Product categories">
+        @forelse($categories as $category)
+            <a href="{{ route('products.index', ['category' => $category->slug]) }}" class="category-tile group w-[72%] shrink-0 snap-start overflow-hidden border border-stone-200 bg-white sm:w-[42%] md:w-[30%] lg:w-[23%] xl:w-[19%]">
+                <div class="aspect-[4/3] overflow-hidden bg-stone-100">
+                    @if($category->image)
+                        <img src="{{ asset('storage/'.$category->image) }}" data-image-fallback alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" decoding="async" width="640" height="480">
+                    @else
+                        <div class="grid h-full place-items-center bg-brand-50 text-brand-300"><svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M4 19h16M6 17l5-8 3 4 2-3 3 7H6Z"/></svg></div>
+                    @endif
                 </div>
-            @endforelse
-        </div>
-        
-        <div class="text-center mt-8 md:hidden">
-            <a href="{{ route('products.index') }}" class="inline-flex items-center gap-2 rounded-full border border-stone-200 px-6 py-3 font-semibold hover:bg-stone-50 transition-all">
-                View All Categories
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
+                <div class="flex items-center justify-between gap-3 p-4"><div><h3 class="text-sm font-extrabold text-stone-900 sm:text-base">{{ $category->name }}</h3><p class="mt-1 text-[11px] font-semibold text-stone-500">{{ $category->products_count }} {{ Str::plural('product', $category->products_count) }}</p></div><span class="text-lg text-brand-700 transition group-hover:translate-x-0.5" aria-hidden="true">→</span></div>
             </a>
-        </div>
-    </section>
+        @empty
+            <div class="surface-card col-span-full p-10 text-center text-stone-500">Collections are being prepared. Please check back soon.</div>
+        @endforelse
+    </div>
+</section>
 
-    {{-- Featured Products --}}
-    <section>
-        <div class="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-                <div class="inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 mb-4">
-                    <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                    <span class="text-sm font-bold text-amber-700 uppercase tracking-wider">Handpicked Collection</span>
-                </div>
-                <h2 class="text-4xl md:text-5xl font-black text-stone-900">
-                    Featured <span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">essentials</span>
-                </h2>
-                <p class="mt-3 text-stone-500">Our most loved mountain treasures, curated just for you</p>
+<section class="mb-14 overflow-hidden rounded-2xl bg-[#efe7d7] sm:mb-18" aria-labelledby="rewards-promo-title">
+    <div class="grid lg:grid-cols-[1.08fr_.92fr]">
+        <div class="relative flex items-center px-7 py-11 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+            <div class="absolute -left-20 -top-24 h-64 w-64 rounded-full border-[40px] border-brand-800/5" aria-hidden="true"></div>
+            <div class="relative max-w-xl"><p class="eyebrow">Pahadi Roots rewards</p><h2 id="rewards-promo-title" class="font-display mt-4 text-4xl font-semibold leading-[1.05] text-brand-950 sm:text-5xl">Share a little goodness. Earn something back.</h2><p class="mt-5 text-sm leading-7 text-stone-600 sm:text-base">Invite a friend with your personal link. After their first qualifying order, you earn <strong class="text-brand-900">{{ config('commerce.loyalty.referrer_reward') }} points</strong> and they receive <strong class="text-brand-900">{{ config('commerce.loyalty.referred_customer_reward') }} points</strong>.</p><div class="mt-7 flex flex-wrap gap-3"><a href="{{ route('rewards') }}" class="button-primary">See how it works <span aria-hidden="true">→</span></a><a href="{{ auth()->check() ? route('profile') : route('register') }}" class="button-secondary">{{ auth()->check() ? 'Get my referral link' : 'Create free account' }}</a></div><p class="mt-5 text-xs text-stone-500">No subscription. No joining fee. Rewards are applied automatically.</p></div>
+        </div>
+        <div class="relative min-h-[340px] overflow-hidden bg-brand-950 sm:min-h-[420px]">
+            <img src="{{ asset('assets/img/products/wild-forest-honey.webp') }}" alt="Himalayan honey to share with friends and family" class="absolute inset-0 h-full w-full object-cover opacity-70" loading="lazy" decoding="async" width="900" height="900">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/25 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 grid grid-cols-2 gap-3 p-6 sm:p-8">
+                <div class="rounded-xl border border-white/15 bg-white/10 p-5 text-white backdrop-blur-md"><span class="text-3xl font-black text-amber-300">+{{ config('commerce.loyalty.referrer_reward') }}</span><p class="mt-1 text-xs font-black uppercase tracking-wider">For you</p></div>
+                <div class="rounded-xl border border-white/15 bg-white/10 p-5 text-white backdrop-blur-md"><span class="text-3xl font-black text-amber-300">+{{ config('commerce.loyalty.referred_customer_reward') }}</span><p class="mt-1 text-xs font-black uppercase tracking-wider">For your friend</p></div>
             </div>
-
-            <a href="{{ route('products.index') }}"
-               class="group hidden md:inline-flex items-center gap-2 rounded-full border-2 border-stone-200 bg-white px-6 py-3 font-semibold text-stone-700 transition-all duration-300 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-md">
-                View All Products
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-            </a>
         </div>
+    </div>
+</section>
 
-        <div class="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            @forelse($featuredProducts as $product)
-                @php
-                    $image = $product->images->where('is_main', 1)->first() ?? $product->images->first();
-                    $price = $product->sale_price ?? $product->price;
-                    $discount = $product->sale_price ? round((($product->price - $product->sale_price) / $product->price) * 100) : 0;
-                @endphp
-
-                <div class="group relative overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                    <a href="{{ route('products.show', $product->slug) }}" class="block">
-                        <div class="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200">
-                            @if($image)
-                                <img src="{{ asset('storage/' . $image->image) }}"
-                                     class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110"
-                                     alt="{{ $product->name }}"
-                                     loading="lazy">
-                            @else
-                                <div class="flex h-full items-center justify-center">
-                                    <svg class="w-20 h-20 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                            @endif
-
-                            <div class="absolute left-3 top-3 flex flex-col gap-2">
-                                <span class="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg inline-flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                    </svg>
-                                    Featured
-                                </span>
-                                @if($discount)
-                                    <span class="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
-                                        -{{ $discount }}% OFF
-                                    </span>
-                                @endif
-                            </div>
-
-                            <div class="absolute inset-0 bg-black/50 opacity-0 transition-all duration-300 group-hover:opacity-100 flex items-center justify-center">
-                                <div class="transform translate-y-4 transition-all duration-500 group-hover:translate-y-0">
-                                    <div class="rounded-full bg-white px-6 py-3 text-sm font-bold text-stone-900 shadow-xl hover:bg-emerald-500 hover:text-white transition-all duration-300 inline-flex items-center gap-2">
-                                        Quick View
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-5">
-                            <p class="text-sm font-semibold text-emerald-600">
-                                {{ $product->category->name ?? 'Premium Product' }}
-                            </p>
-
-                            <h3 class="mt-1 line-clamp-2 text-lg font-black text-stone-900 group-hover:text-emerald-600 transition-colors duration-300">
-                                {{ $product->name }}
-                            </h3>
-
-                            @if($product->origin_region)
-                                <p class="mt-1 text-xs text-stone-400 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    {{ $product->origin_region }}
-                                </p>
-                            @endif
-
-                            <div class="mt-4 flex items-center justify-between">
-                                <div>
-                                    <span class="text-2xl font-black text-stone-900">
-                                        ₹{{ number_format($price, 2) }}
-                                    </span>
-                                    @if($product->sale_price)
-                                        <span class="ml-2 text-sm text-stone-400 line-through">
-                                            ₹{{ number_format($product->price, 2) }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="rounded-full bg-emerald-100 p-2 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            @empty
-                <div class="col-span-full rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 p-16 text-center">
-                    <svg class="w-16 h-16 text-stone-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                    </svg>
-                    <p class="text-stone-500 font-medium">Featured products coming soon!</p>
-                    <p class="text-sm text-stone-400 mt-1">Check back later for our handpicked mountain treasures</p>
-                </div>
-            @endforelse
+<section class="grid gap-4 pb-14 sm:pb-18 lg:grid-cols-[1.15fr_.85fr]" aria-label="Featured promotions">
+    <a href="{{ route('products.index', ['sale' => 1]) }}" class="promo-banner group relative min-h-[300px] overflow-hidden rounded-xl bg-brand-950 sm:min-h-[350px]">
+        <img src="{{ asset('assets/img/products/wild-forest-honey.webp') }}" alt="Wild forest honey from the Himalayan region" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]" loading="lazy" decoding="async" width="960" height="720">
+        <div class="absolute inset-0 bg-gradient-to-r from-brand-950/95 via-brand-950/70 to-brand-950/10"></div>
+        <div class="relative flex h-full min-h-[300px] max-w-md flex-col justify-end p-7 text-white sm:min-h-[350px] sm:p-10">
+            <span class="w-fit rounded-full bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-[.14em] text-brand-950">Limited-time savings</span>
+            <h2 class="font-display mt-4 text-3xl font-semibold leading-tight sm:text-4xl">Mountain favourites, now at friendlier prices.</h2>
+            <p class="mt-3 max-w-sm text-sm leading-6 text-brand-100">Discover selected pantry staples and seasonal produce in our current offers.</p>
+            <span class="mt-6 inline-flex items-center gap-2 text-sm font-black">Shop current offers <span class="transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
         </div>
-    </section>
+    </a>
 
-    {{-- Special Offer Banner --}}
-    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-xl">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] bg-repeat"></div>
+    <a href="{{ route('bundles.index') }}" class="promo-banner group relative min-h-[300px] overflow-hidden rounded-xl bg-[#6d3828] sm:min-h-[350px]">
+        <img src="{{ asset('assets/img/products/munsiyari-rajma.webp') }}" alt="Munsiyari rajma, a traditional hill-grown pulse" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]" loading="lazy" decoding="async" width="800" height="800">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#32150f]/95 via-[#32150f]/48 to-transparent"></div>
+        <div class="relative flex h-full min-h-[300px] flex-col justify-end p-7 text-white sm:min-h-[350px] sm:p-9">
+            <p class="text-[11px] font-black uppercase tracking-[.16em] text-amber-300">Made for sharing</p>
+            <h2 class="font-display mt-3 text-3xl font-semibold leading-tight">Gift the taste of the hills.</h2>
+            <p class="mt-3 text-sm leading-6 text-stone-200">Curated pantry boxes for celebrations, hosts and thoughtful everyday gestures.</p>
+            <span class="mt-5 inline-flex items-center gap-2 text-sm font-black">Explore gift boxes <span class="transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
         </div>
-        
-        <div class="relative z-10 px-8 py-12 md:px-12 md:py-16 text-center text-white">
-            <div class="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 mb-6">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                </svg>
-                <span class="text-sm font-bold uppercase tracking-wider">Limited Time Offer</span>
-            </div>
-            <h2 class="text-3xl md:text-5xl font-black mb-4">
-                Free Shipping on Orders Over ₹500
-            </h2>
-            <p class="text-lg text-emerald-50 mb-6 max-w-2xl mx-auto">
-                Plus, get an additional 10% off on your first order! Use code: <span class="font-mono font-bold bg-white/20 px-3 py-1 rounded-full">HIMALAYAN10</span>
-            </p>
-            <a href="{{ route('products.index') }}" 
-               class="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 font-bold text-emerald-600 transition-all duration-300 hover:shadow-xl hover:scale-105">
-                Shop Now
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-            </a>
-        </div>
-    </section>
+    </a>
+</section>
 
-    {{-- Story & Values Section --}}
-    <section class="grid grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-xl lg:grid-cols-2 border border-stone-100">
-        <div class="bg-gradient-to-br from-emerald-600 via-teal-700 to-stone-800 p-10 text-white md:p-14">
-            <div class="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 mb-6">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
-                <span class="text-sm font-bold uppercase tracking-wider">Our Story</span>
-            </div>
-            <h2 class="text-4xl md:text-5xl font-black leading-tight">
-                Bringing the taste of the <span class="text-emerald-200">hills</span> to every home.
-            </h2>
-            <p class="mt-6 leading-relaxed text-emerald-50">
-                Founded with a passion for authentic Himalayan products, we connect you directly with local farmers, 
-                artisans, and producers from the majestic mountain regions. Every purchase supports sustainable practices 
-                and empowers local communities.
-            </p>
-            <div class="mt-8 flex flex-wrap gap-4">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    <span>100% Authentic Products</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    <span>Sustainably Sourced</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    <span>Supports Local Families</span>
+@if($featuredProducts->isNotEmpty())
+<section class="pb-14 sm:pb-18">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div><p class="eyebrow">Curated essentials</p><h2 class="section-title mt-3">Popular right now</h2></div>
+        <a href="{{ route('products.index') }}" class="button-secondary self-start sm:self-auto">Shop all products</a>
+    </div>
+    <div class="mt-7 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">@foreach($featuredProducts as $product)<x-product-card :product="$product" :wishlist-product-ids="$wishlistProductIds" />@endforeach</div>
+</section>
+@endif
+
+<section class="mb-14 grid overflow-hidden border border-stone-200 bg-white lg:grid-cols-2 sm:mb-18">
+    <div class="relative overflow-hidden bg-brand-950 px-7 py-10 text-white sm:px-10 sm:py-12">
+        <div class="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[45px] border-white/5" aria-hidden="true"></div>
+        <div class="relative max-w-lg"><p class="text-[11px] font-black uppercase tracking-[.17em] text-amber-300">Thoughtful gifting</p><h2 class="font-display mt-4 text-3xl font-semibold leading-tight sm:text-4xl">{{ $featuredBundle?->name ?? 'A little piece of the hills.' }}</h2><p class="mt-4 text-sm leading-7 text-brand-100">{{ $featuredBundle?->description ?? 'Curated mountain pantry collections, ready to share with someone special.' }}</p>@if($featuredBundle)<p class="mt-5 text-2xl font-black">₹{{ number_format((float) $featuredBundle->price, 2) }}</p>@endif<a href="{{ route('bundles.index') }}" class="button-primary mt-6 !bg-white !text-brand-950 hover:!bg-brand-50">Explore gift boxes <span aria-hidden="true">→</span></a></div>
+    </div>
+    <div class="px-7 py-10 sm:px-10 sm:py-12">
+        <p class="eyebrow">Delivery check</p><h2 class="font-display mt-4 text-3xl font-semibold text-brand-950">See if we deliver to you.</h2><p class="mt-4 max-w-lg text-sm leading-7 text-stone-600">Enter your six-digit pincode for availability, estimated delivery time and COD eligibility.</p>
+        <form method="POST" action="{{ route('pincode.check') }}" class="mt-6 max-w-md" data-pincode-form>@csrf<div class="flex gap-2"><label for="homePincode" class="sr-only">Delivery pincode</label><input id="homePincode" name="pincode" inputmode="numeric" autocomplete="postal-code" pattern="[1-9][0-9]{5}" maxlength="6" placeholder="Enter pincode" class="field-control min-w-0" required><button class="button-primary shrink-0" type="submit" data-pincode-button>Check now</button></div><div data-pincode-result role="status" aria-live="polite" class="mt-3 hidden rounded-lg border p-4 text-sm"></div></form>
+        <p class="mt-3 text-xs text-stone-500">We currently dispatch orders from Dehradun, Uttarakhand.</p>
+    </div>
+</section>
+
+<section class="provenance-section overflow-hidden rounded-xl border border-stone-200 bg-white">
+    <div class="grid lg:grid-cols-[1.02fr_.98fr] lg:items-stretch">
+        <div class="provenance-gallery grid min-h-[380px] grid-cols-[1.35fr_.65fr] grid-rows-2 gap-2 bg-stone-100 p-2 sm:min-h-[500px] sm:gap-3 sm:p-3">
+            <div class="relative row-span-2 overflow-hidden rounded-lg">
+                <img src="{{ asset('assets/img/products/munsiyari-rajma.webp') }}" alt="Munsiyari rajma sourced from the Himalayan region" class="h-full w-full object-cover transition duration-700 hover:scale-[1.025]" loading="lazy" decoding="async" width="900" height="1100">
+                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-950/80 to-transparent px-5 pb-5 pt-20 text-white sm:px-7 sm:pb-7">
+                    <p class="text-[10px] font-black uppercase tracking-[.16em] text-amber-300">From Munsiyari, Uttarakhand</p>
+                    <p class="mt-2 font-display text-2xl font-semibold">Produce with a place behind it.</p>
                 </div>
             </div>
-            <a href="{{ route('products.index') }}" class="mt-10 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 font-bold text-stone-900 transition-all duration-300 hover:shadow-xl hover:scale-105">
-                Start Shopping
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-            </a>
+            <div class="overflow-hidden rounded-lg"><img src="{{ asset('assets/img/products/wild-forest-honey.webp') }}" alt="Wild forest honey" class="h-full w-full object-cover transition duration-700 hover:scale-[1.035]" loading="lazy" decoding="async" width="520" height="520"></div>
+            <div class="overflow-hidden rounded-lg"><img src="{{ asset('assets/img/products/dried-apricots.webp') }}" alt="Himalayan dried fruits and nuts" class="h-full w-full object-cover transition duration-700 hover:scale-[1.035]" loading="lazy" decoding="async" width="520" height="520"></div>
         </div>
 
-        <div class="p-10 md:p-14 bg-gradient-to-br from-stone-50 to-white">
-            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 mb-6">
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                <span class="text-sm font-bold text-emerald-700 uppercase tracking-wider">By the Numbers</span>
-            </div>
-            <div class="grid grid-cols-2 gap-6">
-                <div class="rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                    <p class="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">50+</p>
-                    <p class="mt-2 text-sm font-semibold text-stone-700">Mountain Products</p>
-                    <p class="text-xs text-stone-400 mt-1">Carefully selected</p>
-                </div>
+        <div class="flex items-center px-7 py-11 sm:px-10 sm:py-14 lg:px-12 lg:py-16">
+            <div class="w-full">
+                <p class="eyebrow">The Pahadi approach</p>
+                <h2 class="font-display mt-4 text-4xl font-semibold leading-[1.06] text-brand-950 sm:text-5xl">Good food should never feel anonymous.</h2>
+                <p class="mt-5 max-w-xl text-sm leading-7 text-stone-600 sm:text-base">We make the journey behind our products easier to understand, with useful details about origin, batches and preparation.</p>
 
-                <div class="rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                    <p class="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">20+</p>
-                    <p class="mt-2 text-sm font-semibold text-stone-700">Local Partners</p>
-                    <p class="text-xs text-stone-400 mt-1">Across the Himalayas</p>
-                </div>
+                <ol class="provenance-journey mt-8">
+                    <li>
+                        <span class="provenance-marker"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z"/><circle cx="12" cy="10" r="2" stroke-width="2"/></svg></span>
+                        <div><h3>Know where it comes from</h3><p>Region and producer details are shown whenever they are available.</p></div>
+                    </li>
+                    <li>
+                        <span class="provenance-marker"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 3 8 4-8 4-8-4 8-4Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8 4 8-4"/></svg></span>
+                        <div><h3>Understand the batch</h3><p>Harvest and preparation notes make each choice more transparent.</p></div>
+                    </li>
+                    <li>
+                        <span class="provenance-marker"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 12 4 4L19 6"/></svg></span>
+                        <div><h3>Receive it packed with care</h3><p>Every order is checked and prepared by our Dehradun team.</p></div>
+                    </li>
+                </ol>
 
-                <div class="rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                    <p class="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">100%</p>
-                    <p class="mt-2 text-sm font-semibold text-stone-700">Natural Guarantee</p>
-                    <p class="text-xs text-stone-400 mt-1">No artificial additives</p>
-                </div>
-
-                <div class="rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                    <p class="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">24/7</p>
-                    <p class="mt-2 text-sm font-semibold text-stone-700">Customer Support</p>
-                    <p class="text-xs text-stone-400 mt-1">Always here to help</p>
+                <div class="mt-8 flex flex-wrap items-center gap-3 border-t border-stone-200 pt-7">
+                    <a href="{{ route('about') }}" class="button-primary">Discover our sourcing story <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('products.index') }}" class="button-quiet">Explore the collection</a>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-</div>
+@if($journalPosts->isNotEmpty())
+<section class="section-space pb-0">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p class="eyebrow">From the journal</p><h2 class="section-title mt-3">Stories from the hills</h2><p class="mt-3 max-w-2xl text-sm leading-7 text-stone-600">Ingredient guides, regional food traditions and practical ways to use your mountain pantry.</p></div><a href="{{ route('blog') }}" class="button-secondary self-start sm:self-auto">Explore the journal <span aria-hidden="true">→</span></a></div>
+    <div class="mt-7 grid gap-5 md:grid-cols-3">
+        @foreach($journalPosts as $post)
+            <article class="journal-card group overflow-hidden rounded-xl border border-stone-200 bg-white"><a href="{{ route('blog.show', $post->slug) }}" class="block aspect-[16/10] w-full overflow-hidden bg-stone-100">@if($post->image_url)<img src="{{ $post->image_url }}" alt="{{ $post->image_alt }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]" loading="lazy" decoding="async" width="720" height="450">@endif</a><div class="p-5"><div class="flex justify-between gap-3 text-[10px] font-black uppercase tracking-wider text-brand-700"><span>{{ $post->category }}</span><span class="text-stone-400">{{ $post->reading_time }} min</span></div><h3 class="font-display mt-3 text-2xl font-semibold leading-tight text-brand-950"><a href="{{ route('blog.show', $post->slug) }}" class="hover:text-brand-700">{{ $post->title }}</a></h3><a href="{{ route('blog.show', $post->slug) }}" class="mt-5 inline-flex text-sm font-black text-brand-700">Read story <span class="ml-2" aria-hidden="true">→</span></a></div></article>
+        @endforeach
+    </div>
+</section>
+@endif
 
-{{-- Custom Animations --}}
-<style>
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes slowZoom {
-        from {
-            transform: scale(1);
-        }
-        to {
-            transform: scale(1.1);
-        }
-    }
-    
-    @keyframes floatSlow {
-        0%, 100% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-20px);
-        }
-    }
-    
-    .animate-fade-in-up {
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .animate-slow-zoom {
-        animation: slowZoom 20s ease-in-out infinite alternate;
-    }
-    
-    .animate-float-slow {
-        animation: floatSlow 6s ease-in-out infinite;
-    }
-</style>
-
+@if($latestProducts->isNotEmpty())
+<section class="section-space pb-0">
+    <div class="flex items-end justify-between gap-4"><div><p class="eyebrow">New arrivals</p><h2 class="section-title mt-3">Fresh from the hills</h2></div><a href="{{ route('products.index', ['sort' => 'latest']) }}" class="button-quiet hidden sm:inline-flex">View new arrivals <span aria-hidden="true">→</span></a></div>
+    <div class="mt-7 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">@foreach($latestProducts as $product)<x-product-card :product="$product" :wishlist-product-ids="$wishlistProductIds" />@endforeach</div>
+</section>
+@endif
 @endsection

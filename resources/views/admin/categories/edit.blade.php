@@ -35,7 +35,7 @@
 
                 <button
                     type="submit"
-                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
+                    class="rounded-xl bg-brand-800 px-5 py-3 font-bold text-white hover:bg-brand-900"
                 >
                     Update Category
                 </button>

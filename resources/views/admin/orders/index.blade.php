@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+<div class="space-y-5"><form method="GET" class="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 md:flex-row"><input name="search" value="{{ request('search') }}" placeholder="Order number, email or phone…" class="flex-1 rounded-xl border-stone-200 px-4 py-3"><select name="status" class="rounded-xl border-stone-200 px-4 py-3"><option value="">All order statuses</option>@foreach(['pending','processing','shipped','delivered','cancelled'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select><select name="payment" class="rounded-xl border-stone-200 px-4 py-3"><option value="">All payments</option>@foreach(['pending','paid','failed','refunded'] as $status)<option value="{{ $status }}" @selected(request('payment') === $status)>{{ ucfirst($status) }}</option>@endforeach</select><button class="rounded-xl bg-stone-900 px-5 py-3 font-bold text-white">Filter</button></form><div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
 
     <div class="p-6 border-b">
         <h2 class="text-xl font-bold">Orders</h2>
@@ -81,6 +81,7 @@
         {{ $orders->links() }}
     </div>
 
+</div>
 </div>
 
 @endsection

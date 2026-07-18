@@ -1,0 +1,6 @@
+@extends('layouts.app')
+@section('title', 'My wishlist · Pahadi Roots')
+@section('content')
+<header class="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-7"><div><p class="eyebrow">Saved for later</p><h1 class="section-title mt-3">My wishlist</h1><p class="mt-2 text-sm text-stone-500"><span data-wishlist-count>{{ $products->total() }}</span> saved <span data-wishlist-count-label>{{ Str::plural('item',$products->total()) }}</span></p></div><a href="{{ route('products.index') }}" class="button-secondary">Continue shopping</a></header>
+@if($products->isNotEmpty())<div class="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">@foreach($products as $product)<x-product-card :product="$product" :wishlist-product-ids="$products->pluck('id')->all()" />@endforeach</div>@if($products->hasPages())<div class="mt-8 surface-card p-4">{{ $products->links() }}</div>@endif @else<div class="surface-card mt-8 px-6 py-16 text-center"><p class="text-5xl text-brand-300" aria-hidden="true">♡</p><h2 class="font-display mt-4 text-3xl font-semibold">Your wishlist is empty</h2><p class="mt-2 text-sm text-stone-500">Use the heart on any product to keep it here for later.</p><a href="{{ route('products.index') }}" class="button-primary mt-6">Explore products</a></div>@endif
+@endsection

@@ -9,13 +9,9 @@
             ✓
         </div>
 
-        <h1 class="text-4xl font-black text-stone-950">
-            Order Placed Successfully
-        </h1>
+        <h1 class="text-4xl font-black text-stone-950">{{ $order->payment_status === 'paid' ? 'Payment successful' : 'Order placed successfully' }}</h1>
 
-        <p class="mt-3 text-stone-600">
-            Thank you for shopping with Himalaya Store.
-        </p>
+        <p class="mt-3 text-stone-600">{{ $order->payment_status === 'paid' ? 'Your payment is confirmed. Thank you for shopping with Pahadi Roots.' : 'Thank you for shopping with Pahadi Roots.' }}</p>
 
         <div class="mt-6 rounded-2xl bg-white p-5">
             <p class="text-sm text-stone-500">Order Number</p>
@@ -28,6 +24,7 @@
            class="mt-8 inline-block rounded-full bg-emerald-600 px-8 py-4 font-bold text-white hover:bg-emerald-700">
             Continue Shopping
         </a>
+        <a href="{{ route('orders.show', $order) }}" class="ml-2 mt-8 inline-block rounded-full border border-emerald-600 px-8 py-4 font-bold text-emerald-700 hover:bg-emerald-100">View order</a>
     </div>
 
 </div>

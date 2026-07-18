@@ -3,35 +3,65 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bundle;
 use App\Models\Category;
+use App\Models\JournalPost;
+use App\Models\HeroSlide;
 use App\Models\Product;
+use App\Services\StorefrontCache;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $categories = Category::where('status', 1)
-            ->latest()
-            ->take(6)
-            ->get();
+        $catalogue = Cache::remember('storefront:home:v2:'.StorefrontCache::version(), now()->addMinutes(5), function () {
+            $categories = Category::where('status', 1)
+                ->whereHas('products', fn ($query) => $query->where('status', true))
+                ->withCount(['products' => fn ($query) => $query->where('status', true)])
+                ->orderBy('name')->take(9)->get();
 
-        $featuredProducts = Product::with(['category', 'images'])
-            ->where('status', 1)
-            ->where('is_featured', 1)
-            ->latest()
-            ->take(8)
-            ->get();
+            $productQuery = fn () => Product::with(['category', 'images'])
+                ->withCount(['reviews as approved_reviews_count' => fn ($query) => $query->where('is_approved', true)])
+                ->withAvg(['reviews as approved_reviews_avg' => fn ($query) => $query->where('is_approved', true)], 'rating')
+                ->where('status', 1);
 
-        $latestProducts = Product::with(['category', 'images'])
-            ->where('status', 1)
-            ->latest()
-            ->take(4)
-            ->get();
+            $featuredProducts = $productQuery()->where('is_featured', 1)->latest()->take(8)->get();
+            $latestProducts = $productQuery()->latest()->take(4)->get();
+            $featuredBundle = Bundle::with(['products' => fn ($query) => $query->where('status', true)])
+                ->where('is_active', true)->latest()->first();
+            $journalPosts = JournalPost::published()->orderByDesc('is_featured')->latest('published_at')->take(3)->get();
+            $heroSlides = HeroSlide::visible()->orderBy('sort_order')->orderBy('id')->get();
+
+            return compact('categories', 'featuredProducts', 'latestProducts', 'featuredBundle', 'journalPosts', 'heroSlides');
+        });
+
+        ['categories' => $categories, 'featuredProducts' => $featuredProducts, 'latestProducts' => $latestProducts, 'featuredBundle' => $featuredBundle, 'journalPosts' => $journalPosts, 'heroSlides' => $heroSlides] = $catalogue;
+
+        if ($heroSlides->isEmpty()) {
+            $heroSlides = collect([new HeroSlide([
+                'eyebrow' => 'From Uttarakhand, with care',
+                'title' => 'Good food has a place, a maker and a story.',
+                'description' => 'Traceable mountain produce from small producers, packed thoughtfully in Dehradun.',
+                'image_path' => 'assets/img/hero/himalayan-collection-v2.webp',
+                'image_alt' => 'A collection of Himalayan pantry products',
+                'primary_label' => 'Shop the collection',
+                'primary_url' => '/products',
+                'secondary_label' => 'Our sourcing story',
+                'secondary_url' => '/about',
+                'text_theme' => 'light',
+                'text_position' => 'left',
+            ])]);
+        }
+
+        $wishlistProductIds = auth()->check()
+            ? auth()->user()->wishlist()->pluck('products.id')->all()
+            : [];
 
         return view('frontend.home', compact(
             'categories',
             'featuredProducts',
-            'latestProducts'
+            'latestProducts', 'wishlistProductIds', 'featuredBundle', 'journalPosts', 'heroSlides'
         ));
     }
 }

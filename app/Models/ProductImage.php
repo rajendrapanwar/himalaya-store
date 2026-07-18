@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\StorefrontCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductImage extends Model
 {
@@ -13,9 +15,16 @@ class ProductImage extends Model
         'product_id',
         'image',
         'is_main',
+        'sort_order',
     ];
 
-    public function product()
+    protected static function booted(): void
+    {
+        static::saved(fn () => StorefrontCache::bump());
+        static::deleted(fn () => StorefrontCache::bump());
+    }
+
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }

@@ -1,602 +1,164 @@
 @extends('layouts.app')
 
-@section('content')
-
 @php
-    $mainImage = $product->images->where('is_main', 1)->first() ?? $product->images->first();
+    $mainImage = $product->images->firstWhere('is_main', true) ?? $product->images->first();
     $displayPrice = $product->sale_price ?? $product->price;
-    $discountPercent = $product->sale_price ? round((($product->price - $product->sale_price) / $product->price) * 100) : 0;
+    $reviewCount = $product->reviews->count();
+    $averageRating = $reviewCount ? round((float) $product->reviews->avg('rating'), 1) : 0;
+    $productMetaDescription = trim($product->short_description ?: 'Discover '.$product->name.', sourced from '.($product->origin_region ?: 'the Himalayas').'.');
+    if (Str::length($productMetaDescription) < 90) {
+        $productMetaDescription .= ' View origin, ingredients, pack details, availability and delivery information.';
+    }
 @endphp
 
-<div class="space-y-16">
+@section('title', $product->name.' · Pahadi Roots')
+@section('meta_description', Str::limit($productMetaDescription, 155, ''))
+@section('canonical', route('products.show', $product->slug))
+@section('og_type', 'product')
+@section('og_image', $mainImage ? asset('storage/'.$mainImage->image) : asset('assets/img/logo.png'))
+@section('og_image_alt', $product->name.' from Pahadi Roots')
 
-    {{-- Modern Breadcrumb --}}
-    <nav class="flex items-center gap-2 text-sm">
-        <a href="/" class="flex items-center gap-1 text-stone-500 transition-colors hover:text-emerald-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-            </svg>
-            Home
-        </a>
-        <span class="text-stone-400">/</span>
-        <a href="{{ route('products.index') }}" class="text-stone-500 transition-colors hover:text-emerald-600">Products</a>
-        <span class="text-stone-400">/</span>
-        <a href="{{ route('products.index', ['category' => $product->category->slug ?? '']) }}" class="text-stone-500 transition-colors hover:text-emerald-600">
-            {{ $product->category->name ?? 'All' }}
-        </a>
-        <span class="text-stone-400">/</span>
-        <span class="font-medium text-stone-900">{{ Str::limit($product->name, 40) }}</span>
-    </nav>
+@push('head')
+<script type="application/ld+json">{!! json_encode([
+    '@@context' => 'https://schema.org',
+    '@graph' => [[
+        '@type' => 'Product',
+        '@id' => route('products.show', $product->slug).'#product',
+        'url' => route('products.show', $product->slug),
+        'name' => $product->name,
+        'image' => $product->images->sortByDesc('is_main')->map(fn ($image) => asset('storage/'.$image->image))->values()->all(),
+        'description' => $product->short_description,
+        'sku' => $product->sku,
+        'category' => $product->category?->name,
+        'brand' => ['@type' => 'Brand', 'name' => 'Pahadi Roots'],
+        'additionalProperty' => array_values(array_filter([
+            $product->origin_region ? ['@type' => 'PropertyValue', 'name' => 'Origin', 'value' => $product->origin_region] : null,
+            $product->producer_name ? ['@type' => 'PropertyValue', 'name' => 'Producer', 'value' => $product->producer_name] : null,
+            $product->weight ? ['@type' => 'PropertyValue', 'name' => 'Pack weight', 'value' => number_format((float) $product->weight, 0).' g'] : null,
+        ])),
+        'offers' => array_filter([
+            '@type' => 'Offer',
+            'url' => route('products.show', $product->slug),
+            'priceCurrency' => 'INR',
+            'price' => number_format((float) $displayPrice, 2, '.', ''),
+            'availability' => $product->available_stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'itemCondition' => 'https://schema.org/NewCondition',
+            'seller' => ['@id' => route('home').'#organization'],
+            'priceSpecification' => $product->sale_price ? [
+                '@type' => 'UnitPriceSpecification',
+                'priceType' => 'https://schema.org/StrikethroughPrice',
+                'price' => number_format((float) $product->price, 2, '.', ''),
+                'priceCurrency' => 'INR',
+            ] : null,
+        ]),
+    ] + ($reviewCount ? [
+        'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => $averageRating, 'reviewCount' => $reviewCount, 'bestRating' => 5, 'worstRating' => 1],
+        'review' => $product->reviews->map(fn ($review) => array_filter([
+            '@type' => 'Review',
+            'author' => ['@type' => 'Person', 'name' => $review->user->name],
+            'datePublished' => $review->created_at->toDateString(),
+            'name' => $review->title,
+            'reviewBody' => $review->body,
+            'reviewRating' => ['@type' => 'Rating', 'ratingValue' => $review->rating, 'bestRating' => 5, 'worstRating' => 1],
+        ]))->values()->all(),
+    ] : []), [
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => array_values(array_filter([
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Shop', 'item' => route('products.index')],
+            $product->category ? ['@type' => 'ListItem', 'position' => 3, 'name' => $product->category->name, 'item' => route('products.index', ['category' => $product->category->slug])] : null,
+            ['@type' => 'ListItem', 'position' => $product->category ? 4 : 3, 'name' => $product->name, 'item' => route('products.show', $product->slug)],
+        ])),
+    ]],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 
-    {{-- Main Product Section with Enhanced Layout --}}
-    <section class="grid grid-cols-1 gap-12 lg:grid-cols-2">
+@section('content')
+<nav class="mb-6 flex flex-wrap items-center gap-2 text-xs text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-brand-700">Home</a><span aria-hidden="true">/</span><a href="{{ route('products.index') }}" class="hover:text-brand-700">Shop</a>@if($product->category)<span aria-hidden="true">/</span><a href="{{ route('products.index', ['category' => $product->category->slug]) }}" class="hover:text-brand-700">{{ $product->category->name }}</a>@endif<span aria-hidden="true">/</span><span class="font-semibold text-stone-800">{{ $product->name }}</span></nav>
 
-        {{-- Gallery with Lightbox Effect --}}
-        <div class="space-y-5">
-            <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-stone-100 to-stone-200 shadow-xl">
-                @if($mainImage)
-                    <img
-                        src="{{ asset('storage/' . $mainImage->image) }}"
-                        alt="{{ $product->name }}"
-                        class="h-[560px] w-full object-cover transition-transform duration-700 group-hover:scale-105 cursor-pointer"
-                        onclick="openLightbox('{{ asset('storage/' . $mainImage->image) }}')"
-                    >
-                @else
-                    <div class="flex h-[560px] w-full items-center justify-center">
-                        <svg class="w-32 h-32 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                @endif
+<section class="grid gap-9 lg:grid-cols-2 lg:gap-14">
+    <div>
+        <div class="relative overflow-hidden rounded-2xl border border-stone-200 bg-[#f0ede5]">
+            @if($mainImage)
+                <img id="mainProductImage" src="{{ asset('storage/'.$mainImage->image) }}" data-image-fallback alt="{{ $product->name }} from {{ $product->origin_region ?: 'the Himalayan region' }}" class="aspect-square h-auto w-full object-cover" width="760" height="760" fetchpriority="high" decoding="async">
+            @else
+                <div class="flex aspect-square flex-col items-center justify-center gap-4 px-8 text-center text-stone-500"><svg class="h-20 w-20 text-brand-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3" d="M4 19h16M6 17l5-8 3 4 2-3 3 7H6Z"/></svg><p class="text-sm font-bold uppercase tracking-[.15em]">Product photography coming soon</p></div>
+            @endif
+            @if($product->sale_price)<span class="absolute left-4 top-4 rounded-lg bg-saffron px-3 py-1.5 text-xs font-black text-white">Save ₹{{ number_format((float) ($product->price - $product->sale_price), 2) }}</span>@endif
+        </div>
+        @if($product->images->count() > 1)
+            <div class="mt-3 grid grid-cols-5 gap-2" role="list" aria-label="Product images">@foreach($product->images->sortByDesc('is_main') as $image)<button type="button" class="overflow-hidden rounded-xl border-2 {{ $image->id === $mainImage?->id ? 'border-brand-600' : 'border-transparent' }} bg-stone-100" data-product-thumbnail data-src="{{ asset('storage/'.$image->image) }}" aria-label="Show product image {{ $loop->iteration }}"><img src="{{ asset('storage/'.$image->image) }}" data-image-fallback alt="" class="aspect-square w-full object-cover" loading="lazy" decoding="async" width="160" height="160"></button>@endforeach</div>
+        @endif
+    </div>
 
-                {{-- Discount Badge --}}
-                @if($product->sale_price)
-                    <div class="absolute left-5 top-5">
-                        <div class="relative">
-                            <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-lg opacity-50"></div>
-                            <span class="relative rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-sm font-bold text-white shadow-lg">
-                                -{{ $discountPercent }}% OFF
-                            </span>
-                        </div>
-                    </div>
-                @endif
-            </div>
+    <div class="self-start lg:sticky lg:top-32">
+        <div class="flex items-start justify-between gap-4"><div class="flex flex-wrap items-center gap-2"><span class="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-brand-800">{{ $product->category->name ?? 'Mountain produce' }}</span>@if($product->is_featured)<span class="rounded-full border border-saffron/40 bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-800">Featured</span>@endif</div><div class="relative shrink-0"><button type="button" class="icon-button cursor-pointer border border-stone-200 bg-white" data-share data-share-title="{{ $product->name }}" data-share-text="{{ Str::limit($product->short_description ?: 'Discover '.$product->name.' from Pahadi Roots.', 120) }}" data-share-url="{{ route('products.show', $product->slug) }}" aria-label="Share {{ $product->name }}"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" stroke-width="1.8"/><circle cx="6" cy="12" r="2.5" stroke-width="1.8"/><circle cx="18" cy="19" r="2.5" stroke-width="1.8"/><path stroke-width="1.8" d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg></button><span data-share-feedback role="status" class="pointer-events-none absolute right-0 top-12 hidden whitespace-nowrap rounded-lg bg-brand-950 px-3 py-2 text-[11px] font-bold text-white shadow-lg">Link copied</span></div></div>
+        <h1 class="font-display mt-4 text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl">{{ $product->name }}</h1>
+        @if($reviewCount)
+            <a href="#customer-reviews" class="mt-4 inline-flex items-center gap-2 text-sm text-stone-600"><span class="text-saffron" aria-hidden="true">★★★★★</span><strong class="text-stone-900">{{ number_format($averageRating, 1) }}</strong><span>{{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</span></a>
+        @else
+            <p class="mt-4 text-sm text-stone-500">Not reviewed yet</p>
+        @endif
+        @if($product->short_description)
+            <p class="mt-5 text-base leading-8 text-stone-600">{{ $product->short_description }}</p>
+        @endif
 
-            @if($product->images->count() > 1)
-                <div class="grid grid-cols-5 gap-3">
-                    @foreach($product->images as $index => $image)
-                        <div class="group relative overflow-hidden rounded-xl border-2 border-stone-200 bg-stone-100 transition-all duration-300 hover:border-emerald-500 hover:shadow-lg cursor-pointer {{ $loop->first ? 'border-emerald-500 ring-2 ring-emerald-500/20' : '' }}"
-                             onclick="changeMainImage('{{ asset('storage/' . $image->image) }}', this)">
-                            <img
-                                src="{{ asset('storage/' . $image->image) }}"
-                                alt="{{ $product->name }} - Image {{ $index + 1 }}"
-                                class="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                loading="lazy"
-                            >
-                            @if($loop->first && $product->sale_price)
-                                <div class="absolute bottom-1 right-1 rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                                    Main
-                                </div>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
+        <div class="mt-6 flex flex-wrap items-baseline gap-3 border-y border-stone-200 py-5">
+            <span class="text-3xl font-black text-stone-950">₹{{ number_format((float) $displayPrice, 2) }}</span>
+            @if($product->sale_price)
+                <span class="text-base text-stone-400 line-through">₹{{ number_format((float) $product->price, 2) }}</span>
+            @endif
+            @if($product->weight)
+                <span class="text-xs text-stone-500">{{ (float) $product->weight >= 1000 ? rtrim(rtrim(number_format((float) $product->weight / 1000, 2), '0'), '.').' kg' : number_format((float) $product->weight, 0).' g' }} pack</span>
             @endif
         </div>
 
-        {{-- Product Info with Sticky Header --}}
-        <div class="lg:pl-4">
-            <div class="sticky top-6 space-y-8">
-                {{-- Category and Badges --}}
-                <div class="flex flex-wrap gap-2">
-                    <span class="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-bold text-white shadow-md">
-                        {{ $product->category->name ?? 'Premium Product' }}
-                    </span>
+        <div class="mt-5 flex items-center gap-2 text-sm"><span class="h-2.5 w-2.5 rounded-full {{ $product->available_stock > 0 ? 'bg-brand-500' : 'bg-red-500' }}"></span>@if($product->available_stock > 0)<strong>In stock</strong><span class="text-stone-500">· {{ $product->available_stock }} available</span>@else<strong class="text-red-700">Currently unavailable</strong>@endif</div>
 
-                    @if($product->is_featured)
-                        <span class="rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-4 py-2 text-sm font-bold text-white shadow-md">
-                            ⭐ Featured
-                        </span>
-                    @endif
-
-                    @if($product->stock_quantity <= 10 && $product->stock_quantity > 0)
-                        <span class="rounded-full bg-gradient-to-r from-orange-400 to-red-500 px-4 py-2 text-sm font-bold text-white shadow-md">
-                            🔥 Only {{ $product->stock_quantity }} left
-                        </span>
-                    @endif
-                </div>
-
-                {{-- Title --}}
-                <h1 class="text-4xl font-black leading-tight text-stone-900 md:text-5xl lg:text-6xl">
-                    {{ $product->name }}
-                </h1>
-
-                {{-- Origin and Rating --}}
-                <div class="flex flex-wrap items-center gap-6">
-                    @if($product->origin_region)
-                        <div class="flex items-center gap-2 rounded-full bg-stone-100 px-4 py-2">
-                            <svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="text-sm font-medium text-stone-700">
-                                Sourced from <span class="font-bold text-stone-900">{{ $product->origin_region }}</span>
-                            </span>
-                        </div>
-                    @endif
-
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center gap-1">
-                            @for($i = 1; $i <= 5; $i++)
-                                <svg class="w-5 h-5 {{ $i <= 4 ? 'text-yellow-400' : 'text-stone-300' }}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                            @endfor
-                        </div>
-                        <span class="text-sm text-stone-500">(128 customer reviews)</span>
-                    </div>
-                </div>
-
-                {{-- Short Description --}}
-                @if($product->short_description)
-                    <div class="rounded-2xl bg-gradient-to-r from-stone-50 to-white p-6 border border-stone-100">
-                        <p class="text-lg leading-relaxed text-stone-700">
-                            {{ $product->short_description }}
-                        </p>
-                    </div>
-                @endif
-
-                {{-- Price Section --}}
-                <div class="border-t border-b border-stone-200 py-6">
-                    <div class="flex items-end gap-4">
-                        <span class="text-5xl font-black text-stone-900">
-                            ₹{{ number_format($displayPrice, 2) }}
-                        </span>
-
-                        @if($product->sale_price)
-                            <span class="text-xl text-stone-400 line-through">
-                                ₹{{ number_format($product->price, 2) }}
-                            </span>
-                            <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
-                                Save ₹{{ number_format($product->price - $product->sale_price, 2) }}
-                            </span>
-                        @endif
-                    </div>
-
-                    @if($product->weight)
-                        <p class="mt-2 text-sm text-stone-500">
-                            Price per {{ $product->weight }} kg unit
-                        </p>
-                    @endif
-                </div>
-
-                {{-- Product Details Grid --}}
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="rounded-2xl bg-gradient-to-br from-stone-50 to-white p-4 shadow-sm">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="rounded-full bg-emerald-100 p-1.5">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                </svg>
-                            </div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                                Availability
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            @if($product->stock_quantity > 0)
-                                <div class="flex items-center gap-1">
-                                    <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                    <p class="font-bold text-emerald-700">In Stock</p>
-                                </div>
-                                <p class="text-sm text-stone-600">({{ $product->stock_quantity }} units available)</p>
-                            @else
-                                <p class="font-bold text-red-600">Out of Stock</p>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="rounded-2xl bg-gradient-to-br from-stone-50 to-white p-4 shadow-sm">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="rounded-full bg-emerald-100 p-1.5">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
-                                </svg>
-                            </div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                                Weight
-                            </p>
-                        </div>
-                        <p class="font-bold text-stone-900 text-lg">
-                            {{ $product->weight ? $product->weight . ' kg' : 'N/A' }}
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Add to Cart Form with Quantity Selector --}}
-                <form method="POST" action="{{ route('cart.add', $product) }}" class="space-y-5">
-                    @csrf
-
-                    <div class="space-y-3">
-                        <label class="text-sm font-semibold text-stone-700">Quantity</label>
-                        <div class="flex gap-3">
-                            <div class="relative">
-                                <input
-                                    type="number"
-                                    name="quantity"
-                                    value="1"
-                                    min="1"
-                                    max="{{ $product->stock_quantity }}"
-                                    class="w-32 rounded-xl border-2 border-stone-200 px-5 py-4 text-center font-bold focus:border-emerald-500 focus:ring-emerald-500 transition-all duration-300"
-                                    id="quantity-input"
-                                >
-                                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
-                                    <button type="button" onclick="increaseQuantity()" class="text-stone-400 hover:text-emerald-600 transition-colors">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                        </svg>
-                                    </button>
-                                    <button type="button" onclick="decreaseQuantity()" class="text-stone-400 hover:text-emerald-600 transition-colors">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                class="group flex-1 rounded-xl bg-gradient-to-r from-stone-800 to-stone-900 px-8 py-4 font-bold text-white transition-all duration-300 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-stone-800 disabled:hover:to-stone-900"
-                                {{ $product->stock_quantity <= 0 ? 'disabled' : '' }}
-                            >
-                                <span class="flex items-center justify-center gap-2">
-                                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                    </svg>
-                                    Add to Cart
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                {{-- Features List --}}
-                <div class="space-y-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 p-6">
-                    <p class="font-bold text-stone-800 mb-3">Why choose this product?</p>
-                    <div class="grid grid-cols-1 gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-full bg-white p-1.5 shadow-sm">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <span class="text-sm text-stone-700">Authentic mountain-sourced products</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-full bg-white p-1.5 shadow-sm">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <span class="text-sm text-stone-700">Freshly packed and quality checked</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-full bg-white p-1.5 shadow-sm">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <span class="text-sm text-stone-700">Supports local Himalayan communities</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-full bg-white p-1.5 shadow-sm">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <span class="text-sm text-stone-700">Free shipping on orders over ₹500</span>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Share Section --}}
-                <div class="flex items-center gap-4 pt-4">
-                    <span class="text-sm text-stone-500">Share this product:</span>
-                    <div class="flex gap-2">
-                        <a href="#" class="rounded-full bg-stone-100 p-2 transition-colors hover:bg-emerald-100 hover:text-emerald-600">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="rounded-full bg-stone-100 p-2 transition-colors hover:bg-emerald-100 hover:text-emerald-600">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="rounded-full bg-stone-100 p-2 transition-colors hover:bg-emerald-100 hover:text-emerald-600">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Description with Tabs --}}
-    <section class="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div class="border-b border-stone-200">
-            <div class="flex gap-1 px-6 pt-4">
-                <button class="tab-button active px-6 py-3 text-sm font-semibold text-stone-900 border-b-2 border-emerald-500 transition-all" data-tab="description">
-                    Product Details
-                </button>
-                <button class="tab-button px-6 py-3 text-sm font-semibold text-stone-500 hover:text-stone-900 transition-all" data-tab="specifications">
-                    Specifications
-                </button>
-                <button class="tab-button px-6 py-3 text-sm font-semibold text-stone-500 hover:text-stone-900 transition-all" data-tab="reviews">
-                    Reviews (128)
-                </button>
-            </div>
+        <form method="POST" action="{{ route('cart.add', $product) }}" class="mt-6 flex gap-3">@csrf<div><label for="quantity" class="sr-only">Quantity</label><input id="quantity" type="number" name="quantity" value="1" min="1" max="{{ $product->available_stock }}" class="w-24 rounded-xl px-3 text-center" required></div><button type="submit" class="button-primary flex-1 cursor-pointer disabled:cursor-not-allowed" @disabled($product->available_stock < 1)>Add to cart</button></form>
+        <div class="mt-3">
+            @auth<form method="POST" action="{{ $wishlistSaved ? route('wishlist.destroy', $product) : route('wishlist.store', $product) }}" data-wishlist-form data-product-id="{{ $product->id }}" data-add-url="{{ route('wishlist.store', $product) }}" data-remove-url="{{ route('wishlist.destroy', $product) }}" data-product-name="{{ $product->name }}">@csrf @if($wishlistSaved)@method('DELETE')@endif<button type="submit" data-wishlist-button aria-pressed="{{ $wishlistSaved ? 'true' : 'false' }}" class="button-secondary w-full cursor-pointer disabled:cursor-wait disabled:opacity-70"><span data-wishlist-icon aria-hidden="true">{{ $wishlistSaved ? '♥' : '♡' }}</span><span data-wishlist-label>{{ $wishlistSaved ? 'Remove from wishlist' : 'Save to wishlist' }}</span></button></form>@else<a href="{{ route('login') }}" class="button-secondary w-full cursor-pointer"><span aria-hidden="true">♡</span>Sign in to save</a>@endauth
         </div>
 
-        <div class="p-8">
-            {{-- Description Tab --}}
-            <div id="description" class="tab-content active">
-                <div class="prose max-w-none">
-                    <div class="text-stone-700 leading-relaxed space-y-4">
-                        {!! nl2br(e($product->description)) !!}
-                    </div>
-                </div>
-            </div>
+        <form method="POST" action="{{ route('pincode.check') }}" class="mt-6 rounded-xl bg-white p-4 ring-1 ring-stone-200" data-pincode-form>@csrf<label for="deliveryPincode" class="field-label">Check delivery availability</label><div class="flex gap-2"><input id="deliveryPincode" name="pincode" inputmode="numeric" autocomplete="postal-code" pattern="[1-9][0-9]{5}" maxlength="6" placeholder="6-digit pincode" class="field-control min-w-0" required><button class="button-secondary shrink-0" type="submit" data-pincode-button>Check</button></div><div data-pincode-result role="status" aria-live="polite" class="mt-3 hidden rounded-lg border p-4 text-sm"></div></form>
 
-            {{-- Specifications Tab --}}
-            <div id="specifications" class="tab-content hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div class="flex justify-between py-3 border-b border-stone-100">
-                            <span class="font-semibold text-stone-600">Product Name</span>
-                            <span class="text-stone-900">{{ $product->name }}</span>
-                        </div>
-                        <div class="flex justify-between py-3 border-b border-stone-100">
-                            <span class="font-semibold text-stone-600">Category</span>
-                            <span class="text-stone-900">{{ $product->category->name ?? 'N/A' }}</span>
-                        </div>
-                        <div class="flex justify-between py-3 border-b border-stone-100">
-                            <span class="font-semibold text-stone-600">Origin Region</span>
-                            <span class="text-stone-900">{{ $product->origin_region ?? 'N/A' }}</span>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between py-3 border-b border-stone-100">
-                            <span class="font-semibold text-stone-600">Weight</span>
-                            <span class="text-stone-900">{{ $product->weight ? $product->weight . ' kg' : 'N/A' }}</span>
-                        </div>
-                        <div class="flex justify-between py-3 border-b border-stone-100">
-                            <span class="font-semibold text-stone-600">Stock Status</span>
-                            <span class="text-stone-900">{{ $product->stock_quantity > 0 ? 'In Stock' : 'Out of Stock' }}</span>
-                        </div>
-                        <div class="flex justify-between py-3 border-b border-stone-100">
-                            <span class="font-semibold text-stone-600">SKU</span>
-                            <span class="text-stone-900">{{ $product->sku ?? 'N/A' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Reviews Tab --}}
-            <div id="reviews" class="tab-content hidden">
-                <div class="text-center py-12">
-                    <div class="text-6xl mb-4">⭐ 4.8</div>
-                    <p class="text-stone-600">Based on 128 customer reviews</p>
-                    <button class="mt-6 rounded-full bg-emerald-500 px-6 py-3 text-white font-semibold hover:bg-emerald-600 transition-colors">
-                        Write a Review
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Related Products with Enhanced Design --}}
-    @if($relatedProducts->count())
-        <section>
-            <div class="mb-8 flex items-end justify-between border-b border-stone-200 pb-4">
-                <div>
-                    <p class="text-sm font-bold uppercase tracking-wider text-emerald-600">
-                        You may also like
-                    </p>
-                    <h2 class="mt-1 text-3xl font-black text-stone-900">
-                        Related Products
-                    </h2>
-                </div>
-
-                <a href="{{ route('products.index') }}" class="group hidden rounded-full border border-stone-200 px-6 py-2.5 text-sm font-semibold transition-all duration-300 hover:bg-stone-100 hover:shadow-md md:flex items-center gap-2">
-                    View All
-                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach($relatedProducts as $related)
-
-                    @php
-                        $relatedImage = $related->images->where('is_main', 1)->first() ?? $related->images->first();
-                        $relatedPrice = $related->sale_price ?? $related->price;
-                    @endphp
-
-                    <a href="{{ route('products.show', $related->slug) }}"
-                       class="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
-
-                        <div class="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200">
-                            @if($relatedImage)
-                                <img
-                                    src="{{ asset('storage/' . $relatedImage->image) }}"
-                                    alt="{{ $related->name }}"
-                                    class="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                                    loading="lazy"
-                                >
-                            @else
-                                <div class="flex h-full w-full items-center justify-center">
-                                    <svg class="w-16 h-16 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                            @endif
-
-                            @if($related->sale_price)
-                                <div class="absolute left-3 top-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-1 text-xs font-bold text-white shadow-lg">
-                                    -{{ round((($related->price - $related->sale_price) / $related->price) * 100) }}%
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="p-5">
-                            <h3 class="line-clamp-2 font-bold text-stone-900 group-hover:text-emerald-600 transition-colors duration-300">
-                                {{ $related->name }}
-                            </h3>
-
-                            <div class="mt-3 flex items-center justify-between">
-                                <div>
-                                    <span class="text-xl font-black text-stone-900">
-                                        ₹{{ number_format($relatedPrice, 2) }}
-                                    </span>
-                                    @if($related->sale_price)
-                                        <span class="ml-2 text-sm text-stone-400 line-through">
-                                            ₹{{ number_format($related->price, 2) }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="rounded-full bg-emerald-100 p-2 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-</div>
-
-{{-- Lightbox Modal --}}
-<div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-lg items-center justify-center" onclick="closeLightbox()">
-    <div class="relative max-w-5xl w-full mx-4">
-        <img id="lightbox-img" src="" alt="" class="w-full rounded-2xl shadow-2xl">
-        <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white hover:text-emerald-400 transition-colors">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
+        <dl class="mt-6 grid grid-cols-2 gap-3 text-sm"><div class="rounded-xl bg-white p-4 ring-1 ring-stone-200"><dt class="text-xs font-bold uppercase tracking-wider text-stone-500">Origin</dt><dd class="mt-1 font-extrabold">{{ $product->origin_region ?: 'Himalayan region' }}</dd></div><div class="rounded-xl bg-white p-4 ring-1 ring-stone-200"><dt class="text-xs font-bold uppercase tracking-wider text-stone-500">Producer</dt><dd class="mt-1 font-extrabold">{{ $product->producer_name ?: 'Pahadi Roots partner' }}</dd></div></dl>
     </div>
-</div>
+</section>
 
-{{-- JavaScript for Interactivity --}}
-<script>
-    // Quantity selector
-    function increaseQuantity() {
-        const input = document.getElementById('quantity-input');
-        if(input && input.value < parseInt(input.max)) {
-            input.value = parseInt(input.value) + 1;
-        }
-    }
-    
-    function decreaseQuantity() {
-        const input = document.getElementById('quantity-input');
-        if(input && input.value > parseInt(input.min)) {
-            input.value = parseInt(input.value) - 1;
-        }
-    }
-    
-    // Image gallery
-    function changeMainImage(imageUrl, element) {
-        const mainImage = document.querySelector('.group > img');
-        if(mainImage) {
-            mainImage.src = imageUrl;
-        }
-        
-        // Update active state
-        document.querySelectorAll('.grid-cols-5 > div').forEach(div => {
-            div.classList.remove('border-emerald-500', 'ring-2', 'ring-emerald-500/20');
-        });
-        element.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500/20');
-    }
-    
-    // Lightbox
-    function openLightbox(imageUrl) {
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
-        if(lightbox && lightboxImg) {
-            lightboxImg.src = imageUrl;
-            lightbox.classList.remove('hidden');
-            lightbox.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-    
-    function closeLightbox() {
-        const lightbox = document.getElementById('lightbox');
-        if(lightbox) {
-            lightbox.classList.add('hidden');
-            lightbox.classList.remove('flex');
-            document.body.style.overflow = '';
-        }
-    }
-    
-    // Tabs functionality
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
-            
-            // Update active states
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active', 'text-stone-900', 'border-emerald-500');
-                btn.classList.add('text-stone-500');
-            });
-            button.classList.add('active', 'text-stone-900', 'border-emerald-500');
-            button.classList.remove('text-stone-500');
-            
-            // Show selected tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            document.getElementById(tabId).classList.remove('hidden');
-        });
-    });
-    
-    // Prevent lightbox close when clicking on image
-    document.getElementById('lightbox-img')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-</script>
+<section class="mt-8 grid gap-4 border-y border-stone-200 py-7 sm:grid-cols-3" aria-label="Ordering information">
+    <div><h2 class="text-sm font-extrabold text-brand-950">Clear product information</h2><p class="mt-2 text-xs leading-6 text-stone-600">Available origin, producer, ingredient and pack details are published on this page.</p></div>
+    <div><h2 class="text-sm font-extrabold text-brand-950">Delivery from Dehradun</h2><p class="mt-2 text-xs leading-6 text-stone-600">Check your pincode above or read our <a href="{{ route('shipping.policy') }}" class="font-bold text-brand-700 underline">shipping policy</a>.</p></div>
+    <div><h2 class="text-sm font-extrabold text-brand-950">Human customer care</h2><p class="mt-2 text-xs leading-6 text-stone-600">Questions before ordering? <a href="{{ route('contact') }}" class="font-bold text-brand-700 underline">Contact our Dehradun team</a>.</p></div>
+</section>
 
-<style>
-    .tab-button.active {
-        border-bottom-width: 2px;
-    }
-    
-    .tab-content {
-        transition: all 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .tab-content.active {
-        animation: fadeIn 0.4s ease-out;
-    }
-</style>
+<section class="section-space pb-0">
+    <div class="grid gap-6 lg:grid-cols-[1.35fr_.65fr]">
+        <article class="surface-card p-6 sm:p-8"><p class="eyebrow">Product story</p><h2 class="font-display mt-3 text-3xl font-semibold">What makes it special</h2><div class="mt-5 space-y-4 leading-8 text-stone-600">{!! nl2br(e($product->description ?: $product->short_description ?: 'More sourcing information will be added soon.')) !!}</div>@if($product->ingredients)<div class="mt-7 border-t border-stone-200 pt-5"><h3 class="font-extrabold">Ingredients</h3><p class="mt-2 text-sm leading-7 text-stone-600">{{ $product->ingredients }}</p></div>@endif</article>
+        <aside class="surface-card p-6 sm:p-8"><p class="eyebrow">Batch information</p><dl class="mt-5 divide-y divide-stone-100 text-sm"><div class="flex justify-between gap-5 py-3"><dt class="text-stone-500">SKU</dt><dd class="font-bold text-right">{{ $product->sku ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3"><dt class="text-stone-500">Batch</dt><dd class="font-bold text-right">{{ $product->batch_number ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3"><dt class="text-stone-500">Harvested</dt><dd class="font-bold text-right">{{ $product->harvested_at?->format('d M Y') ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3"><dt class="text-stone-500">Producer location</dt><dd class="font-bold text-right">{{ $product->producer_location ?: $product->origin_region ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3"><dt class="text-stone-500">Pack weight</dt><dd class="font-bold text-right">{{ $product->weight ? ((float) $product->weight >= 1000 ? rtrim(rtrim(number_format((float) $product->weight / 1000, 2), '0'), '.').' kg' : number_format((float) $product->weight, 0).' g') : 'Not specified' }}</dd></div></dl></aside>
+    </div>
+</section>
 
+<section id="customer-reviews" class="section-space pb-0 scroll-mt-32">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p class="eyebrow">Verified customer feedback</p><h2 class="section-title mt-3">Customer reviews</h2></div>@if($reviewCount)<p class="text-sm text-stone-500"><strong class="text-2xl text-stone-900">{{ number_format($averageRating, 1) }}</strong> out of 5 · {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</p>@endif</div>
+    <div class="mt-8 grid gap-6 lg:grid-cols-[.65fr_1.35fr]">
+        <aside class="surface-card h-fit p-6"><h3 class="font-display text-2xl font-semibold">Share your experience</h3>@auth @if($canReview)<p class="mt-2 text-sm leading-6 text-stone-500">Your review will appear after moderation.</p><form method="POST" action="{{ route('reviews.store', $product) }}" class="mt-5 space-y-4">@csrf<div><label for="reviewRating" class="field-label">Rating</label><select id="reviewRating" name="rating" class="field-control" required>@foreach([5=>'Excellent — 5 stars',4=>'Very good — 4 stars',3=>'Good — 3 stars',2=>'Fair — 2 stars',1=>'Poor — 1 star'] as $value=>$label)<option value="{{ $value }}" @selected((int)old('rating',5)===$value)>{{ $label }}</option>@endforeach</select></div><div><label for="reviewTitle" class="field-label">Review title <span class="font-normal text-stone-500">(optional)</span></label><input id="reviewTitle" name="title" value="{{ old('title') }}" maxlength="150" class="field-control"></div><div><label for="reviewBody" class="field-label">Your review</label><textarea id="reviewBody" name="body" rows="5" minlength="10" maxlength="2000" class="field-control" required>{{ old('body') }}</textarea><p class="field-help">At least 10 characters. Please focus on the product.</p></div><button class="button-primary w-full" type="submit">Submit for approval</button></form>@else<p class="mt-3 text-sm leading-6 text-stone-600">Reviews are available after a verified purchase of this product.</p><a href="{{ route('orders') }}" class="button-secondary mt-5">View your orders</a>@endif @else<p class="mt-3 text-sm leading-6 text-stone-600">Sign in after receiving your order to leave a verified review.</p><a href="{{ route('login') }}" class="button-primary mt-5">Sign in</a>@endauth</aside>
+        <div class="space-y-4">@forelse($product->reviews as $review)<article class="surface-card p-6"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-saffron" aria-label="{{ $review->rating }} out of 5 stars">@for($star=1;$star<=5;$star)<span aria-hidden="true" class="{{ $star <= $review->rating ? '' : 'text-stone-300' }}">★</span>@endfor</p><h3 class="mt-2 text-lg font-extrabold">{{ $review->title ?: 'Customer review' }}</h3></div>@if($review->verified_purchase)<span class="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-black text-brand-700">Verified purchase</span>@endif</div><p class="mt-4 leading-7 text-stone-600">{{ $review->body }}</p><p class="mt-4 text-xs text-stone-500"><strong class="text-stone-800">{{ $review->user->name }}</strong> · {{ $review->created_at->format('d M Y') }}</p></article>@empty<div class="surface-card p-10 text-center"><p class="text-3xl text-saffron" aria-hidden="true">☆</p><h3 class="font-display mt-3 text-2xl font-semibold">No approved reviews yet</h3><p class="mt-2 text-sm text-stone-500">Verified buyers can be the first to share their experience.</p></div>@endforelse</div>
+    </div>
+</section>
+
+@if($relatedProducts->isNotEmpty())<section class="section-space pb-0"><div class="flex items-end justify-between gap-4"><div><p class="eyebrow">Continue exploring</p><h2 class="section-title mt-3">You may also like</h2></div><a href="{{ route('products.index') }}" class="button-quiet hidden sm:inline-flex">View all →</a></div><div class="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">@foreach($relatedProducts as $related)<x-product-card :product="$related" />@endforeach</div></section>@endif
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('[data-product-thumbnail]').forEach(button => button.addEventListener('click', () => {
+    const image = document.getElementById('mainProductImage');
+    if (!image) return;
+    image.src = button.dataset.src;
+    document.querySelectorAll('[data-product-thumbnail]').forEach(item => item.classList.remove('border-brand-600'));
+    button.classList.add('border-brand-600');
+}));
+
+</script>
+@endpush

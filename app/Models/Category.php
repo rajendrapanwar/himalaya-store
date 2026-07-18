@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\StorefrontCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
@@ -17,7 +19,13 @@ class Category extends Model
         'status',
     ];
 
-    public function products()
+    protected static function booted(): void
+    {
+        static::saved(fn () => StorefrontCache::bump());
+        static::deleted(fn () => StorefrontCache::bump());
+    }
+
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }

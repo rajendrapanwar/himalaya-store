@@ -1,55 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Panel - Himalaya Store</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gray-100">
-
-<div class="flex min-h-screen">
-
-    <aside class="w-64 bg-gray-900 text-white">
-        <div class="p-6 text-2xl font-bold border-b border-gray-700">
-            Admin Panel
-        </div>
-
-        <nav class="p-4 space-y-2">
-            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 rounded hover:bg-gray-800">
-                Dashboard
-            </a>
-
-            <a href="{{ route('admin.categories.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800">
-                Categories
-            </a>
-
-            <a href="{{ route('admin.products.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800">
-                Products
-            </a>
-            
-            <a href="{{ route('admin.orders.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800">
-                Orders
-            </a>
-        </nav>
-    </aside>
-
-    <main class="flex-1">
-        <header class="bg-white shadow px-6 py-4">
-            <h1 class="text-xl font-semibold">@yield('title')</h1>
-        </header>
-
-        <div class="p-6">
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 text-green-800 px-4 py-3 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @yield('content')
-        </div>
-    </main>
-
-</div>
-
-</body>
-</html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0e2119"><link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}"><title>@yield('title') | Pahadi Roots Admin</title>@vite(['resources/css/app.css','resources/js/app.js'])</head>
+<body class="admin-ui bg-[#f4f6f4] text-stone-800 antialiased">
+@php
+$adminSections = [
+ 'Overview' => [
+  ['admin.dashboard','admin.dashboard','Dashboard','M4 13h6V3H4v10Zm10 8h6V11h-6v10ZM4 21h6v-4H4v4Zm10-14h6V3h-6v4Z'],
+  ['admin.orders.index','admin.orders.*','Orders','M6 2h12l2 4v16H4V6l2-4Zm-2 4h16M9 10h6'],
+  ['admin.returns.index','admin.returns.*','Returns','M4 8h11a5 5 0 0 1 0 10H9m-5-10 4-4m-4 4 4 4'],
+ ],
+ 'Catalogue' => [
+  ['admin.products.index','admin.products.*','Products','m3 6 9-4 9 4-9 4-9-4Zm0 0v12l9 4 9-4V6M12 10v12'],
+  ['admin.inventory.index','admin.inventory.*','Inventory','M4 7h16M5 7l1-4h12l1 4M6 7v14h12V7M9 11h6'],
+  ['admin.categories.index','admin.categories.*','Categories','M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z'],
+ ['admin.bundles.index','admin.bundles.*','Gift bundles','M20 12v9H4v-9M2 7h20v5H2V7Zm10 14V7m0 0c-2.5 0-5-1-5-3 0-1.1.9-2 2-2 2 0 3 3 3 5Zm0 0c2.5 0 5-1 5-3 0-1.1-.9-2-2-2-2 0-3 3-3 5Z'],
+  ['admin.journals.index','admin.journals.*','Journal','M5 4h14a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Zm1 0v13a3 3 0 0 1-3 3m7-11h7m-7 4h7'],
+  ['admin.hero-slides.index','admin.hero-slides.*','Homepage slider','M4 5h16v14H4V5Zm3 11 4-4 3 3 3-4 3 3M8 9h.01'],
+ ],
+ 'Customers & growth' => [
+  ['admin.customers.index','admin.customers.*','Customers','M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'],
+  ['admin.coupons.index','admin.coupons.*','Coupons','M20 12a2 2 0 0 0 0-4V4H4v4a2 2 0 0 0 0 4v4a2 2 0 0 0 0 4v4h16v-4a2 2 0 0 0 0-4Zm-8-5v10'],
+  ['admin.reviews.index','admin.reviews.*','Reviews','m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z'],
+  ['admin.contact-messages.index','admin.contact-messages.*','Contact requests','M4 4h16v14H7l-3 3V4Zm4 5h8m-8 4h5'],
+ ],
+ 'Operations' => [
+  ['admin.serviceability.index','admin.serviceability.*','Delivery areas','M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Zm0-8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'],
+  ['admin.reports.index','admin.reports.*','Sales reports','M4 20V10m6 10V4m6 16v-7m4 7H2'],
+  ['admin.team.index','admin.team.*','Team access','M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2'],
+  ['admin.activity.index','admin.activity.*','Activity log','M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'],
+ ],
+];
+$staffRole = auth()->user()->is_admin && in_array(auth()->user()->role, [null,'customer','administrator'], true) ? 'administrator' : auth()->user()->role;
+$isAllowed = fn(string $route) => match($staffRole) {
+ 'administrator','manager' => true,
+ 'catalogue' => str_starts_with($route,'admin.products.') || str_starts_with($route,'admin.categories.') || str_starts_with($route,'admin.bundles.') || str_starts_with($route,'admin.journals.') || str_starts_with($route,'admin.hero-slides.') || $route === 'admin.dashboard',
+ 'fulfillment' => str_starts_with($route,'admin.orders.') || str_starts_with($route,'admin.returns.') || str_starts_with($route,'admin.inventory.') || str_starts_with($route,'admin.serviceability.') || $route === 'admin.dashboard',
+ 'support' => str_starts_with($route,'admin.customers.') || str_starts_with($route,'admin.reviews.') || str_starts_with($route,'admin.contact-messages.') || str_starts_with($route,'admin.returns.') || str_starts_with($route,'admin.orders.') || $route === 'admin.dashboard',
+ default => false,
+} && (!in_array($route,['admin.team.index','admin.activity.index'],true) || $staffRole === 'administrator');
+@endphp
+<div class="min-h-screen lg:flex"><div id="adminOverlay" class="fixed inset-0 z-40 hidden bg-brand-950/60 backdrop-blur-sm lg:hidden"></div>
+<aside id="adminSidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-brand-950 text-stone-200 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
+ <div class="flex h-20 items-center justify-between border-b border-white/10 px-5"><a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3"><svg class="h-10 w-10" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#f8f4eb"/><path d="m8 31 9-13 6 8 6-12 11 17H8Z" fill="#28503c"/><path d="m13 31 7-7 4 5 6-8 7 10H13Z" fill="#d78a18"/></svg><span><b class="block text-sm text-white">Pahadi Roots</b><small class="text-xs text-brand-300">Admin workspace</small></span></a><button id="closeSidebar" type="button" aria-label="Close navigation" class="icon-button !text-white lg:hidden">×</button></div>
+ <nav class="admin-nav flex-1 overflow-y-auto px-4 py-5" aria-label="Admin navigation">@foreach($adminSections as $section=>$links)@php($visibleLinks=collect($links)->filter(fn($link)=>$isAllowed($link[0])))@if($visibleLinks->isNotEmpty())<p class="mb-2 mt-5 px-3 text-[10px] font-black uppercase tracking-[.18em] text-brand-400 first:mt-0">{{ $section }}</p><div class="space-y-1">@foreach($visibleLinks as [$route,$match,$label,$path])<a href="{{ route($route) }}" class="{{ request()->routeIs($match) ? 'is-active bg-white text-brand-950' : 'text-brand-100 hover:bg-white/10 hover:text-white' }} flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold"><svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true"><path d="{{ $path }}"/></svg>{{ $label }}</a>@endforeach</div>@endif @endforeach</nav>
+ <div class="border-t border-white/10 p-4"><a href="{{ route('home') }}" target="_blank" rel="noopener" class="flex items-center justify-between rounded-lg bg-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/15"><span>View storefront</span><span aria-hidden="true">↗</span></a><form method="POST" action="{{ route('logout') }}" class="mt-1">@csrf<button class="w-full rounded-lg px-4 py-3 text-left text-sm font-bold text-brand-300 hover:bg-white/10 hover:text-white">Sign out</button></form></div>
+</aside>
+<main class="min-w-0 flex-1"><header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-stone-200 bg-white/95 px-4 backdrop-blur lg:px-8"><div class="flex min-w-0 items-center gap-4"><button id="openSidebar" type="button" aria-label="Open navigation" class="icon-button border border-stone-200 lg:hidden"><span class="text-xl">☰</span></button><div class="min-w-0"><p class="text-[10px] font-black uppercase tracking-[.18em] text-brand-600">Store management</p><h1 class="truncate text-xl font-black text-stone-950">@yield('title')</h1></div></div><div class="flex items-center gap-2"><a href="{{ route('admin.orders.index') }}" class="hidden rounded-lg border border-stone-200 px-3 py-2 text-xs font-bold hover:bg-brand-50 sm:block">Orders</a><a href="{{ route('admin.products.create') }}" class="hidden rounded-lg bg-brand-800 px-3 py-2 text-xs font-bold text-white hover:bg-brand-950 sm:block">Add product</a><div class="ml-1 flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 p-1 pr-3"><span class="grid h-9 w-9 place-items-center rounded-full bg-brand-800 text-xs font-black text-white">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</span><span class="hidden max-w-32 truncate text-xs font-bold md:block">{{ auth()->user()->name }}</span></div></div></header>
+ <section class="admin-content mx-auto max-w-[1500px] p-4 sm:p-6 lg:p-8">@if(session('success'))<div role="status" class="mb-5 flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 text-sm font-semibold text-brand-900"><span>✓ {{ session('success') }}</span><button type="button" aria-label="Dismiss" onclick="this.parentElement.remove()">×</button></div>@endif @if(session('error'))<div role="alert" class="mb-5 flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-800"><span>{{ session('error') }}</span><button type="button" aria-label="Dismiss" onclick="this.parentElement.remove()">×</button></div>@endif @if($errors->any())<div role="alert" class="mb-5 rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800"><p class="font-black">Please correct the following:</p><ul class="mt-2 list-disc space-y-1 pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif @yield('content')</section>
+</main></div>
+<script>(()=>{const sidebar=document.getElementById('adminSidebar'),overlay=document.getElementById('adminOverlay'),openButton=document.getElementById('openSidebar');const open=()=>{sidebar?.classList.remove('-translate-x-full');overlay?.classList.remove('hidden');document.body.classList.add('overflow-hidden');openButton?.setAttribute('aria-expanded','true')};const close=()=>{sidebar?.classList.add('-translate-x-full');overlay?.classList.add('hidden');document.body.classList.remove('overflow-hidden');openButton?.setAttribute('aria-expanded','false')};openButton?.addEventListener('click',open);document.getElementById('closeSidebar')?.addEventListener('click',close);overlay?.addEventListener('click',close);document.addEventListener('keydown',event=>{if(event.key==='Escape')close()})})();</script>@stack('scripts')</body></html>

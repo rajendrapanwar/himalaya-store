@@ -1,149 +1,21 @@
 @extends('layouts.admin')
-
 @section('title', 'Dashboard')
-
 @section('content')
+@php($maxRevenue = max(1, (float) $salesTrend->max('revenue')))
+<div class="space-y-6">
+    <section class="rounded-2xl bg-brand-950 p-6 text-white sm:p-8"><div class="flex flex-wrap items-end justify-between gap-5"><div><p class="text-xs font-black uppercase tracking-[.18em] text-amber-400">Uttarakhand operations</p><h2 class="font-display mt-3 text-3xl font-semibold">Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 17 ? 'afternoon' : 'evening') }}, {{ Str::before(auth()->user()->name, ' ') }}.</h2><p class="mt-2 text-sm text-brand-200">{{ $stats['pending_orders'] }} {{ Str::plural('order', $stats['pending_orders']) }} currently need attention.</p></div><div class="flex gap-2"><a href="{{ route('admin.orders.index') }}" class="rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold hover:bg-white/10">Review orders</a><a href="{{ route('admin.products.create') }}" class="rounded-lg bg-saffron px-4 py-2.5 text-sm font-bold text-brand-950">Add product</a></div></div></section>
 
-<div class="space-y-8">
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Store summary">
+        @foreach([['Paid revenue','₹'.number_format($stats['revenue'],0),'All confirmed payments','brand'],['Total orders',$stats['orders'],$stats['today_orders'].' created today','brand'],['Products',$stats['products'],'Across '.$stats['categories'].' categories','brand'],['Low stock',$lowStockProducts->count(),'At 10 or fewer units','amber']] as [$label,$value,$copy,$tone])
+            <article class="rounded-xl border {{ $tone === 'amber' ? 'border-amber-200 bg-amber-50' : 'border-stone-200 bg-white' }} p-5 shadow-sm"><p class="text-xs font-extrabold uppercase tracking-wider {{ $tone === 'amber' ? 'text-amber-800' : 'text-stone-500' }}">{{ $label }}</p><p class="mt-3 text-3xl font-black">{{ $value }}</p><p class="mt-2 text-xs {{ $tone === 'amber' ? 'text-amber-800' : 'text-stone-500' }}">{{ $copy }}</p></article>
+        @endforeach
+    </section>
 
-    {{-- Welcome Card --}}
-    <div class="bg-gradient-to-r from-green-700 to-emerald-500 rounded-2xl p-8 text-white shadow">
-        <h2 class="text-3xl font-bold mb-2">
-            Welcome to Himalaya Store Admin
-        </h2>
-        <p class="text-green-50">
-            Manage your mountain products, categories, orders and customers from one place.
-        </p>
-    </div>
+    <section class="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
+        <article class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm"><div class="flex items-start justify-between gap-4"><div><h3 class="text-lg font-black">Seven-day paid revenue</h3><p class="mt-1 text-xs text-stone-500">Confirmed payments across every payment method</p></div><a href="{{ route('admin.reports.index') }}" class="text-xs font-bold text-brand-700">Open reports →</a></div><div class="mt-7 flex h-52 items-end gap-3" aria-label="Seven day revenue chart">@foreach($salesTrend as $day)<div class="flex h-full flex-1 flex-col justify-end gap-2"><div class="group relative flex flex-1 items-end"><div class="w-full rounded-t-md bg-brand-600 transition hover:bg-brand-700" style="height: {{ max(4, ($day['revenue'] / $maxRevenue) * 100) }}%"><span class="sr-only">{{ $day['label'] }}: ₹{{ number_format($day['revenue'],2) }}, {{ $day['orders'] }} orders</span></div></div><p class="text-center text-[10px] font-bold text-stone-500">{{ $day['label'] }}</p></div>@endforeach</div></article>
+        <aside class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm"><h3 class="text-lg font-black">Action queue</h3><p class="mt-1 text-xs text-stone-500">Items waiting for the team</p><div class="mt-5 space-y-2"><a href="{{ route('admin.orders.index', ['status'=>'pending']) }}" class="flex items-center justify-between rounded-xl bg-stone-50 p-3 text-sm font-bold"><span>Pending orders</span><span class="rounded-full bg-white px-2 py-1">{{ $stats['pending_orders'] }}</span></a><a href="{{ route('admin.reviews.index') }}" class="flex items-center justify-between rounded-xl bg-stone-50 p-3 text-sm font-bold"><span>Reviews to moderate</span><span class="rounded-full bg-white px-2 py-1">{{ $actionCounts['pending_reviews'] }}</span></a><a href="{{ route('admin.returns.index') }}" class="flex items-center justify-between rounded-xl bg-stone-50 p-3 text-sm font-bold"><span>Open returns</span><span class="rounded-full bg-white px-2 py-1">{{ $actionCounts['open_returns'] }}</span></a><a href="{{ route('admin.contact-messages.index') }}" class="flex items-center justify-between rounded-xl bg-stone-50 p-3 text-sm font-bold"><span>New messages</span><span class="rounded-full bg-white px-2 py-1">{{ $actionCounts['new_messages'] }}</span></a></div></aside>
+    </section>
 
-    {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
-        <div class="bg-white rounded-2xl shadow-sm border p-6">
-            <p class="text-sm text-gray-500">Total Products</p>
-            <h3 class="text-3xl font-bold mt-2">0</h3>
-            <p class="text-sm text-green-600 mt-2">Ready for product setup</p>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border p-6">
-            <p class="text-sm text-gray-500">Total Categories</p>
-            <h3 class="text-3xl font-bold mt-2">0</h3>
-            <p class="text-sm text-green-600 mt-2">Organise your store</p>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border p-6">
-            <p class="text-sm text-gray-500">Total Orders</p>
-            <h3 class="text-3xl font-bold mt-2">0</h3>
-            <p class="text-sm text-yellow-600 mt-2">Orders will appear here</p>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border p-6">
-            <p class="text-sm text-gray-500">Total Revenue</p>
-            <h3 class="text-3xl font-bold mt-2">₹0</h3>
-            <p class="text-sm text-gray-500 mt-2">After checkout setup</p>
-        </div>
-
-    </div>
-
-    {{-- Quick Actions --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border p-6">
-            <h3 class="text-xl font-bold mb-4">
-                Quick Actions
-            </h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <a href="{{ route('admin.categories.create') }}"
-                   class="block rounded-xl border p-5 hover:bg-gray-50">
-                    <div class="text-lg font-semibold">Add Category</div>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Create product categories like Honey, Tea, Spices and Handmade.
-                    </p>
-                </a>
-
-                <a href="#"
-                   class="block rounded-xl border p-5 hover:bg-gray-50">
-                    <div class="text-lg font-semibold">Add Product</div>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Add new Himalayan products once product CRUD is ready.
-                    </p>
-                </a>
-
-                <a href="#"
-                   class="block rounded-xl border p-5 hover:bg-gray-50">
-                    <div class="text-lg font-semibold">View Orders</div>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Track customer orders after checkout is implemented.
-                    </p>
-                </a>
-
-                <a href="/"
-                   target="_blank"
-                   class="block rounded-xl border p-5 hover:bg-gray-50">
-                    <div class="text-lg font-semibold">View Storefront</div>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Open the customer-facing website.
-                    </p>
-                </a>
-
-            </div>
-        </div>
-
-        {{-- Store Setup Progress --}}
-        <div class="bg-white rounded-2xl shadow-sm border p-6">
-            <h3 class="text-xl font-bold mb-4">
-                MVP Progress
-            </h3>
-
-            <div class="space-y-4">
-
-                <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span>Laravel Setup</span>
-                        <span>Done</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full w-full"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span>Category Module</span>
-                        <span>In Progress</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full w-2/3"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span>Product Module</span>
-                        <span>Pending</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-gray-400 h-2 rounded-full w-1/6"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span>Checkout</span>
-                        <span>Pending</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-gray-400 h-2 rounded-full w-0"></div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-    </div>
-
+    <section class="grid gap-6 xl:grid-cols-5"><article class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm xl:col-span-3"><header class="flex items-center justify-between border-b border-stone-100 p-5"><div><h3 class="font-black">Recent orders</h3><p class="text-xs text-stone-500">Latest customer activity</p></div><a href="{{ route('admin.orders.index') }}" class="text-xs font-bold text-brand-700">All orders →</a></header><div class="divide-y divide-stone-100">@forelse($recentOrders as $order)<a href="{{ route('admin.orders.show',$order) }}" class="flex items-center justify-between gap-4 p-4 hover:bg-brand-50"><div><p class="text-sm font-bold">{{ $order->order_number }}</p><p class="mt-1 text-xs text-stone-500">{{ $order->address?->first_name ?: 'Customer' }} · {{ $order->created_at->diffForHumans() }}</p></div><div class="text-right"><p class="text-sm font-black">₹{{ number_format($order->total_amount,2) }}</p><span class="text-[10px] font-bold uppercase text-brand-700">{{ $order->order_status }}</span></div></a>@empty<p class="p-10 text-center text-sm text-stone-500">Orders will appear here after checkout.</p>@endforelse</div></article><article class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm xl:col-span-2"><header class="border-b border-stone-100 p-5"><h3 class="font-black">Inventory watch</h3><p class="text-xs text-stone-500">Products at 10 or fewer units</p></header><div class="divide-y divide-stone-100">@forelse($lowStockProducts as $product)<div class="flex items-center justify-between gap-3 p-4"><div><p class="text-sm font-bold">{{ $product->name }}</p><p class="text-xs text-stone-500">{{ $product->category?->name }}</p></div><span class="rounded-full {{ $product->stock_quantity === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800' }} px-2.5 py-1 text-xs font-black">{{ $product->stock_quantity }} left</span></div>@empty<p class="p-10 text-center text-sm text-stone-500">All stocked up.</p>@endforelse</div></article></section>
 </div>
-
 @endsection

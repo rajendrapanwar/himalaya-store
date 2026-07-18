@@ -4,6 +4,13 @@
 
 @section('content')
 
+<div class="space-y-5">
+<form method="GET" class="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 md:flex-row">
+    <input name="search" value="{{ request('search') }}" placeholder="Search name or SKU…" class="flex-1 rounded-xl border-stone-200 px-4 py-3">
+    <select name="category" class="rounded-xl border-stone-200 px-4 py-3"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(request('category') == $category->id)>{{ $category->name }}</option>@endforeach</select>
+    <select name="status" class="rounded-xl border-stone-200 px-4 py-3"><option value="">All statuses</option><option value="1" @selected(request('status') === '1')>Active</option><option value="0" @selected(request('status') === '0')>Inactive</option></select>
+    <button class="rounded-xl bg-stone-900 px-5 py-3 font-bold text-white">Filter</button><a href="{{ route('admin.products.index') }}" class="rounded-xl px-4 py-3 font-bold text-stone-600">Reset</a>
+</form>
 <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
 
     <div class="p-6 border-b flex justify-between items-center">
@@ -13,7 +20,7 @@
         </div>
 
         <a href="{{ route('admin.products.create') }}"
-           class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl">
+           class="rounded-xl bg-brand-800 px-5 py-3 font-bold text-white hover:bg-brand-900">
             + Add Product
         </a>
     </div>
@@ -69,12 +76,12 @@
                         </td>
 
                         <td class="p-4">
-                            {{ $product->stock_quantity }}
+                            <span class="font-bold {{ $product->stock_quantity <= 10 ? 'text-amber-700' : '' }}">{{ $product->stock_quantity }}</span>
                         </td>
 
                         <td class="p-4">
                             @if($product->status)
-                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                                <span class="rounded-full bg-brand-100 px-3 py-1 text-sm font-bold text-brand-700">
                                     Active
                                 </span>
                             @else
@@ -119,6 +126,7 @@
         {{ $products->links() }}
     </div>
 
+</div>
 </div>
 
 @endsection

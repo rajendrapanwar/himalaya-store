@@ -10,7 +10,7 @@
             name="name"
             value="{{ old('name', $category->name ?? '') }}"
             placeholder="Enter category name"
-            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-green-500 focus:ring-green-500"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-brand-600 focus:ring-brand-200"
         >
 
         @error('name')
@@ -27,7 +27,7 @@
             name="description"
             rows="5"
             placeholder="Category description..."
-            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-green-500 focus:ring-green-500"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-brand-600 focus:ring-brand-200"
         >{{ old('description', $category->description ?? '') }}</textarea>
     </div>
 
