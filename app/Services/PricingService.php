@@ -43,8 +43,6 @@ class PricingService
             $discount = Money::toRupees(min($discountPaise, $eligiblePaise));
         }
 
-        $shippingPaise = $destination && ! $coupon?->free_shipping ? Money::toPaise($destination->shipping_amount) : 0;
-        $shipping = Money::toRupees($shippingPaise);
         $points = 0;
         $loyaltyDiscount = 0.0;
         if ($user && $requestedPoints > 0) {
@@ -56,9 +54,19 @@ class PricingService
             $loyaltyDiscount = Money::toRupees($points * $ratePaise);
         }
 
-        $total = Money::toRupees(max(0, $subtotalPaise - Money::toPaise($discount) - Money::toPaise($loyaltyDiscount) + $shippingPaise));
+        $merchandiseTotalPaise = max(0, $subtotalPaise - Money::toPaise($discount) - Money::toPaise($loyaltyDiscount));
+        $freeShippingThreshold = (float) config('commerce.free_shipping_threshold', 500);
+        $freeShippingThresholdPaise = Money::toPaise($freeShippingThreshold);
+        $thresholdFreeShipping = $freeShippingThresholdPaise > 0 && $merchandiseTotalPaise > $freeShippingThresholdPaise;
+        $freeShippingEligible = (bool) $coupon?->free_shipping || $thresholdFreeShipping;
+        $amountUntilFreeShipping = $freeShippingEligible || $freeShippingThresholdPaise <= 0
+            ? 0.0
+            : Money::toRupees(($freeShippingThresholdPaise - $merchandiseTotalPaise) + 1);
+        $shippingPaise = $destination && ! $freeShippingEligible ? Money::toPaise($destination->shipping_amount) : 0;
+        $shipping = Money::toRupees($shippingPaise);
+        $total = Money::toRupees($merchandiseTotalPaise + $shippingPaise);
 
-        return compact('lines', 'subtotal', 'discount', 'shipping', 'points', 'loyaltyDiscount', 'total');
+        return compact('lines', 'subtotal', 'discount', 'shipping', 'points', 'loyaltyDiscount', 'total', 'freeShippingEligible', 'freeShippingThreshold', 'amountUntilFreeShipping');
     }
 
     /** @return array<int, int> */

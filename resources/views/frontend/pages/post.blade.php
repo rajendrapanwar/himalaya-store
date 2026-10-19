@@ -1,22 +1,22 @@
 @extends('layouts.app')
-@section('title', ($post->seo_title ?: $post->title).' · Pahadi Roots Journal')
+@section('title', $post->seo_title ?: $post->title.' | Pahadi Roots Journal')
 @section('meta_description', $post->meta_description ?: Str::limit($post->excerpt, 160, ''))
 @section('canonical', route('blog.show', $post->slug))
 @section('og_type', 'article')
 @if($post->image_url) @section('og_image', $post->image_url) @section('og_image_alt', $post->image_alt ?: $post->title) @endif
 @push('head')
 <meta property="article:published_time" content="{{ $post->published_at->toAtomString() }}"><meta property="article:modified_time" content="{{ $post->updated_at->toAtomString() }}">@if($post->category)<meta property="article:section" content="{{ $post->category }}">@endif
-<script type="application/ld+json">{!! json_encode(['@@context' => 'https://schema.org', '@graph' => [[
+<x-structured-data :data="['@context' => 'https://schema.org', '@graph' => [[
     '@type' => 'Article', '@id' => route('blog.show', $post->slug).'#article', 'headline' => $post->title,
     'description' => $post->meta_description ?: $post->excerpt, 'image' => $post->image_url,
     'datePublished' => $post->published_at->toAtomString(), 'dateModified' => $post->updated_at->toAtomString(),
     'mainEntityOfPage' => route('blog.show', $post->slug), 'author' => ['@type' => 'Person', 'name' => $post->author_name],
-    'publisher' => ['@id' => route('home').'#organization'], 'articleSection' => $post->category, 'inLanguage' => config('seo.language'),
+    'publisher' => ['@id' => route('home').'#organization'], 'articleSection' => $post->category, 'keywords' => $post->focus_keyword, 'wordCount' => str_word_count(strip_tags($post->content)), 'inLanguage' => config('seo.language'),
 ], ['@type' => 'BreadcrumbList', 'itemListElement' => [
     ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
     ['@type' => 'ListItem', 'position' => 2, 'name' => 'Journal', 'item' => route('blog')],
     ['@type' => 'ListItem', 'position' => 3, 'name' => $post->title, 'item' => route('blog.show', $post->slug)],
-]]]], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+]]]]" />
 @endpush
 @section('content')
 <article>

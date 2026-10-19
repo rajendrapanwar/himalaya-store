@@ -60,6 +60,9 @@ class ProductController extends Controller
             'name' => 'required|string|max:255|unique:products,name',
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
+            'seo_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:170',
+            'focus_keyword' => 'nullable|string|max:120',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lt:price',
             'sku' => 'nullable|string|max:100|unique:products,sku',
@@ -80,9 +83,12 @@ class ProductController extends Controller
         $product = Product::create([
             'category_id' => $request->category_id,
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $this->uniqueSlug($request->name),
             'short_description' => $request->short_description,
             'description' => $request->description,
+            'seo_title' => $request->seo_title,
+            'meta_description' => $request->meta_description,
+            'focus_keyword' => $request->focus_keyword,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
             'sku' => $request->sku,
@@ -128,6 +134,9 @@ class ProductController extends Controller
             'name' => 'required|string|max:255|unique:products,name,'.$product->id,
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
+            'seo_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:170',
+            'focus_keyword' => 'nullable|string|max:120',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lt:price',
             'sku' => 'nullable|string|max:100|unique:products,sku,'.$product->id,
@@ -148,9 +157,12 @@ class ProductController extends Controller
         $product->update([
             'category_id' => $request->category_id,
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $product->slug,
             'short_description' => $request->short_description,
             'description' => $request->description,
+            'seo_title' => $request->seo_title,
+            'meta_description' => $request->meta_description,
+            'focus_keyword' => $request->focus_keyword,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
             'sku' => $request->sku,
@@ -217,5 +229,18 @@ class ProductController extends Controller
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
+    }
+
+    private function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'product';
+        $slug = $base;
+        $counter = 2;
+
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$counter++;
+        }
+
+        return $slug;
     }
 }

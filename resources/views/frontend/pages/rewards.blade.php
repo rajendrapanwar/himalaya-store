@@ -4,15 +4,15 @@
 @section('meta_description', 'Learn how Pahadi Roots loyalty points and referral rewards work, how to invite friends, earn points and redeem them at checkout.')
 
 @push('head')
-<script type="application/ld+json">{!! json_encode([
-    '@@context' => 'https://schema.org',
+<x-structured-data :data="[
+    '@context' => 'https://schema.org',
     '@type' => 'FAQPage',
     'mainEntity' => [
         ['@type' => 'Question', 'name' => 'How do I refer a friend?', 'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Sign in, open My Account and share your personal referral link. Your friend must register through that link in the same browser session.']],
         ['@type' => 'Question', 'name' => 'When are referral points added?', 'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Points are added after the referred customer’s first qualifying paid order, or when their cash-on-delivery order is delivered.']],
         ['@type' => 'Question', 'name' => 'How do I spend loyalty points?', 'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Enter the number of points you want to use at checkout. The available discount and redemption limit are shown before you place the order.']],
     ],
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+]" />
 @endpush
 
 @section('content')

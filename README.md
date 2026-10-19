@@ -18,7 +18,7 @@ npm run build
 
 Point Apache at the `public` directory, or run `php artisan serve`. Start the queue worker in another terminal with `php artisan queue:work --tries=3`, and run `php artisan schedule:work` locally so expired Stripe reservations are released.
 
-The seeded admin signs in at `/login` using `ADMIN_EMAIL` and is sent through email two-factor verification before `/admin/dashboard`. Set both `ADMIN_EMAIL` and `ADMIN_INITIAL_PASSWORD` before seeding. Never use placeholder credentials in a shared environment.
+The seeded admin signs in at `/admin/login` using `ADMIN_EMAIL` and is sent through email two-factor verification before `/admin/dashboard`. Customer accounts use `/login` and cannot authenticate through the administrator portal. Set both `ADMIN_EMAIL` and `ADMIN_INITIAL_PASSWORD` before seeding. Never use placeholder credentials in a shared environment.
 
 ## Stripe test mode and local webhooks
 

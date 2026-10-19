@@ -79,6 +79,8 @@ class CheckoutController extends Controller
             'shippingAmount' => $quote['shipping'],
             'loyaltyDiscount' => $quote['loyaltyDiscount'],
             'total' => $quote['total'],
+            'freeShippingEligible' => $quote['freeShippingEligible'],
+            'freeShippingThreshold' => $quote['freeShippingThreshold'],
             'destination' => $destination,
             'checkoutDefaults' => $checkoutDefaults,
         ]);
@@ -119,6 +121,8 @@ class CheckoutController extends Controller
             'location' => "{$destination->city}, {$destination->state}",
             'estimate' => "{$destination->estimated_days_min}–{$destination->estimated_days_max} business days",
             'cod_available' => $destination->cod_available,
+            'free_shipping' => $quote['freeShippingEligible'],
+            'free_shipping_threshold' => $quote['freeShippingThreshold'],
         ]);
     }
 

@@ -111,7 +111,8 @@
                 stripe.checked = true;
                 refreshOptions();
             }
-            setStatus(`Delivery available to ${data.location}. Estimated ${data.estimate}. ${data.cod_available ? 'COD is available.' : 'Online payment is required.'}`, 'success');
+            const deliveryOffer = data.free_shipping ? ` Free delivery is applied for orders over ${money(data.free_shipping_threshold)}.` : '';
+            setStatus(`Delivery available to ${data.location}. Estimated ${data.estimate}.${deliveryOffer} ${data.cod_available ? 'COD is available.' : 'Online payment is required.'}`, 'success');
             placeOrder.disabled = false;
         } catch (error) {
             if (error.name === 'AbortError') return;

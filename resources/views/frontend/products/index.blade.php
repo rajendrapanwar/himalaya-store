@@ -2,9 +2,9 @@
 
 @php
     $pageNumber = $products->currentPage();
-    $listingTitle = $selectedCategory ? $selectedCategory->name.' from the Himalayas' : 'Himalayan food, produce and craft';
+    $listingTitle = $selectedCategory ? ($selectedCategory->seo_title ?: $selectedCategory->name.' from the Himalayas') : 'Himalayan Food, Produce and Craft Online';
     $listingDescription = $selectedCategory
-        ? ($selectedCategory->description ?: 'Browse '.$selectedCategory->name.' selected from Uttarakhand and neighbouring Himalayan regions.')
+        ? ($selectedCategory->meta_description ?: $selectedCategory->description ?: 'Browse '.$selectedCategory->name.' selected from Uttarakhand and neighbouring Himalayan regions.')
         : 'Browse traceable Himalayan honey, teas, pulses, grains, flours, spices, preserves, dry fruits, gifts and handmade craft.';
     if ($selectedCategory && Str::length($listingDescription) < 90) {
         $listingDescription .= ' Compare origin, ingredients, pack sizes, prices and availability across the collection.';
@@ -12,12 +12,24 @@
     $filterParameters = ['search', 'sort', 'min_price', 'max_price', 'availability', 'sale', 'featured', 'origin', 'rating', 'weight'];
     $isFiltered = request()->hasAny($filterParameters);
     $activeFilterCount = collect(['category', 'search', 'min_price', 'max_price', 'availability', 'sale', 'featured', 'origin', 'rating', 'weight'])->filter(fn ($key) => request()->filled($key))->count();
+    $filterChips = collect([
+        'category' => $selectedCategory?->name,
+        'search' => request('search') ? 'Search: '.request('search') : null,
+        'min_price' => request('min_price') ? 'From ₹'.request('min_price') : null,
+        'max_price' => request('max_price') ? 'Up to ₹'.request('max_price') : null,
+        'availability' => request('availability') ? str(request('availability'))->replace('_', ' ')->title() : null,
+        'sale' => request()->boolean('sale') ? 'On sale' : null,
+        'featured' => request()->boolean('featured') ? 'Featured' : null,
+        'origin' => request('origin') ? 'Origin: '.request('origin') : null,
+        'rating' => request('rating') ? request('rating').'★ & up' : null,
+        'weight' => request('weight') ? 'Pack: '.str(request('weight'))->replace(['_', 'plus'], ['–', '+'])->replace('under–250', 'under 250 g')->replace('250–499', '250–499 g')->replace('500–999', '500–999 g')->replace('1000–+', '1 kg+') : null,
+    ])->filter();
     $canonicalParameters = array_filter([
         'category' => $selectedCategory?->slug,
         'page' => $pageNumber > 1 && ! $isFiltered ? $pageNumber : null,
     ]);
 @endphp
-@section('title', $listingTitle.($pageNumber > 1 ? ' · Page '.$pageNumber : '').' · Pahadi Roots')
+@section('title', $listingTitle.($pageNumber > 1 ? ' | Page '.$pageNumber : '').($selectedCategory?->seo_title ? '' : ' | Pahadi Roots'))
 @section('meta_description', Str::limit($listingDescription.($pageNumber > 1 ? ' Page '.$pageNumber.'.' : ''), 155, ''))
 @section('canonical', route('products.index', $canonicalParameters))
 @if($selectedCategory?->image)@section('og_image', asset('storage/'.$selectedCategory->image))@section('og_image_alt', $selectedCategory->name.' collection at Pahadi Roots')@endif
@@ -27,8 +39,8 @@
 @endsection
 
 @push('head')
-<script type="application/ld+json">{!! json_encode([
-    '@@context' => 'https://schema.org',
+<x-structured-data :data="[
+    '@context' => 'https://schema.org',
     '@graph' => [[
         '@type' => 'BreadcrumbList',
         'itemListElement' => array_values(array_filter([
@@ -36,11 +48,12 @@
             ['@type' => 'ListItem', 'position' => 2, 'name' => 'Shop', 'item' => route('products.index')],
             $selectedCategory ? ['@type' => 'ListItem', 'position' => 3, 'name' => $selectedCategory->name, 'item' => route('products.index', ['category' => $selectedCategory->slug])] : null,
         ])),
-    ], [
+    ], array_filter([
         '@type' => 'CollectionPage',
         'name' => $listingTitle,
         'description' => $listingDescription,
         'url' => route('products.index', $canonicalParameters),
+        'primaryImageOfPage' => $selectedCategory?->image ? ['@type' => 'ImageObject', 'url' => asset('storage/'.$selectedCategory->image)] : null,
         'mainEntity' => [
             '@type' => 'ItemList',
             'numberOfItems' => $products->count(),
@@ -51,8 +64,8 @@
                 'name' => $product->name,
             ])->all(),
         ],
-    ]],
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    ])],
+]" />
 @endpush
 
 @section('content')

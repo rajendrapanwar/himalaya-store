@@ -99,6 +99,7 @@ class Order extends Model
         return $this->hasOne(CouponRedemption::class);
     }
 
+    /** @return HasMany<OrderStatusHistory, $this> */
     public function statusHistory(): HasMany
     {
         return $this->hasMany(OrderStatusHistory::class);

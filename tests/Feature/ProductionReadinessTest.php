@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ContactMessageAcknowledgement;
 use App\Mail\ContactMessageReceived;
 use App\Models\Coupon;
 use App\Models\InventoryReservation;
@@ -76,6 +77,7 @@ class ProductionReadinessTest extends TestCase
         $this->post(route('contact.send'), ['name' => 'Mountain Buyer', 'email' => 'buyer@example.com', 'subject' => 'Product question', 'message' => 'Please tell me about the producer and batch.'])->assertRedirect();
         $this->assertDatabaseHas('contact_messages', ['email' => 'buyer@example.com', 'status' => 'new']);
         Mail::assertQueued(ContactMessageReceived::class);
+        Mail::assertQueued(ContactMessageAcknowledgement::class);
     }
 
     public function test_coupon_per_user_limit_is_enforced(): void

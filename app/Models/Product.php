@@ -21,6 +21,9 @@ class Product extends Model
         'slug',
         'short_description',
         'description',
+        'seo_title',
+        'meta_description',
+        'focus_keyword',
         'price',
         'sale_price',
         'sku',
@@ -61,6 +64,7 @@ class Product extends Model
         return $this->mainImage ?: $this->images->first();
     }
 
+    /** @return HasMany<Review, $this> */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

@@ -10,7 +10,7 @@ class JournalPost extends Model
 {
     protected $fillable = [
         'title', 'slug', 'category', 'author_name', 'excerpt', 'content',
-        'featured_image', 'image_alt', 'seo_title', 'meta_description',
+        'featured_image', 'image_alt', 'seo_title', 'meta_description', 'focus_keyword',
         'is_featured', 'is_published', 'published_at',
     ];
 

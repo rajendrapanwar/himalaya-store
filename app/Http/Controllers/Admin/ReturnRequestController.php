@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\ReturnRequestStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Models\ReturnRequest as CustomerReturn;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class ReturnRequestController extends Controller
             'completed' => ['completed_at' => now()],
         };
         $returnRequest->update($data + $timestamps + ['resolved_by' => $request->user()->id]);
+        ReturnRequestStatusChanged::dispatch($returnRequest->id);
 
         return back()->with('success', 'Return request updated.');
     }

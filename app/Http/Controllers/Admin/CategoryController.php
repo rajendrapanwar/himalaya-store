@@ -27,6 +27,9 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
             'description' => 'nullable|string',
+            'seo_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:170',
+            'focus_keyword' => 'nullable|string|max:120',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|boolean',
         ]);
@@ -39,8 +42,11 @@ class CategoryController extends Controller
 
         Category::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $this->uniqueSlug($request->name),
             'description' => $request->description,
+            'seo_title' => $request->seo_title,
+            'meta_description' => $request->meta_description,
+            'focus_keyword' => $request->focus_keyword,
             'image' => $imagePath,
             'status' => $request->status,
         ]);
@@ -60,6 +66,9 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
             'description' => 'nullable|string',
+            'seo_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:170',
+            'focus_keyword' => 'nullable|string|max:120',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|boolean',
         ]);
@@ -77,8 +86,11 @@ class CategoryController extends Controller
 
         $category->update([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $category->slug,
             'description' => $request->description,
+            'seo_title' => $request->seo_title,
+            'meta_description' => $request->meta_description,
+            'focus_keyword' => $request->focus_keyword,
             'image' => $imagePath,
             'status' => $request->status,
         ]);
@@ -102,5 +114,18 @@ class CategoryController extends Controller
         return redirect()
             ->route('admin.categories.index')
             ->with('success', 'Category deleted successfully.');
+    }
+
+    private function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'category';
+        $slug = $base;
+        $counter = 2;
+
+        while (Category::where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$counter++;
+        }
+
+        return $slug;
     }
 }

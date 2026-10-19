@@ -13,7 +13,19 @@ class CartService
     public function current(?User $user = null, bool $create = true): ?Cart
     {
         $sessionId = session()->getId();
-        $sessionCart = Cart::where('session_id', $sessionId)->latest('id')->first();
+        $sessionCartId = session()->get('cart_id');
+        $sessionCart = $sessionCartId
+            ? Cart::query()
+                ->whereKey($sessionCartId)
+                ->where(function ($query) use ($user) {
+                    $query->whereNull('user_id');
+                    if ($user) {
+                        $query->orWhere('user_id', $user->id);
+                    }
+                })
+                ->first()
+            : null;
+        $sessionCart ??= Cart::where('session_id', $sessionId)->latest('id')->first();
         $userCart = $user ? Cart::where('user_id', $user->id)->latest('updated_at')->first() : null;
 
         if ($user && $sessionCart && $userCart && ! $sessionCart->is($userCart)) {
@@ -29,7 +41,43 @@ class CartService
             $cart->update(['session_id' => $sessionId, 'user_id' => $user?->id ?: $cart->user_id]);
         }
 
+        if ($cart) {
+            session()->put('cart_id', $cart->id);
+        }
+
         return $cart;
+    }
+
+    /**
+     * Attach a cart created before authentication to the signed-in customer.
+     *
+     * Authentication rotates the session ID, so the previous ID must be used
+     * to find the guest cart before assigning the new, secure session ID.
+     */
+    public function transferGuestCart(string $previousSessionId, User $user, ?int $guestCartId = null): ?Cart
+    {
+        $guestCartId ??= session()->get('cart_id');
+        $guestCart = $guestCartId
+            ? Cart::query()->whereKey($guestCartId)->whereNull('user_id')->first()
+            : null;
+        $guestCart ??= Cart::where('session_id', $previousSessionId)->whereNull('user_id')->latest('id')->first();
+        $userCart = Cart::where('user_id', $user->id)->latest('updated_at')->first();
+
+        if ($guestCart && $userCart && ! $guestCart->is($userCart)) {
+            $userCart = $this->merge($guestCart, $userCart);
+        }
+
+        $cart = $userCart ?: $guestCart;
+
+        if ($cart) {
+            $cart->update([
+                'session_id' => session()->getId(),
+                'user_id' => $user->id,
+            ]);
+            session()->put('cart_id', $cart->id);
+        }
+
+        return $cart?->fresh();
     }
 
     public function load(Cart $cart): Cart

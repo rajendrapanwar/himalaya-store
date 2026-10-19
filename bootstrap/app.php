@@ -5,9 +5,11 @@ use App\Http\Middleware\EnsureAdminPermission;
 use App\Http\Middleware\EnsureAdminSecondFactor;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\StorefrontMaintenanceMode;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustHosts();
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin/*') ? route('admin.login') : route('login'));
+        $middleware->appendToGroup('web', StorefrontMaintenanceMode::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);
         $middleware->alias([

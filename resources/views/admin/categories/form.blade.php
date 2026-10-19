@@ -71,4 +71,13 @@
         </select>
     </div>
 
+    <section class="rounded-xl border border-stone-200 bg-stone-50 p-5">
+        <p class="text-xs font-black uppercase tracking-wider text-brand-700">Search appearance</p>
+        <div class="mt-4 space-y-5">
+            <div><label for="seoTitle" class="field-label">SEO title</label><input id="seoTitle" name="seo_title" value="{{ old('seo_title', $category->seo_title ?? '') }}" maxlength="70" class="field-control" placeholder="Category name | Pahadi Roots"><p class="field-help">Leave empty to use the category name.</p></div>
+            <div><label for="metaDescription" class="field-label">Meta description</label><textarea id="metaDescription" name="meta_description" rows="3" maxlength="170" class="field-control">{{ old('meta_description', $category->meta_description ?? '') }}</textarea><p class="field-help">Summarise this collection in roughly 140–160 characters.</p></div>
+            <div><label for="focusKeyword" class="field-label">Primary search phrase</label><input id="focusKeyword" name="focus_keyword" value="{{ old('focus_keyword', $category->focus_keyword ?? '') }}" maxlength="120" class="field-control" placeholder="Example: Himalayan pulses online"><p class="field-help">Used as an editorial target; search engines do not use a meta-keywords tag.</p></div>
+        </div>
+    </section>
+
 </div>

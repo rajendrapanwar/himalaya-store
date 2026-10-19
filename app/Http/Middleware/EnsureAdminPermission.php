@@ -14,10 +14,18 @@ class EnsureAdminPermission
         // Preserve compatibility with the original is_admin flag while role-based
         // staff accounts use the more granular role column.
         $role = $user->is_admin && in_array($user->role, [null, 'customer', 'administrator'], true) ? 'administrator' : $user->role;
+        $route = (string) $request->route()?->getName();
+        if (str_starts_with($route, 'admin.maintenance.')) {
+            abort_unless($role === 'administrator', 403, 'Only a full administrator can change storefront availability.');
+
+            return $next($request);
+        }
         if ($role === 'administrator') {
             return $next($request);
         }
-        $route = (string) $request->route()?->getName();
+        if (str_starts_with($route, 'admin.notifications.')) {
+            return $next($request);
+        }
         $write = ! in_array($request->method(), ['GET', 'HEAD'], true);
         if (in_array($route, ['admin.orders.refund', 'admin.customers.points'], true)) {
             abort_unless(in_array($role, ['administrator', 'manager'], true), 403, 'Only administrators and managers can perform this financial action.');

@@ -39,6 +39,7 @@ class OptimizeCatalogueImages extends Command
             };
             if (! $source || ! $info) {
                 $this->warn("Skipped unreadable image: {$file->getFilename()}");
+
                 continue;
             }
 

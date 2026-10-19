@@ -1,15 +1,21 @@
 @extends('layouts.app')
-@section('title', 'Journal · Pahadi Roots')
-@section('meta_description', 'Stories and practical guides to Himalayan ingredients, Uttarakhand food traditions, sourcing, product care and mindful mountain living.')
-@section('canonical', route('blog'))
+@php($journalPage = $posts->currentPage())
+@section('title', 'Himalayan Food & Culture Journal'.($journalPage > 1 ? ' | Page '.$journalPage : '').' | Pahadi Roots')
+@section('meta_description', 'Stories and practical guides to Himalayan ingredients, Uttarakhand food traditions, sourcing, product care and mindful mountain living.'.($journalPage > 1 ? ' Page '.$journalPage.'.' : ''))
+@section('canonical', route('blog', request()->filled('topic') ? [] : array_filter(['page' => $journalPage > 1 ? $journalPage : null])))
 @if(request()->filled('topic')) @section('robots', 'noindex, follow') @endif
+@section('pagination_links')
+    @if(! request()->filled('topic') && $posts->previousPageUrl())<link rel="prev" href="{{ route('blog', array_filter(['page' => $journalPage - 1 > 1 ? $journalPage - 1 : null])) }}">@endif
+    @if(! request()->filled('topic') && $posts->nextPageUrl())<link rel="next" href="{{ route('blog', ['page' => $journalPage + 1]) }}">@endif
+@endsection
 @push('head')
-<script type="application/ld+json">{!! json_encode([
-    '@@context' => 'https://schema.org', '@type' => 'CollectionPage',
-    'name' => 'The Pahadi Journal', 'url' => route('blog'),
+<x-structured-data :data="[
+    '@context' => 'https://schema.org', '@type' => 'CollectionPage',
+    'name' => 'The Pahadi Journal', 'url' => route('blog', request()->filled('topic') ? [] : array_filter(['page' => $journalPage > 1 ? $journalPage : null])),
     'description' => 'Stories and practical guides to Himalayan ingredients, sourcing and mountain food traditions.',
+    'primaryImageOfPage' => $posts->first()?->image_url ? ['@type' => 'ImageObject', 'url' => $posts->first()->image_url] : null,
     'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $posts->getCollection()->map(fn ($post, $index) => ['@type' => 'ListItem', 'position' => $posts->firstItem() + $index, 'url' => route('blog.show', $post->slug), 'name' => $post->title])->all()],
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+]" />
 @endpush
 @section('content')
 <nav class="mb-7 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-brand-700">Home</a><span aria-hidden="true">/</span><span class="text-stone-800">Journal</span></nav>

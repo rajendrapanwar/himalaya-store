@@ -44,6 +44,7 @@ class JournalManagementTest extends TestCase
         $post = JournalPost::where('title', $payload['title'])->firstOrFail();
         $this->assertSame('a-useful-mountain-story', $post->slug);
         $this->assertTrue($post->is_featured);
+        $this->assertSame('Himalayan ingredient sourcing', $post->focus_keyword);
 
         $this->actingAs($admin)->withSession($session)
             ->put(route('admin.journals.update', $post), $this->articleData(['title' => 'Updated Mountain Story', 'slug' => $post->slug, 'is_published' => '1']))
@@ -80,6 +81,7 @@ class JournalManagementTest extends TestCase
             'image_alt' => 'A carefully sourced mountain ingredient',
             'seo_title' => 'A Useful Mountain Story and Sourcing Guide',
             'meta_description' => 'A practical guide to mountain ingredients, transparent sourcing, safe storage and understanding natural seasonal variation.',
+            'focus_keyword' => 'Himalayan ingredient sourcing',
             'is_featured' => false,
             'is_published' => true,
             'published_at' => now()->subDay()->format('Y-m-d H:i:s'),

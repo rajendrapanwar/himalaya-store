@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\LoyaltyBalanceChanged;
 use App\Models\LoyaltyTransaction;
 use App\Models\Order;
 use App\Models\User;
@@ -17,7 +18,7 @@ class LoyaltyService
 
         $user = User::lockForUpdate()->findOrFail($user->id);
         $user->increment('loyalty_points', $points);
-        LoyaltyTransaction::create([
+        $transaction = LoyaltyTransaction::create([
             'user_id' => $user->id,
             'order_id' => $order?->id,
             'type' => $type,
@@ -26,6 +27,7 @@ class LoyaltyService
             'reference' => $reference,
             'description' => $description,
         ]);
+        LoyaltyBalanceChanged::dispatch($transaction->id);
     }
 
     public function redeem(User $user, Order $order, int $points): void
@@ -40,7 +42,7 @@ class LoyaltyService
         }
 
         $user->decrement('loyalty_points', $points);
-        LoyaltyTransaction::create([
+        $transaction = LoyaltyTransaction::create([
             'user_id' => $user->id,
             'order_id' => $order->id,
             'type' => 'redemption',
@@ -49,6 +51,7 @@ class LoyaltyService
             'reference' => "order:{$order->id}:redemption",
             'description' => "Redeemed on order {$order->order_number}",
         ]);
+        LoyaltyBalanceChanged::dispatch($transaction->id);
     }
 
     public function awardPurchase(Order $order): void
@@ -64,7 +67,8 @@ class LoyaltyService
         }
         $user = User::lockForUpdate()->findOrFail($user->id);
         $user->decrement('loyalty_points', $points);
-        LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $order?->id, 'type' => $type, 'points' => -$points, 'balance_after' => $user->fresh()->loyalty_points, 'reference' => $reference, 'description' => $description]);
+        $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $order?->id, 'type' => $type, 'points' => -$points, 'balance_after' => $user->fresh()->loyalty_points, 'reference' => $reference, 'description' => $description]);
+        LoyaltyBalanceChanged::dispatch($transaction->id);
     }
 
     public function reverseRedemption(Order $order): void

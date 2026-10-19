@@ -3,130 +3,43 @@
 @section('title', 'Products')
 
 @section('content')
-
-<div class="space-y-5">
-<form method="GET" class="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 md:flex-row">
-    <input name="search" value="{{ request('search') }}" placeholder="Search name or SKU…" class="flex-1 rounded-xl border-stone-200 px-4 py-3">
-    <select name="category" class="rounded-xl border-stone-200 px-4 py-3"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(request('category') == $category->id)>{{ $category->name }}</option>@endforeach</select>
-    <select name="status" class="rounded-xl border-stone-200 px-4 py-3"><option value="">All statuses</option><option value="1" @selected(request('status') === '1')>Active</option><option value="0" @selected(request('status') === '0')>Inactive</option></select>
-    <button class="rounded-xl bg-stone-900 px-5 py-3 font-bold text-white">Filter</button><a href="{{ route('admin.products.index') }}" class="rounded-xl px-4 py-3 font-bold text-stone-600">Reset</a>
-</form>
-<div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-
-    <div class="p-6 border-b flex justify-between items-center">
-        <div>
-            <h2 class="text-xl font-bold">Products</h2>
-            <p class="text-gray-500 text-sm">Manage store products, prices and stock.</p>
-        </div>
-
-        <a href="{{ route('admin.products.create') }}"
-           class="rounded-xl bg-brand-800 px-5 py-3 font-bold text-white hover:bg-brand-900">
-            + Add Product
-        </a>
+<div class="space-y-6">
+    <div class="admin-page-intro">
+        <div><p class="eyebrow">Catalogue</p><h2>Product library</h2><p>Manage product information, pricing, visibility and stock from one place.</p></div>
+        <a href="{{ route('admin.products.create') }}" class="admin-action admin-action-primary"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M12 5v14M5 12h14"/></svg>Add product</a>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="text-left p-4">Product</th>
-                    <th class="text-left p-4">Category</th>
-                    <th class="text-left p-4">Price</th>
-                    <th class="text-left p-4">Stock</th>
-                    <th class="text-left p-4">Status</th>
-                    <th class="text-right p-4">Actions</th>
-                </tr>
-            </thead>
+    <form method="GET" class="admin-filter-bar lg:grid-cols-[minmax(260px,1fr)_220px_180px_auto_auto]" aria-label="Filter products">
+        <div class="relative"><label for="productSearch" class="sr-only">Search products</label><svg class="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="1.8" d="m21 21-4.4-4.4m2.4-5.6a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg><input id="productSearch" name="search" value="{{ request('search') }}" placeholder="Search product name or SKU…" class="w-full rounded-xl !pl-10 pr-4 py-3"></div>
+        <div><label for="productCategory" class="sr-only">Category</label><select id="productCategory" name="category" class="w-full rounded-xl px-4 py-3"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(request('category') == $category->id)>{{ $category->name }}</option>@endforeach</select></div>
+        <div><label for="productStatus" class="sr-only">Status</label><select id="productStatus" name="status" class="w-full rounded-xl px-4 py-3"><option value="">All statuses</option><option value="1" @selected(request('status') === '1')>Active</option><option value="0" @selected(request('status') === '0')>Inactive</option></select></div>
+        <button class="admin-action admin-action-primary" type="submit">Apply filters</button>
+        <a href="{{ route('admin.products.index') }}" class="admin-action admin-action-secondary">Reset</a>
+    </form>
 
-            <tbody>
+    <section class="admin-panel">
+        <header class="admin-panel-header"><div><h3 class="font-black text-brand-950">All products</h3><p class="mt-1 text-xs text-stone-500">{{ $products->total() }} {{ Str::plural('product', $products->total()) }} in the catalogue</p></div><a href="{{ route('admin.inventory.index') }}" class="text-xs font-black text-brand-700">Open inventory →</a></header>
+        <div class="overflow-x-auto">
+            <table>
+                <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Available stock</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+                <tbody>
                 @forelse($products as $product)
-                    <tr class="border-t hover:bg-gray-50">
-
-                        <td class="p-4">
-                            <div class="flex items-center gap-4">
-                               @php
-                                    $displayImage = $product->images->where('is_main', 1)->first() ?? $product->images->first();
-                                @endphp
-
-                                @if($displayImage)
-                                    <img src="{{ asset('storage/' . $displayImage->image) }}"
-                                        class="w-16 h-16 rounded-xl object-cover border">
-                                @else
-                                    <div class="w-16 h-16 rounded-xl bg-gray-200"></div>
-                                @endif
-
-                                <div>
-                                    <div class="font-semibold">{{ $product->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $product->sku ?? 'No SKU' }}</div>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td class="p-4">
-                            {{ $product->category->name ?? '-' }}
-                        </td>
-
-                        <td class="p-4">
-                            @if($product->sale_price)
-                                <div class="font-semibold">₹{{ number_format($product->sale_price, 2) }}</div>
-                                <div class="text-sm line-through text-gray-400">₹{{ number_format($product->price, 2) }}</div>
-                            @else
-                                <div class="font-semibold">₹{{ number_format($product->price, 2) }}</div>
-                            @endif
-                        </td>
-
-                        <td class="p-4">
-                            <span class="font-bold {{ $product->stock_quantity <= 10 ? 'text-amber-700' : '' }}">{{ $product->stock_quantity }}</span>
-                        </td>
-
-                        <td class="p-4">
-                            @if($product->status)
-                                <span class="rounded-full bg-brand-100 px-3 py-1 text-sm font-bold text-brand-700">
-                                    Active
-                                </span>
-                            @else
-                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
-                                    Inactive
-                                </span>
-                            @endif
-                        </td>
-
-                        <td class="p-4">
-                            <div class="flex justify-end gap-2">
-                                <a href="{{ route('admin.products.edit', $product) }}"
-                                   class="px-3 py-2 bg-blue-600 text-white rounded-lg">
-                                    Edit
-                                </a>
-
-                                <form method="POST" action="{{ route('admin.products.destroy', $product) }}">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button onclick="return confirm('Delete product?')"
-                                            class="px-3 py-2 bg-red-600 text-white rounded-lg">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-
+                    @php($displayImage = $product->images->firstWhere('is_main', true) ?? $product->images->first())
+                    <tr>
+                        <td><div class="flex min-w-[280px] items-center gap-3">@if($displayImage)<img src="{{ asset('storage/'.$displayImage->image) }}" alt="" class="h-14 w-14 shrink-0 rounded-xl border border-stone-200 object-cover">@else<div class="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-300"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="1.5" d="M4 19h16M6 17l5-8 3 4 2-3 3 7H6Z"/></svg></div>@endif<div><a href="{{ route('admin.products.edit', $product) }}" class="font-black text-stone-900 hover:text-brand-700">{{ $product->name }}</a><p class="mt-1 font-mono text-[11px] text-stone-500">{{ $product->sku ?: 'No SKU' }}</p></div></div></td>
+                        <td class="text-sm text-stone-600">{{ $product->category->name ?? 'Uncategorised' }}</td>
+                        <td>@if($product->sale_price)<strong>₹{{ number_format($product->sale_price, 2) }}</strong><small class="ml-1 text-stone-400 line-through">₹{{ number_format($product->price, 2) }}</small>@else<strong>₹{{ number_format($product->price, 2) }}</strong>@endif</td>
+                        <td><span class="admin-badge {{ $product->available_stock <= 0 ? 'bg-red-50 text-red-700' : ($product->available_stock <= 10 ? 'bg-amber-50 text-amber-800' : 'bg-stone-100 text-stone-700') }}">{{ $product->available_stock }} available</span></td>
+                        <td><span class="admin-badge {{ $product->status ? 'bg-brand-50 text-brand-800' : 'bg-stone-100 text-stone-500' }}"><span class="mr-1.5 h-1.5 w-1.5 rounded-full {{ $product->status ? 'bg-brand-600' : 'bg-stone-400' }}"></span>{{ $product->status ? 'Active' : 'Hidden' }}</span></td>
+                        <td><div class="flex justify-end gap-2"><a href="{{ route('admin.products.edit', $product) }}" class="admin-action admin-action-secondary !min-h-9 !px-3">Edit</a><form method="POST" action="{{ route('admin.products.destroy', $product) }}" onsubmit="return confirm('Delete this product permanently?')">@csrf @method('DELETE')<button class="admin-action admin-action-danger !min-h-9 !px-3">Delete</button></form></div></td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="text-center p-12 text-gray-500">
-                            No products found.
-                        </td>
-                    </tr>
+                    <tr><td colspan="6" class="py-16 text-center"><div class="mx-auto max-w-sm"><strong class="text-lg text-brand-950">No products found</strong><p class="mt-2 text-sm text-stone-500">Try changing the filters or add a new product.</p></div></td></tr>
                 @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="p-4">
-        {{ $products->links() }}
-    </div>
-
+                </tbody>
+            </table>
+        </div>
+        @if($products->hasPages())<div class="border-t border-stone-200 p-4">{{ $products->links() }}</div>@endif
+    </section>
 </div>
-</div>
-
 @endsection

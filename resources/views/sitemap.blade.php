@@ -1,7 +1,0 @@
-{!! '<'.'?xml version="1.0" encoding="UTF-8"?'.'>' !!}
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-@foreach([route('home'),route('products.index'),route('bundles.index'),route('about'),route('blog'),route('rewards'),route('contact'),route('faq'),route('shipping.policy'),route('returns.policy'),route('privacy.policy'),route('terms'),route('editorial.policy')] as $url)<url><loc>{{ $url }}</loc><lastmod>2026-07-19</lastmod></url>@endforeach
-@foreach($products as $product)<url><loc>{{ route('products.show',$product->slug) }}</loc><lastmod>{{ $product->updated_at->toAtomString() }}</lastmod>@foreach($product->images->sortByDesc('is_main')->take(1) as $image)<image:image><image:loc>{{ asset('storage/'.$image->image) }}</image:loc><image:title>{{ $product->name }}</image:title></image:image>@endforeach</url>@endforeach
-@foreach($categories as $category)<url><loc>{{ route('products.index',['category'=>$category->slug]) }}</loc><lastmod>{{ $category->updated_at->toAtomString() }}</lastmod>@if($category->image)<image:image><image:loc>{{ asset('storage/'.$category->image) }}</image:loc></image:image>@endif</url>@endforeach
-@foreach($posts as $post)<url><loc>{{ route('blog.show',$post->slug) }}</loc><lastmod>{{ $post->updated_at->toAtomString() }}</lastmod>@if($post->image_url)<image:image><image:loc>{{ $post->image_url }}</image:loc><image:title>{{ $post->title }}</image:title></image:image>@endif</url>@endforeach
-</urlset>

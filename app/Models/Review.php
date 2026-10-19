@@ -21,16 +21,19 @@ class Review extends Model
         return ['verified_purchase' => 'boolean', 'is_approved' => 'boolean', 'moderated_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function moderator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'moderated_by');

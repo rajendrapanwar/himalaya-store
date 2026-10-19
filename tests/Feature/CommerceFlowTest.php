@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Bundle;
 use App\Models\Address;
+use App\Models\Bundle;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Order;
@@ -34,8 +34,8 @@ class CommerceFlowTest extends TestCase
         $this->assertSame('SAVE10', $order->coupon_code);
         $this->assertSame('100.00', $order->discount_amount);
         $this->assertSame('10.00', $order->loyalty_discount_amount);
-        $this->assertSame('49.00', $order->shipping_amount);
-        $this->assertSame('939.00', $order->total_amount);
+        $this->assertSame('0.00', $order->shipping_amount);
+        $this->assertSame('890.00', $order->total_amount);
         $this->assertSame(8, $product->fresh()->stock_quantity);
         $this->assertSame(0, $product->fresh()->reserved_quantity);
         $this->assertDatabaseHas('coupon_redemptions', ['coupon_id' => $coupon->id, 'order_id' => $order->id, 'status' => 'redeemed']);
@@ -118,12 +118,53 @@ class CommerceFlowTest extends TestCase
             ->assertJson(['shipping' => 49.0, 'total' => 549.0, 'cod_available' => true]);
     }
 
+    public function test_delivery_becomes_free_when_discounted_merchandise_total_is_over_five_hundred(): void
+    {
+        [$user, $product] = $this->customerAndProduct();
+        ServiceablePincode::create(['pincode' => '248001', 'city' => 'Dehradun', 'state' => 'Uttarakhand', 'shipping_amount' => 49, 'estimated_days_min' => 1, 'estimated_days_max' => 3, 'cod_available' => true, 'is_active' => true]);
+
+        $this->actingAs($user)->post(route('cart.add', $product), ['quantity' => 2]);
+
+        $this->postJson(route('checkout.quote'), ['pincode' => '248001', 'loyalty_points' => 0])
+            ->assertOk()
+            ->assertJson([
+                'subtotal' => 1000.0,
+                'shipping' => 0.0,
+                'total' => 1000.0,
+                'free_shipping' => true,
+                'free_shipping_threshold' => 500.0,
+            ]);
+    }
+
     public function test_customer_cannot_view_another_customers_order(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
         $order = Order::create(['order_number' => 'HS-PRIVATE', 'user_id' => $owner->id, 'subtotal' => 100, 'total_amount' => 100, 'payment_method' => 'cod', 'payment_status' => 'pending', 'order_status' => 'pending']);
         $this->actingAs($other)->get(route('orders.show', $order))->assertForbidden();
+        $this->get(route('orders.track', $order))->assertForbidden();
+    }
+
+    public function test_customer_can_view_their_order_tracking_journey(): void
+    {
+        $user = User::factory()->create();
+        $address = Address::create([
+            'user_id' => $user->id, 'first_name' => 'Asha', 'last_name' => 'Sharma',
+            'email' => 'asha@example.test', 'phone' => '9876543210', 'address_line_1' => '14 Rajpur Road',
+            'city' => 'Dehradun', 'state' => 'Uttarakhand', 'pincode' => '248001', 'country' => 'India',
+        ]);
+        $order = Order::create([
+            'order_number' => 'HS-TRACK-1', 'user_id' => $user->id, 'address_id' => $address->id,
+            'subtotal' => 500, 'shipping_amount' => 49, 'total_amount' => 549,
+            'payment_method' => 'cod', 'payment_status' => 'pending', 'order_status' => 'shipped',
+            'courier_name' => 'India Post', 'tracking_number' => 'TRACK12345', 'shipped_at' => now(),
+        ]);
+
+        $this->actingAs($user)->get(route('orders.track', $order))
+            ->assertOk()
+            ->assertSee('Your parcel is on the way')
+            ->assertSee('TRACK12345')
+            ->assertSee('Delivery progress');
     }
 
     private function customerAndProduct(): array

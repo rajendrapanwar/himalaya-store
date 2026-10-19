@@ -91,6 +91,7 @@ class ProductController extends Controller
             'page' => max(1, $request->integer('page', 1)),
         ], JSON_THROW_ON_ERROR));
         $products = Cache::remember($cacheKey, now()->addMinutes(5), fn () => $productsQuery->paginate(12))->withQueryString();
+        abort_if($products->currentPage() > $products->lastPage(), 404);
 
         $wishlistProductIds = auth()->check()
             ? auth()->user()->wishlist()->pluck('products.id')->all()

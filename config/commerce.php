@@ -8,6 +8,7 @@ return [
         'gstin' => env('BUSINESS_GSTIN'),
     ],
     'stripe_reservation_minutes' => (int) env('STRIPE_RESERVATION_MINUTES', 30),
+    'free_shipping_threshold' => (float) env('FREE_SHIPPING_THRESHOLD', 500),
     'loyalty' => [
         'points_per_rupee' => (float) env('LOYALTY_POINTS_PER_RUPEE', 0.1),
         'rupees_per_point' => (float) env('LOYALTY_RUPEES_PER_POINT', 0.1),

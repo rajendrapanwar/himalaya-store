@@ -5,13 +5,13 @@
     $displayPrice = $product->sale_price ?? $product->price;
     $reviewCount = $product->reviews->count();
     $averageRating = $reviewCount ? round((float) $product->reviews->avg('rating'), 1) : 0;
-    $productMetaDescription = trim($product->short_description ?: 'Discover '.$product->name.', sourced from '.($product->origin_region ?: 'the Himalayas').'.');
+    $productMetaDescription = trim($product->meta_description ?: $product->short_description ?: 'Discover '.$product->name.', sourced from '.($product->origin_region ?: 'the Himalayas').'.');
     if (Str::length($productMetaDescription) < 90) {
         $productMetaDescription .= ' View origin, ingredients, pack details, availability and delivery information.';
     }
 @endphp
 
-@section('title', $product->name.' · Pahadi Roots')
+@section('title', $product->seo_title ?: $product->name.' | Pahadi Roots')
 @section('meta_description', Str::limit($productMetaDescription, 155, ''))
 @section('canonical', route('products.show', $product->slug))
 @section('og_type', 'product')
@@ -19,15 +19,16 @@
 @section('og_image_alt', $product->name.' from Pahadi Roots')
 
 @push('head')
-<script type="application/ld+json">{!! json_encode([
-    '@@context' => 'https://schema.org',
+<meta property="product:price:amount" content="{{ number_format((float) $displayPrice, 2, '.', '') }}"><meta property="product:price:currency" content="INR"><meta property="product:availability" content="{{ $product->available_stock > 0 ? 'in stock' : 'out of stock' }}"><meta property="product:retailer_item_id" content="{{ $product->sku ?: $product->id }}">
+<x-structured-data :data="[
+    '@context' => 'https://schema.org',
     '@graph' => [[
         '@type' => 'Product',
         '@id' => route('products.show', $product->slug).'#product',
         'url' => route('products.show', $product->slug),
         'name' => $product->name,
-        'image' => $product->images->sortByDesc('is_main')->map(fn ($image) => asset('storage/'.$image->image))->values()->all(),
-        'description' => $product->short_description,
+        'image' => $product->images->sortByDesc('is_main')->map(fn ($image) => asset('storage/'.$image->image))->whenEmpty(fn ($images) => $images->push(asset(config('seo.default_social_image'))))->values()->all(),
+        'description' => $productMetaDescription,
         'sku' => $product->sku,
         'category' => $product->category?->name,
         'brand' => ['@type' => 'Brand', 'name' => 'Pahadi Roots'],
@@ -70,7 +71,7 @@
             ['@type' => 'ListItem', 'position' => $product->category ? 4 : 3, 'name' => $product->name, 'item' => route('products.show', $product->slug)],
         ])),
     ]],
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+]" />
 @endpush
 
 @section('content')
@@ -143,7 +144,7 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p class="eyebrow">Verified customer feedback</p><h2 class="section-title mt-3">Customer reviews</h2></div>@if($reviewCount)<p class="text-sm text-stone-500"><strong class="text-2xl text-stone-900">{{ number_format($averageRating, 1) }}</strong> out of 5 · {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</p>@endif</div>
     <div class="mt-8 grid gap-6 lg:grid-cols-[.65fr_1.35fr]">
         <aside class="surface-card h-fit p-6"><h3 class="font-display text-2xl font-semibold">Share your experience</h3>@auth @if($canReview)<p class="mt-2 text-sm leading-6 text-stone-500">Your review will appear after moderation.</p><form method="POST" action="{{ route('reviews.store', $product) }}" class="mt-5 space-y-4">@csrf<div><label for="reviewRating" class="field-label">Rating</label><select id="reviewRating" name="rating" class="field-control" required>@foreach([5=>'Excellent — 5 stars',4=>'Very good — 4 stars',3=>'Good — 3 stars',2=>'Fair — 2 stars',1=>'Poor — 1 star'] as $value=>$label)<option value="{{ $value }}" @selected((int)old('rating',5)===$value)>{{ $label }}</option>@endforeach</select></div><div><label for="reviewTitle" class="field-label">Review title <span class="font-normal text-stone-500">(optional)</span></label><input id="reviewTitle" name="title" value="{{ old('title') }}" maxlength="150" class="field-control"></div><div><label for="reviewBody" class="field-label">Your review</label><textarea id="reviewBody" name="body" rows="5" minlength="10" maxlength="2000" class="field-control" required>{{ old('body') }}</textarea><p class="field-help">At least 10 characters. Please focus on the product.</p></div><button class="button-primary w-full" type="submit">Submit for approval</button></form>@else<p class="mt-3 text-sm leading-6 text-stone-600">Reviews are available after a verified purchase of this product.</p><a href="{{ route('orders') }}" class="button-secondary mt-5">View your orders</a>@endif @else<p class="mt-3 text-sm leading-6 text-stone-600">Sign in after receiving your order to leave a verified review.</p><a href="{{ route('login') }}" class="button-primary mt-5">Sign in</a>@endauth</aside>
-        <div class="space-y-4">@forelse($product->reviews as $review)<article class="surface-card p-6"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-saffron" aria-label="{{ $review->rating }} out of 5 stars">@for($star=1;$star<=5;$star)<span aria-hidden="true" class="{{ $star <= $review->rating ? '' : 'text-stone-300' }}">★</span>@endfor</p><h3 class="mt-2 text-lg font-extrabold">{{ $review->title ?: 'Customer review' }}</h3></div>@if($review->verified_purchase)<span class="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-black text-brand-700">Verified purchase</span>@endif</div><p class="mt-4 leading-7 text-stone-600">{{ $review->body }}</p><p class="mt-4 text-xs text-stone-500"><strong class="text-stone-800">{{ $review->user->name }}</strong> · {{ $review->created_at->format('d M Y') }}</p></article>@empty<div class="surface-card p-10 text-center"><p class="text-3xl text-saffron" aria-hidden="true">☆</p><h3 class="font-display mt-3 text-2xl font-semibold">No approved reviews yet</h3><p class="mt-2 text-sm text-stone-500">Verified buyers can be the first to share their experience.</p></div>@endforelse</div>
+        <div class="space-y-4">@forelse($product->reviews as $review)<article class="surface-card p-6"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-saffron" aria-label="{{ $review->rating }} out of 5 stars">@for($star=1;$star<=5;$star++)<span aria-hidden="true" class="{{ $star <= $review->rating ? '' : 'text-stone-300' }}">★</span>@endfor</p><h3 class="mt-2 text-lg font-extrabold">{{ $review->title ?: 'Customer review' }}</h3></div>@if($review->verified_purchase)<span class="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-black text-brand-700">Verified purchase</span>@endif</div><p class="mt-4 leading-7 text-stone-600">{{ $review->body }}</p><p class="mt-4 text-xs text-stone-500"><strong class="text-stone-800">{{ $review->user->name }}</strong> · {{ $review->created_at->format('d M Y') }}</p></article>@empty<div class="surface-card p-10 text-center"><p class="text-3xl text-saffron" aria-hidden="true">☆</p><h3 class="font-display mt-3 text-2xl font-semibold">No approved reviews yet</h3><p class="mt-2 text-sm text-stone-500">Verified buyers can be the first to share their experience.</p></div>@endforelse</div>
     </div>
 </section>
 

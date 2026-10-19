@@ -96,6 +96,7 @@ class JournalPostController extends Controller
             'image_alt' => ['nullable', 'string', 'max:180'],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'meta_description' => ['nullable', 'string', 'max:170'],
+            'focus_keyword' => ['nullable', 'string', 'max:120'],
             'published_at' => ['nullable', 'date'],
         ]);
     }

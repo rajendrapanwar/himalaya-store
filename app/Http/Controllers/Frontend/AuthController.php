@@ -25,6 +25,8 @@ class AuthController extends Controller
 
     public function store(Request $request)
     {
+        $guestSessionId = $request->session()->getId();
+        $guestCartId = $request->session()->get('cart_id');
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
@@ -36,6 +38,7 @@ class AuthController extends Controller
         event(new Registered($user));
         Auth::login($user);
         $request->session()->regenerate();
+        app(CartService::class)->transferGuestCart($guestSessionId, $user, $guestCartId);
 
         return redirect()->route('home')->with('success', 'Welcome to Pahadi Roots. Please verify your email before checkout.');
     }
@@ -45,25 +48,50 @@ class AuthController extends Controller
         return view('frontend.auth.login');
     }
 
+    public function adminLogin()
+    {
+        return view('admin.auth.login');
+    }
+
     public function authenticate(Request $request)
     {
+        $guestSessionId = $request->session()->getId();
+        $guestCartId = $request->session()->get('cart_id');
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required']]);
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt([
+            ...$credentials,
+            fn ($query) => $query->where('is_admin', false)->where(function ($roleQuery) {
+                $roleQuery->whereNull('role')->orWhere('role', 'customer');
+            }),
+        ], $request->boolean('remember'))) {
             return back()->withErrors(['email' => 'The supplied email or password is incorrect.'])->onlyInput('email');
         }
         $request->session()->regenerate();
-        app(CartService::class)->current($request->user());
-        if ($request->user()->isStaff()) {
-            $request->session()->forget('admin_2fa_verified_at');
-            $code = app(AdminTwoFactorService::class)->send($request->user());
-            if (app()->environment('local')) {
-                $request->session()->put('admin_2fa_local_code', $code);
-            }
-
-            return redirect()->route('admin.two-factor.show');
-        }
+        app(CartService::class)->transferGuestCart($guestSessionId, $request->user(), $guestCartId);
 
         return redirect()->intended(route('home'))->with('success', 'Welcome back.');
+    }
+
+    public function authenticateAdmin(Request $request)
+    {
+        $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required']]);
+        if (! Auth::attempt([
+            ...$credentials,
+            fn ($query) => $query->where(function ($staffQuery) {
+                $staffQuery->where('is_admin', true)->orWhereIn('role', ['administrator', 'manager', 'catalogue', 'fulfillment', 'support']);
+            }),
+        ], $request->boolean('remember'))) {
+            return back()->withErrors(['email' => 'The supplied administrator credentials are incorrect.'])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+        $request->session()->forget('admin_2fa_verified_at');
+        $code = app(AdminTwoFactorService::class)->send($request->user());
+        if (app()->environment('local')) {
+            $request->session()->put('admin_2fa_local_code', $code);
+        }
+
+        return redirect()->route('admin.two-factor.show');
     }
 
     public function destroy(Request $request)
@@ -91,11 +119,9 @@ class AuthController extends Controller
     public function sendResetLink(Request $request)
     {
         $request->validate(['email' => 'required|email']);
-        $status = Password::sendResetLink($request->only('email'));
+        Password::sendResetLink($request->only('email'));
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('success', __($status))
-            : back()->withErrors(['email' => __($status)]);
+        return back()->with('success', 'If an account exists for that email address, a password reset link has been sent.');
     }
 
     public function resetPassword(Request $request, string $token)

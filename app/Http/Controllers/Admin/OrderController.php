@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderLifecycleChanged;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
-use App\Notifications\OrderUpdateNotification;
 use App\Services\OrderLifecycleService;
 use Illuminate\Http\Request;
 use Stripe\StripeClient;
@@ -68,7 +68,7 @@ class OrderController extends Controller
             $order->update($updates);
             OrderStatusHistory::create(['order_id' => $order->id, 'user_id' => $request->user()->id, 'from_status' => $from, 'to_status' => $data['order_status'], 'source' => 'admin']);
             if ($data['order_status'] === 'shipped') {
-                $order->fresh()->user?->notify(new OrderUpdateNotification($order->id, 'shipped'));
+                OrderLifecycleChanged::dispatch($order->id, 'shipped');
             }
         }
 

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\OrderLifecycleChanged;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
-use App\Notifications\OrderUpdateNotification;
 use Illuminate\Support\Facades\DB;
 
 class OrderLifecycleService
@@ -40,7 +40,7 @@ class OrderLifecycleService
             return $order->fresh();
         });
         if (! $wasPaid && $result->payment_status === 'paid') {
-            $result->user?->notify(new OrderUpdateNotification($result->id, 'paid'));
+            OrderLifecycleChanged::dispatch($result->id, 'paid');
         }
 
         return $result;
@@ -55,7 +55,7 @@ class OrderLifecycleService
 
             return $order->fresh();
         });
-        $result->user?->notify(new OrderUpdateNotification($result->id, 'placed'));
+        OrderLifecycleChanged::dispatch($result->id, 'placed');
 
         return $result;
     }
@@ -79,7 +79,7 @@ class OrderLifecycleService
             return $order->fresh();
         });
         if (! $wasTerminal && $result->payment_status === 'failed') {
-            $result->user?->notify(new OrderUpdateNotification($result->id, 'payment_failed'));
+            OrderLifecycleChanged::dispatch($result->id, 'payment_failed');
         }
 
         return $result;
@@ -105,7 +105,7 @@ class OrderLifecycleService
         });
         if (! $wasCancelled && $result->order_status === 'cancelled') {
             $event = str_contains(strtolower($reason), 'refund') ? 'refunded' : 'cancelled';
-            $result->user?->notify(new OrderUpdateNotification($result->id, $event));
+            OrderLifecycleChanged::dispatch($result->id, $event);
         }
 
         return $result;
@@ -130,7 +130,7 @@ class OrderLifecycleService
             return $order->fresh();
         });
         if (! $wasDelivered && $result->order_status === 'delivered') {
-            $result->user?->notify(new OrderUpdateNotification($result->id, 'delivered'));
+            OrderLifecycleChanged::dispatch($result->id, 'delivered');
         }
 
         return $result;

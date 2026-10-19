@@ -22,7 +22,7 @@ class TwoFactorController extends Controller
         $request->session()->forget('admin_2fa_local_code');
         $request->session()->put('admin_2fa_verified_at', now()->timestamp);
 
-        return redirect()->intended(route('admin.dashboard'))->with('success', 'Administrator verification completed.');
+        return redirect()->route('admin.dashboard')->with('success', 'Administrator verification completed.');
     }
 
     public function resend(Request $request, AdminTwoFactorService $service)
