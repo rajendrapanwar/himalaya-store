@@ -5,8 +5,9 @@ namespace App\Listeners;
 use App\Events\ReturnRequestStatusChanged;
 use App\Models\ReturnRequest;
 use App\Notifications\AccountActivityNotification;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class HandleReturnRequestStatusChanged
+class HandleReturnRequestStatusChanged implements ShouldQueueAfterCommit
 {
     public function handle(ReturnRequestStatusChanged $event): void
     {

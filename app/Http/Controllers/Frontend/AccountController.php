@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Notifications\AccountActivityNotification;
+use App\Notifications\EmailAddressChangedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -60,14 +64,17 @@ class AccountController extends Controller
             'current_password' => ['nullable', 'required_with:password', 'current_password'],
             'password' => ['nullable', 'confirmed', Password::min(10)->letters()->mixedCase()->numbers()],
         ]);
-        $emailChanged = $data['email'] !== $user->email;
+        $previousEmail = $user->email;
+        $emailChanged = $data['email'] !== $previousEmail;
         $passwordChanged = ! empty($data['password']);
         $user->fill(['name' => $data['name'], 'email' => $data['email']]);
         if ($emailChanged) {
             $user->email_verified_at = null;
         }
-        if (! empty($data['password'])) {
+        if ($passwordChanged) {
             $user->password = Hash::make($data['password']);
+            // Invalidate "remember me" cookies issued before the change.
+            $user->setRememberToken(Str::random(60));
         }
 
         $previousAvatar = $user->avatar_path;
@@ -88,8 +95,16 @@ class AccountController extends Controller
                 route('profile'),
                 'security',
             ));
+            // Tell the previous address too: it is the only channel the real owner
+            // still controls if someone else made this change.
+            Notification::route('mail', [$previousEmail => $user->name])
+                ->notify(new EmailAddressChangedNotification($user->name, $user->email));
         }
         if ($passwordChanged) {
+            // Sign out every other browser. The AuthenticateSession middleware rejects
+            // sessions holding the old password hash; this also re-issues this
+            // device's remember-me cookie so the current customer stays signed in.
+            Auth::logoutOtherDevices($data['password']);
             $user->notify(new AccountActivityNotification(
                 'Your password was changed',
                 'The password for your Pahadi Roots account was changed successfully. Contact us immediately if this was not you.',

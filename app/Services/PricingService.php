@@ -54,14 +54,18 @@ class PricingService
             $loyaltyDiscount = Money::toRupees($points * $ratePaise);
         }
 
-        $merchandiseTotalPaise = max(0, $subtotalPaise - Money::toPaise($discount) - Money::toPaise($loyaltyDiscount));
+        // Free delivery is judged on the order value after coupons but before loyalty
+        // points, so redeeming points can never add a delivery charge that costs the
+        // customer more than the points saved.
+        $qualifyingPaise = max(0, $subtotalPaise - Money::toPaise($discount));
+        $merchandiseTotalPaise = max(0, $qualifyingPaise - Money::toPaise($loyaltyDiscount));
         $freeShippingThreshold = (float) config('commerce.free_shipping_threshold', 500);
         $freeShippingThresholdPaise = Money::toPaise($freeShippingThreshold);
-        $thresholdFreeShipping = $freeShippingThresholdPaise > 0 && $merchandiseTotalPaise > $freeShippingThresholdPaise;
+        $thresholdFreeShipping = $freeShippingThresholdPaise > 0 && $qualifyingPaise > $freeShippingThresholdPaise;
         $freeShippingEligible = (bool) $coupon?->free_shipping || $thresholdFreeShipping;
         $amountUntilFreeShipping = $freeShippingEligible || $freeShippingThresholdPaise <= 0
             ? 0.0
-            : Money::toRupees(($freeShippingThresholdPaise - $merchandiseTotalPaise) + 1);
+            : Money::toRupees(($freeShippingThresholdPaise - $qualifyingPaise) + 1);
         $shippingPaise = $destination && ! $freeShippingEligible ? Money::toPaise($destination->shipping_amount) : 0;
         $shipping = Money::toRupees($shippingPaise);
         $total = Money::toRupees($merchandiseTotalPaise + $shippingPaise);

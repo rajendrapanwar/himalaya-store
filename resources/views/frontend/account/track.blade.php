@@ -125,7 +125,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 document.querySelector('[data-copy-value]')?.addEventListener('click', async event => {
     const button = event.currentTarget;
     try {

@@ -7,8 +7,9 @@ use App\Models\ReturnRequest;
 use App\Notifications\AccountActivityNotification;
 use App\Notifications\AdminAlertNotification;
 use App\Services\StaffNotificationService;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class HandleReturnRequestSubmitted
+class HandleReturnRequestSubmitted implements ShouldQueueAfterCommit
 {
     public function __construct(private readonly StaffNotificationService $staff) {}
 

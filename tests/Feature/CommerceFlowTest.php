@@ -136,6 +136,28 @@ class CommerceFlowTest extends TestCase
             ]);
     }
 
+    public function test_redeeming_loyalty_points_never_removes_free_delivery(): void
+    {
+        [$user, $product] = $this->customerAndProduct();
+        $product->update(['price' => 520]);
+        $user->update(['loyalty_points' => 300]);
+        config(['commerce.loyalty.rupees_per_point' => 0.1]);
+        ServiceablePincode::create(['pincode' => '248001', 'city' => 'Dehradun', 'state' => 'Uttarakhand', 'shipping_amount' => 49, 'estimated_days_min' => 1, 'estimated_days_max' => 3, 'cod_available' => true, 'is_active' => true]);
+
+        $this->actingAs($user)->post(route('cart.add', $product), ['quantity' => 1]);
+
+        // ₹30 of points takes the payable merchandise to ₹490, below the ₹500 threshold,
+        // but the order still qualified for free delivery before points were applied.
+        $this->postJson(route('checkout.quote'), ['pincode' => '248001', 'loyalty_points' => 300])
+            ->assertOk()
+            ->assertJson([
+                'loyalty_discount' => 30.0,
+                'shipping' => 0.0,
+                'total' => 490.0,
+                'free_shipping' => true,
+            ]);
+    }
+
     public function test_customer_cannot_view_another_customers_order(): void
     {
         $owner = User::factory()->create();

@@ -13,6 +13,9 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /** Signed-in traffic from one IP may use this many times an account's daily allowance. */
+    private const SHARED_NETWORK_MULTIPLIER = 10;
+
     /**
      * Register any application services.
      */
@@ -69,7 +72,7 @@ class AppServiceProvider extends ServiceProvider
             return [
                 Limit::perMinute(5)->by("login:credential-minute:{$credential}:{$ip}"),
                 Limit::perHour(30)->by("login:credential-hour:{$credential}:{$ip}"),
-                Limit::perHour(75)->by("login:ip-hour:{$ip}"),
+                Limit::perHour(150)->by("login:ip-hour:{$ip}"),
             ];
         });
 
@@ -85,8 +88,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('registration', fn (Request $request) => [
-            Limit::perHour(5)->by('registration:hour:'.$this->ipKey($request)),
-            Limit::perDay(20)->by('registration:day:'.$this->ipKey($request)),
+            Limit::perHour(10)->by('registration:hour:'.$this->ipKey($request)),
+            Limit::perDay(50)->by('registration:day:'.$this->ipKey($request)),
         ]);
 
         RateLimiter::for('password-reset', function (Request $request) {
@@ -136,20 +139,26 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Apply both short-burst and sustained limits. Authenticated limits are keyed
-     * to the account and IP limits remain in place to contain distributed misuse.
+     * to the account so customers who share a carrier-grade NAT or office IP do
+     * not exhaust each other's allowance; a much wider per-IP ceiling still
+     * contains one network driving many accounts.
      *
      * @return array<int, Limit>
      */
     private function actorLimits(string $name, Request $request, int $perMinute, int $perHour, int $perDay): array
     {
         $actor = $this->actorKey($request);
-        $ip = $this->ipKey($request);
-
-        return [
+        $limits = [
             Limit::perMinute($perMinute)->by("{$name}:actor-minute:{$actor}"),
             Limit::perHour($perHour)->by("{$name}:actor-hour:{$actor}"),
-            Limit::perDay($perDay)->by("{$name}:ip-day:{$ip}"),
+            Limit::perDay($perDay)->by("{$name}:actor-day:{$actor}"),
         ];
+
+        if ($request->user()) {
+            $limits[] = Limit::perDay($perDay * self::SHARED_NETWORK_MULTIPLIER)->by("{$name}:ip-day:{$this->ipKey($request)}");
+        }
+
+        return $limits;
     }
 
     private function actorKey(Request $request): string

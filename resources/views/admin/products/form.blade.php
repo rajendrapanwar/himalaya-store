@@ -16,7 +16,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 (() => {
  const input=document.getElementById('productImages'),preview=document.getElementById('newImagePreview');
  input?.addEventListener('change',()=>{preview.innerHTML='';preview.classList.toggle('hidden',!input.files.length);preview.classList.toggle('grid',input.files.length>0);Array.from(input.files).forEach(file=>{const img=document.createElement('img');img.className='aspect-square w-full rounded-xl border border-stone-200 object-cover';img.alt='New image preview';img.src=URL.createObjectURL(file);preview.appendChild(img)})});

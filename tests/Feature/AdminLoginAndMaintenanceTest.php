@@ -7,8 +7,10 @@ use App\Notifications\AdminLoginCode;
 use App\Services\AdminTwoFactorService;
 use App\Services\MaintenanceModeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class AdminLoginAndMaintenanceTest extends TestCase
@@ -108,5 +110,15 @@ class AdminLoginAndMaintenanceTest extends TestCase
         $this->assertFalse(app(MaintenanceModeService::class)->enabled());
         auth()->logout();
         $this->get(route('home'))->assertOk();
+    }
+
+    public function test_maintenance_fallback_is_not_cached_when_settings_cannot_be_read(): void
+    {
+        Cache::flush();
+        Schema::drop('site_settings');
+
+        $this->assertFalse(app(MaintenanceModeService::class)->enabled());
+        // A transient failure must not pin "disabled" in the cache forever.
+        $this->assertFalse(Cache::has('site-setting:maintenance'));
     }
 }

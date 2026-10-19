@@ -9,9 +9,10 @@ use App\Models\ContactMessage;
 use App\Notifications\AccountActivityNotification;
 use App\Notifications\AdminAlertNotification;
 use App\Services\StaffNotificationService;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Support\Facades\Mail;
 
-class HandleContactMessageSubmitted
+class HandleContactMessageSubmitted implements ShouldQueueAfterCommit
 {
     public function __construct(private readonly StaffNotificationService $staff) {}
 
@@ -23,8 +24,16 @@ class HandleContactMessageSubmitted
         }
 
         Mail::to(config('services.support_email'))->queue(new ContactMessageReceived($message));
-        Mail::to($message->email)->queue(new ContactMessageAcknowledgement($message));
-        $message->user?->notify(new AccountActivityNotification(
+
+        // Only acknowledge to a verified account address. Mailing whatever address
+        // a guest typed (with their own name and subject echoed back) would let the
+        // form relay attacker-written text to strangers from the shop's domain.
+        $customer = $message->user;
+        if ($customer?->hasVerifiedEmail()) {
+            Mail::to($customer->email)->queue(new ContactMessageAcknowledgement($message));
+        }
+
+        $customer?->notify(new AccountActivityNotification(
             'Message received',
             "We received your message about {$message->subject} and will reply shortly.",
             route('contact'),

@@ -122,8 +122,8 @@
 
     @if(session('success') || session('error') || $errors->any())
         <div class="site-shell pt-5">
-            @if(session('success'))<div role="status" class="flex items-start justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-900"><span>{{ session('success') }}</span><button type="button" aria-label="Dismiss message" onclick="this.parentElement.remove()">×</button></div>@endif
-            @if(session('error'))<div role="alert" class="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"><span>{{ session('error') }}</span><button type="button" aria-label="Dismiss message" onclick="this.parentElement.remove()">×</button></div>@endif
+            @if(session('success'))<div role="status" class="flex items-start justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-900"><span>{{ session('success') }}</span><button type="button" aria-label="Dismiss message" data-dismiss>×</button></div>@endif
+            @if(session('error'))<div role="alert" class="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"><span>{{ session('error') }}</span><button type="button" aria-label="Dismiss message" data-dismiss>×</button></div>@endif
             @if($errors->any())<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><strong>Please check the highlighted information.</strong><ul class="mt-1 list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         </div>
     @endif
@@ -159,7 +159,7 @@
 
     <a href="https://wa.me/{{ config('commerce.whatsapp_number', '919876543210') }}?text={{ urlencode('Hello Pahadi Roots, I need help with an order.') }}" target="_blank" rel="noopener noreferrer" class="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-xl transition hover:-translate-y-1 hover:bg-[#1fbd5a]" aria-label="Chat with Pahadi Roots on WhatsApp"><svg class="h-7 w-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2A9.84 9.84 0 0 0 3.6 16.9L2 22l5.25-1.53A9.96 9.96 0 1 0 12.04 2Zm5.82 14.08c-.24.68-1.4 1.3-1.93 1.37-.5.06-1.12.08-1.81-.14-.42-.13-.96-.31-1.65-.61-2.9-1.26-4.8-4.2-4.94-4.39-.14-.19-1.18-1.57-1.18-3 0-1.44.74-2.14 1.01-2.43.27-.3.6-.37.8-.37h.57c.18 0 .43-.07.67.51.24.58.82 2 .9 2.14.07.14.12.31.02.5-.1.2-.14.32-.29.49-.14.17-.3.38-.43.51-.14.15-.29.3-.12.59.17.29.75 1.24 1.61 2 .1.09 1.75 1.54 3.22 2.14.29.12.52.1.71-.12.2-.21.84-.98 1.06-1.32.22-.34.44-.29.74-.17.31.12 1.94.92 2.27 1.09.34.17.56.25.65.39.08.15.08.83-.16 1.51Z"/></svg></a>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
     (() => {
         const togglePanel = (button, panel, show) => { if (!button || !panel) return; panel.classList.toggle('hidden', !show); button.setAttribute('aria-expanded', String(show)); };
         const mobileButton = document.getElementById('mobileMenuButton');

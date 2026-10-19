@@ -5,8 +5,9 @@ namespace App\Listeners;
 use App\Events\LoyaltyBalanceChanged;
 use App\Models\LoyaltyTransaction;
 use App\Notifications\AccountActivityNotification;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class HandleLoyaltyBalanceChanged
+class HandleLoyaltyBalanceChanged implements ShouldQueueAfterCommit
 {
     public function handle(LoyaltyBalanceChanged $event): void
     {

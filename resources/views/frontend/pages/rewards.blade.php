@@ -74,5 +74,5 @@
 @endsection
 
 @push('scripts')
-<script>document.querySelector('[data-copy-referral]')?.addEventListener('click', async event => { const input = document.getElementById(event.currentTarget.dataset.copyTarget); const feedback = document.querySelector('[data-copy-feedback]'); try { await navigator.clipboard.writeText(input.value); event.currentTarget.textContent = 'Copied'; if (feedback) feedback.textContent = 'Referral link copied. It is ready to share.'; } catch (_) { input.select(); document.execCommand('copy'); event.currentTarget.textContent = 'Copied'; } });</script>
+<script nonce="{{ Vite::cspNonce() }}">document.querySelector('[data-copy-referral]')?.addEventListener('click', async event => { const input = document.getElementById(event.currentTarget.dataset.copyTarget); const feedback = document.querySelector('[data-copy-feedback]'); try { await navigator.clipboard.writeText(input.value); event.currentTarget.textContent = 'Copied'; if (feedback) feedback.textContent = 'Referral link copied. It is ready to share.'; } catch (_) { input.select(); document.execCommand('copy'); event.currentTarget.textContent = 'Copied'; } });</script>
 @endpush

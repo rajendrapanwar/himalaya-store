@@ -14,19 +14,27 @@ class MaintenanceModeService
     /** @return array{enabled: bool, message: string, expected_return_at: ?string, enabled_at: ?string} */
     public function status(): array
     {
-        return Cache::rememberForever(self::CACHE_KEY, function () {
-            try {
-                $value = SiteSetting::query()->where('key', 'maintenance')->value('value');
-                if (is_string($value)) {
-                    $value = json_decode($value, true);
-                }
+        $cached = Cache::get(self::CACHE_KEY);
+        if (is_array($cached)) {
+            return $this->normalize($cached);
+        }
 
-                return $this->normalize(is_array($value) ? $value : []);
-            } catch (Throwable) {
-                // The storefront must remain available before the settings migration runs.
-                return $this->normalize([]);
-            }
-        });
+        try {
+            $value = SiteSetting::query()->where('key', 'maintenance')->value('value');
+        } catch (Throwable) {
+            // Keep the storefront reachable before the settings migration runs, but
+            // never cache this fallback: a transient database error must not
+            // silently and permanently switch an active maintenance window off.
+            return $this->normalize([]);
+        }
+
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+        $status = $this->normalize(is_array($value) ? $value : []);
+        Cache::forever(self::CACHE_KEY, $status);
+
+        return $status;
     }
 
     public function enabled(): bool

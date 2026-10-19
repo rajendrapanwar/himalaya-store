@@ -77,7 +77,20 @@ class ProductionReadinessTest extends TestCase
         $this->post(route('contact.send'), ['name' => 'Mountain Buyer', 'email' => 'buyer@example.com', 'subject' => 'Product question', 'message' => 'Please tell me about the producer and batch.'])->assertRedirect();
         $this->assertDatabaseHas('contact_messages', ['email' => 'buyer@example.com', 'status' => 'new']);
         Mail::assertQueued(ContactMessageReceived::class);
-        Mail::assertQueued(ContactMessageAcknowledgement::class);
+        // A guest-typed address is never mailed, so the form cannot relay text to strangers.
+        Mail::assertNotQueued(ContactMessageAcknowledgement::class);
+    }
+
+    public function test_contact_acknowledgement_goes_only_to_a_verified_account_address(): void
+    {
+        Mail::fake();
+        $customer = User::factory()->create(['email' => 'owner@example.com', 'email_verified_at' => now()]);
+
+        $this->actingAs($customer)
+            ->post(route('contact.send'), ['name' => 'Mountain Buyer', 'email' => 'someone-else@example.com', 'subject' => 'Product question', 'message' => 'Please tell me about the producer and batch.'])
+            ->assertRedirect();
+
+        Mail::assertQueued(ContactMessageAcknowledgement::class, fn (ContactMessageAcknowledgement $mail) => $mail->hasTo('owner@example.com') && ! $mail->hasTo('someone-else@example.com'));
     }
 
     public function test_coupon_per_user_limit_is_enforced(): void

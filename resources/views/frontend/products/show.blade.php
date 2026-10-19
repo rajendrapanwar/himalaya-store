@@ -152,7 +152,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 document.querySelectorAll('[data-product-thumbnail]').forEach(button => button.addEventListener('click', () => {
     const image = document.getElementById('mainProductImage');
     if (!image) return;

@@ -5,8 +5,9 @@ namespace App\Listeners;
 use App\Events\ReviewModerated;
 use App\Models\Review;
 use App\Notifications\AccountActivityNotification;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class HandleReviewModerated
+class HandleReviewModerated implements ShouldQueueAfterCommit
 {
     public function handle(ReviewModerated $event): void
     {

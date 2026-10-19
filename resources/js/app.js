@@ -1,4 +1,5 @@
 import './bootstrap';
+import './modules/actions';
 
 document.querySelectorAll('[data-carousel]').forEach((carousel) => {
     const section = carousel.closest('section');

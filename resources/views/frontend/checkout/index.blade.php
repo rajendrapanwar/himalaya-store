@@ -46,7 +46,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 (() => {
     const options = document.querySelectorAll('.payment-option');
     const refreshOptions = () => options.forEach(option => { const checked = option.querySelector('input').checked; option.classList.toggle('border-brand-600', checked); option.classList.toggle('bg-brand-50', checked); });

@@ -7,8 +7,9 @@ use App\Models\Order;
 use App\Notifications\AdminAlertNotification;
 use App\Notifications\OrderUpdateNotification;
 use App\Services\StaffNotificationService;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class HandleOrderLifecycleChanged
+class HandleOrderLifecycleChanged implements ShouldQueueAfterCommit
 {
     public function __construct(private readonly StaffNotificationService $staff) {}
 

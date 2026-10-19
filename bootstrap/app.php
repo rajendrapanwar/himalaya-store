@@ -10,6 +10,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustHosts();
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin/*') ? route('admin.login') : route('login'));
+        // Ends other sessions once the account password changes.
+        $middleware->appendToGroup('web', AuthenticateSession::class);
         $middleware->appendToGroup('web', StorefrontMaintenanceMode::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);

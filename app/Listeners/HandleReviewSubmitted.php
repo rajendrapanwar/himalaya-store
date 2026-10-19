@@ -6,8 +6,9 @@ use App\Events\ReviewSubmitted;
 use App\Models\Review;
 use App\Notifications\AdminAlertNotification;
 use App\Services\StaffNotificationService;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class HandleReviewSubmitted
+class HandleReviewSubmitted implements ShouldQueueAfterCommit
 {
     public function __construct(private readonly StaffNotificationService $staff) {}
 

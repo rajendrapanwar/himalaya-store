@@ -21,7 +21,7 @@
                 </div>
                 <div class="flex flex-wrap items-center justify-between gap-3 p-4">
                     <p class="text-xs text-stone-500">@if($slide->starts_at)Starts {{ $slide->starts_at->format('d M Y, g:i A') }}@else Always available @endif @if($slide->ends_at) · Ends {{ $slide->ends_at->format('d M Y, g:i A') }}@endif</p>
-                    <div class="flex gap-2"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="button-secondary !min-h-9 !px-3 !py-1.5">Edit</a><form method="POST" action="{{ route('admin.hero-slides.destroy', $slide) }}" onsubmit="return confirm('Delete this homepage slide permanently?')">@csrf @method('DELETE')<button class="min-h-9 rounded-lg border border-red-200 px-3 text-xs font-black text-red-700 hover:bg-red-50">Delete</button></form></div>
+                    <div class="flex gap-2"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="button-secondary !min-h-9 !px-3 !py-1.5">Edit</a><form method="POST" action="{{ route('admin.hero-slides.destroy', $slide) }}" data-confirm="Delete this homepage slide permanently?">@csrf @method('DELETE')<button class="min-h-9 rounded-lg border border-red-200 px-3 text-xs font-black text-red-700 hover:bg-red-50">Delete</button></form></div>
                 </div>
             </article>
         @empty
