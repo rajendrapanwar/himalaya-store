@@ -31,12 +31,13 @@ jobs:
           DB_DATABASE: database/database.sqlite
       - run: vendor/bin/pint --test
       - run: composer analyse
+      # Views render @vite tags, so the asset manifest must exist before the tests run.
+      - run: npm ci
+      - run: npm audit --omit=dev
+      - run: npm run build
       - run: php artisan test
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
           MAIL_MAILER: array
           QUEUE_CONNECTION: sync
-      - run: npm ci
-      - run: npm audit --omit=dev
-      - run: npm run build
