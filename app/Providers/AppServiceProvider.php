@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Cart;
 use App\Models\Category;
 use App\Services\MaintenanceModeService;
+use App\Services\MiniCartService;
+use App\Services\StorefrontCache;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -32,23 +33,16 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
 
         view()->composer('layouts.app', function ($view) {
-            $count = 0;
-            if (session()->isStarted()) {
-                $cart = Cart::query()->where(function ($query) {
-                    $query->where('session_id', session()->getId());
-                    if (auth()->check()) {
-                        $query->orWhere('user_id', auth()->id());
-                    }
-                })->with(['items:id,cart_id,quantity', 'bundleItems:id,cart_id,quantity'])->latest('id')->first();
-                $count = $cart ? (int) $cart->items->sum('quantity') + (int) $cart->bundleItems->sum('quantity') : 0;
-            }
+            $miniCart = app(MiniCartService::class)->summary();
             $view->with([
-                'cartCount' => $count,
-                'navigationCategories' => Cache::remember('navigation_categories', now()->addMinutes(15), fn () => Category::query()
+                'miniCart' => $miniCart,
+                'cartCount' => $miniCart['count'],
+                'navigationCategories' => Cache::remember(StorefrontCache::NAVIGATION_KEY, now()->addMinutes(15), fn () => Category::query()
                     ->where('status', true)
                     ->whereHas('products', fn ($query) => $query->where('status', true))
+                    ->withCount(['products' => fn ($query) => $query->where('status', true)])
                     ->orderBy('name')
-                    ->get(['name', 'slug'])),
+                    ->get(['id', 'name', 'slug', 'image'])),
             ]);
         });
 
@@ -121,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('commerce-actions', fn (Request $request) => $this->actorLimits('commerce-actions', $request, 30, 300, 1200));
         RateLimiter::for('cart-actions', fn (Request $request) => $this->actorLimits('cart-actions', $request, 60, 500, 2000));
         RateLimiter::for('wishlist', fn (Request $request) => $this->actorLimits('wishlist', $request, 30, 200, 600));
+        RateLimiter::for('search', fn (Request $request) => $this->actorLimits('search', $request, 60, 600, 3000));
         RateLimiter::for('pincode', fn (Request $request) => $this->actorLimits('pincode', $request, 30, 200, 800));
         RateLimiter::for('checkout-quote', fn (Request $request) => $this->actorLimits('checkout-quote', $request, 30, 200, 500));
         RateLimiter::for('checkout', fn (Request $request) => $this->actorLimits('checkout', $request, 5, 20, 50));

@@ -11,9 +11,52 @@ use App\Models\ServiceablePincode;
 use App\Services\StorefrontCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    /** Instant results for the header search overlay. */
+    public function suggestions(Request $request)
+    {
+        $term = Str::of($request->string('q')->toString())->squish()->limit(80, '')->toString();
+        if (mb_strlen($term) < 2) {
+            return response()->json(['products' => [], 'categories' => []]);
+        }
+
+        $like = '%'.addcslashes($term, '%_\\').'%';
+        $products = Product::with(['category:id,name', 'images'])
+            ->where('status', true)
+            ->where(fn ($query) => $query->where('name', 'like', $like)
+                ->orWhere('origin_region', 'like', $like)
+                ->orWhere('short_description', 'like', $like))
+            ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', [addcslashes($term, '%_\\').'%'])
+            ->orderBy('name')
+            ->take(6)
+            ->get();
+        $categories = Category::where('status', true)
+            ->where('name', 'like', $like)
+            ->whereHas('products', fn ($query) => $query->where('status', true))
+            ->orderBy('name')
+            ->take(3)
+            ->get(['name', 'slug']);
+
+        return response()->json([
+            'products' => $products->map(fn (Product $product) => [
+                'name' => $product->name,
+                'url' => route('products.show', $product->slug),
+                'category' => $product->category?->name,
+                'origin' => $product->origin_region,
+                'price' => '₹'.number_format((float) ($product->sale_price ?? $product->price), 2),
+                'image' => ($image = $product->images->firstWhere('is_main', true) ?? $product->images->first()) ? asset('storage/'.$image->image) : null,
+            ])->values(),
+            'categories' => $categories->map(fn (Category $category) => [
+                'name' => $category->name,
+                'url' => route('products.index', ['category' => $category->slug]),
+            ])->values(),
+            'all_url' => route('products.index', ['search' => $term]),
+        ]);
+    }
+
     public function index(Request $request)
     {
         $version = StorefrontCache::version();

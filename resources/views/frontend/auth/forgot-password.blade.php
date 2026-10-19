@@ -1,1 +1,14 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-md py-14"><div class="rounded-3xl border border-stone-200 bg-white p-8 shadow-sm"><p class="text-sm font-bold uppercase tracking-widest text-brand-700">Account recovery</p><h1 class="mt-2 text-3xl font-black">Forgot your password?</h1><p class="mt-3 text-stone-600">Enter your email and we will send a secure reset link.</p><form method="POST" action="{{ route('password.email') }}" class="mt-7 space-y-5">@csrf<div><label class="mb-2 block font-bold">Email</label><input name="email" type="email" value="{{ old('email') }}" required autofocus class="w-full rounded-xl px-4 py-3">@error('email')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div><button class="w-full rounded-xl bg-brand-800 px-5 py-3 font-bold text-white">Send reset link</button></form></div></div>@endsection
+@extends('layouts.app')
+@section('title', 'Reset your password · Pahadi Roots')
+@section('content')
+<x-auth-shell eyebrow="Account recovery" title="It happens to all of us." description="We will email a secure link so you can choose a new password." image="assets/img/editorial/rolling-cultivated-hills.webp">
+    <p class="eyebrow eyebrow-line md:hidden">Account recovery</p>
+    <h1 class="font-display mt-4 text-4xl font-medium text-ink md:mt-0">Forgot your password?</h1>
+    <p class="mt-3 text-sm leading-6 text-stone-600">Enter your email and we will send a secure reset link.</p>
+    <form method="POST" action="{{ route('password.email') }}" class="mt-8 space-y-5">@csrf
+        <div><label for="forgotEmail" class="field-label">Email address</label><input id="forgotEmail" name="email" type="email" value="{{ old('email') }}" autocomplete="email" required autofocus class="field-control">@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>
+        <button class="button-primary w-full" type="submit">Send reset link <span class="button-arrow" aria-hidden="true">→</span></button>
+    </form>
+    <p class="mt-7 text-center text-sm text-stone-600">Remembered it? <a href="{{ route('login') }}" class="font-bold text-brand-700 hover:underline">Back to sign in</a></p>
+</x-auth-shell>
+@endsection

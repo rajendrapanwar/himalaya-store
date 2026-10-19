@@ -1,1 +1,14 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-md py-14"><div class="rounded-3xl border border-stone-200 bg-white p-8 shadow-sm"><h1 class="text-3xl font-black">Create a new password</h1><form method="POST" action="{{ route('password.update') }}" class="mt-7 space-y-5">@csrf<input type="hidden" name="token" value="{{ $token }}"><div><label class="mb-2 block font-bold">Email</label><input name="email" type="email" value="{{ old('email', $email) }}" required class="w-full rounded-xl px-4 py-3"></div><div><label class="mb-2 block font-bold">New password</label><input name="password" type="password" required class="w-full rounded-xl px-4 py-3"></div><div><label class="mb-2 block font-bold">Confirm password</label><input name="password_confirmation" type="password" required class="w-full rounded-xl px-4 py-3"></div>@if($errors->any())<div class="rounded-xl bg-red-50 p-4 text-sm text-red-700">{{ $errors->first() }}</div>@endif<button class="w-full rounded-xl bg-brand-800 px-5 py-3 font-bold text-white">Reset password</button></form></div></div>@endsection
+@extends('layouts.app')
+@section('title', 'Choose a new password · Pahadi Roots')
+@section('content')
+<x-auth-shell eyebrow="Account security" title="A fresh start for your account." description="Choose a strong password you have not used elsewhere. Other signed-in devices will be signed out." image="assets/img/editorial/darjeeling-tea-garden.webp">
+    <h1 class="font-display text-4xl font-medium text-ink">Create a new password</h1>
+    <form method="POST" action="{{ route('password.update') }}" class="mt-8 space-y-5">@csrf<input type="hidden" name="token" value="{{ $token }}">
+        <div><label for="resetEmail" class="field-label">Email address</label><input id="resetEmail" name="email" type="email" value="{{ old('email', $email) }}" autocomplete="email" required class="field-control"></div>
+        <div><label for="resetPassword" class="field-label">New password</label><x-password-input id="resetPassword" autocomplete="new-password" required /><p class="field-help">Use at least 10 characters with uppercase, lowercase and a number.</p></div>
+        <div><label for="resetConfirm" class="field-label">Confirm password</label><x-password-input id="resetConfirm" name="password_confirmation" autocomplete="new-password" required /></div>
+        @if($errors->any())<div role="alert" class="rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700">{{ $errors->first() }}</div>@endif
+        <button class="button-primary w-full" type="submit">Reset password <span class="button-arrow" aria-hidden="true">→</span></button>
+    </form>
+</x-auth-shell>
+@endsection

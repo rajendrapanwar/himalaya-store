@@ -158,6 +158,40 @@ class CommerceFlowTest extends TestCase
             ]);
     }
 
+    public function test_add_to_cart_can_respond_in_place_with_the_updated_cart_drawer(): void
+    {
+        [$user, $product] = $this->customerAndProduct();
+
+        $this->actingAs($user)->postJson(route('cart.add', $product), ['quantity' => 2])
+            ->assertOk()
+            ->assertJson(['added' => true, 'cart_count' => 2])
+            ->assertJsonPath('drawer', fn (string $html) => str_contains($html, 'Mountain Tea') && str_contains($html, 'Checkout securely'));
+
+        $product->update(['stock_quantity' => 0]);
+        $this->postJson(route('cart.add', $product), ['quantity' => 1])
+            ->assertUnprocessable()
+            ->assertJson(['added' => false]);
+    }
+
+    public function test_search_suggestions_match_products_and_escape_wildcards(): void
+    {
+        $this->customerAndProduct();
+
+        $this->getJson(route('products.suggestions', ['q' => 'mountain']))
+            ->assertOk()
+            ->assertJsonPath('products.0.name', 'Mountain Tea')
+            ->assertJsonPath('products.0.url', route('products.show', 'mountain-tea'));
+        $this->getJson(route('products.suggestions', ['q' => 'tea']))
+            ->assertOk()
+            ->assertJsonPath('categories.0.name', 'Tea');
+        $this->getJson(route('products.suggestions', ['q' => '%%']))
+            ->assertOk()
+            ->assertJson(['products' => [], 'categories' => []]);
+        $this->getJson(route('products.suggestions', ['q' => 'm']))
+            ->assertOk()
+            ->assertJson(['products' => [], 'categories' => []]);
+    }
+
     public function test_customer_cannot_view_another_customers_order(): void
     {
         $owner = User::factory()->create();

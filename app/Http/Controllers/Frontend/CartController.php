@@ -9,6 +9,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\CartService;
 use App\Services\CouponService;
+use App\Services\MiniCartService;
 use App\Services\PricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,9 @@ class CartController extends Controller
             'coupon' => $coupon,
             'discountAmount' => $quote['discount'],
             'total' => $quote['total'],
+            'freeShippingEligible' => $quote['freeShippingEligible'],
+            'freeShippingThreshold' => $quote['freeShippingThreshold'],
+            'amountUntilFreeShipping' => $quote['amountUntilFreeShipping'],
         ]);
     }
 
@@ -64,10 +68,27 @@ class CartController extends Controller
         });
 
         if (! $added) {
-            return back()->with('error', 'This product is currently out of stock.');
+            return $request->expectsJson()
+                ? response()->json(['added' => false, 'message' => 'This product is currently out of stock.'], 422)
+                : back()->with('error', 'This product is currently out of stock.');
         }
 
-        return redirect()->route('cart.index')->with('success', 'Product added to cart.');
+        return $request->expectsJson()
+            ? $this->addedResponse("{$product->name} was added to your cart.")
+            : redirect()->route('cart.index')->with('success', 'Product added to cart.');
+    }
+
+    /** JSON for the storefront's in-place add-to-cart: new badge count plus the re-rendered drawer. */
+    private function addedResponse(string $message)
+    {
+        $miniCart = app(MiniCartService::class)->summary();
+
+        return response()->json([
+            'added' => true,
+            'message' => $message,
+            'cart_count' => $miniCart['count'],
+            'drawer' => view('partials.cart-drawer-body', ['miniCart' => $miniCart])->render(),
+        ]);
     }
 
     public function addBundle(Request $request, Bundle $bundle)
@@ -91,10 +112,16 @@ class CartController extends Controller
         });
 
         if (! $availability['added']) {
-            return back()->with('error', "Only {$availability['stock']} {$availability['name']} bundle(s) are currently available.");
+            $message = "Only {$availability['stock']} {$availability['name']} bundle(s) are currently available.";
+
+            return $request->expectsJson()
+                ? response()->json(['added' => false, 'message' => $message], 422)
+                : back()->with('error', $message);
         }
 
-        return redirect()->route('cart.index')->with('success', 'Gift bundle added to cart.');
+        return $request->expectsJson()
+            ? $this->addedResponse("{$bundle->name} was added to your cart.")
+            : redirect()->route('cart.index')->with('success', 'Gift bundle added to cart.');
     }
 
     public function update(Request $request, CartItem $cartItem)

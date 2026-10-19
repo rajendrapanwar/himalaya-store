@@ -42,6 +42,7 @@ class Product extends Model
         static::deleted(fn () => StorefrontCache::bump());
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

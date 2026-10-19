@@ -4,6 +4,7 @@
 //   data-auto-submit          on a <select>/<input> to submit its form on change
 //   data-dismiss              on a button that removes its dismissible container
 //   data-print                on a button that opens the print dialog
+//   data-password-toggle      on a button (aria-controls=input id) that shows/hides a password
 
 const confirmed = (element) => {
     const message = element?.dataset.confirm;
@@ -38,6 +39,18 @@ document.addEventListener('click', (event) => {
     }
 
     if (target.closest('[data-print]')) window.print();
+
+    const passwordToggle = target.closest('[data-password-toggle]');
+    if (passwordToggle) {
+        const input = document.getElementById(passwordToggle.getAttribute('aria-controls'));
+        if (!input) return;
+        const reveal = input.type === 'password';
+        input.type = reveal ? 'text' : 'password';
+        passwordToggle.setAttribute('aria-pressed', String(reveal));
+        passwordToggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+        passwordToggle.querySelector('[data-icon-show]')?.classList.toggle('hidden', reveal);
+        passwordToggle.querySelector('[data-icon-hide]')?.classList.toggle('hidden', !reveal);
+    }
 }, true);
 
 document.addEventListener('change', (event) => {

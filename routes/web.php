@@ -125,6 +125,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'admin.2fa'
     Route::patch('returns/{returnRequest}', [AdminReturnRequestController::class, 'update'])->name('returns.update');
 });
 
+Route::get('/search/suggestions', [FrontendProductController::class, 'suggestions'])->middleware('throttle:search')->name('products.suggestions');
 Route::get('/products', [FrontendProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [FrontendProductController::class, 'show'])->name('products.show');
 Route::get('/bundles', [FrontendProductController::class, 'bundles'])->name('bundles.index');
