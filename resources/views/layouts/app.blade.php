@@ -4,7 +4,7 @@
     $privateRoute = request()->routeIs('admin.*', 'cart.*', 'checkout.*', 'login', 'register', 'password.*', 'verification.*', 'profile', 'orders*', 'wishlist.*', 'notifications.*');
     $filteredListing = request()->routeIs('products.index') && request()->hasAny(['search', 'sort', 'min_price', 'max_price', 'availability', 'sale', 'featured', 'origin', 'rating', 'weight']);
     $robots = trim($__env->yieldContent('robots', $privateRoute ? 'noindex, nofollow' : ($filteredListing ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')));
-    $canonicalUrl = trim($__env->yieldContent('canonical', request()->url()));
+    $canonicalUrl = trim($__env->yieldContent('canonical', url()->current()));
     $socialImage = trim($__env->yieldContent('og_image', asset(config('seo.default_social_image'))));
     $socialImageAlt = trim($__env->yieldContent('og_image_alt', 'Pahadi Roots Himalayan pantry collection'));
     $freeDeliveryThreshold = '₹'.number_format((float) config('commerce.free_shipping_threshold'), 0);
