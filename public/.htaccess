@@ -5,6 +5,13 @@
 
     RewriteEngine On
 
+    # On shared hosting the root .htaccess serves this folder invisibly, so
+    # send old /public/... links to the clean URL. Only GET/HEAD are
+    # redirected, so form posts and payment webhooks to /public/ still work.
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/public/(\S*)\s
+    RewriteRule ^ /%1 [NE,R=301,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -13,10 +20,11 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # Redirect Trailing Slashes If Not A Folder... (built from the URL the
+    # visitor requested, which never contains the hidden public/ prefix)
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    RewriteCond %{THE_REQUEST} \s([^\s?]+?)/+(\?\S*)?\s
+    RewriteRule ^ %1%2 [NE,L,R=301]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d

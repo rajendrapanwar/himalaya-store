@@ -1,20 +1,17 @@
-# Shared hosting (Hostinger): the project root is the web root and the
-# storefront is served from /public/. Send the bare domain to the store and
-# refuse direct access to everything else in the project — storage/logs,
-# vendor/, composer files, deploy scripts and so on.
+# Shared hosting (Hostinger): the project root is the web root. Serve every
+# request from public/ without showing it in the URL, so /about is handled by
+# public/index.php. Nothing outside public/ — storage/logs, vendor/, .env,
+# composer files, deploy scripts — can be reached, because every path is
+# looked up inside public/ instead.
 #
-# Requests under /public/ are handled by public/.htaccess (Laravel's front
-# controller), so these rules only ever see paths outside it.
+# Requests that already start with /public/ are handled by public/.htaccess,
+# which redirects them to the clean URL.
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Bare domain → storefront. Built from the request URI so it also works
-    # when the project sits in a sub-directory (e.g. XAMPP's htdocs).
-    RewriteRule ^$ %{REQUEST_URI}public/ [R=301,L]
+    # Leave certificate validation files where the host puts them.
+    RewriteRule ^\.well-known/ - [L]
 
-    # Allow certificate validation; forbid every other path outside /public/.
-    RewriteCond %{REQUEST_URI} !^/public(/|$)
-    RewriteCond %{REQUEST_URI} !^/\.well-known/
-    RewriteRule ^ - [F,L]
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

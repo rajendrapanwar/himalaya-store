@@ -75,7 +75,7 @@ Until the secrets below exist, the deploy job is skipped with a warning and CI s
 
 ### Shared-hosting document root
 
-On Hostinger the project root is the web root and the store is served from `/public/`. The root `.htaccess` redirects the bare domain to `/public/` and returns 403 for every other path — `storage/logs`, `vendor/`, `composer.json`, deploy scripts — so application files are never downloadable.
+On Hostinger the project root is the web root. The root `.htaccess` serves every request from `public/` without showing it in the URL (`/about`, not `/public/about`), so files outside `public/` — `storage/logs`, `vendor/`, `.env`, `composer.json`, deploy scripts — can never be downloaded. `public/.htaccess` 301-redirects old `/public/...` links to the clean URL (GET/HEAD only, so form posts and webhooks still work). Set `APP_URL` without `/public`, and point the Stripe webhook at `https://your-domain/stripe/webhook`.
 
 ## Required background processes
 
