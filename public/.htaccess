@@ -6,10 +6,13 @@
     RewriteEngine On
 
     # On shared hosting the root .htaccess serves this folder invisibly, so
-    # send old /public/... links to the clean URL. Only GET/HEAD are
-    # redirected, so form posts and payment webhooks to /public/ still work.
+    # send old /public/... links to the clean URL (the query string is carried
+    # over). Only GET/HEAD are redirected, so form posts and payment webhooks
+    # to /public/ still work. Bare /public/ is served, not redirected: browsers
+    # may have cached the old permanent "/ -> /public/" redirect, and sending
+    # them back to / would loop.
     RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
-    RewriteCond %{THE_REQUEST} \s/public/(\S*)\s
+    RewriteCond %{THE_REQUEST} \s/public/([^\s?]+)
     RewriteRule ^ /%1 [NE,R=301,L]
 
     # Handle Authorization Header
@@ -23,8 +26,8 @@
     # Redirect Trailing Slashes If Not A Folder... (built from the URL the
     # visitor requested, which never contains the hidden public/ prefix)
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{THE_REQUEST} \s([^\s?]+?)/+(\?\S*)?\s
-    RewriteRule ^ %1%2 [NE,L,R=301]
+    RewriteCond %{THE_REQUEST} \s([^\s?]+?)/+[\s?]
+    RewriteRule ^ %1 [NE,L,R=301]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
