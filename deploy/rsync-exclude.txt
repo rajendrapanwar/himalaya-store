@@ -1,0 +1,31 @@
+# Paths the CI deploy never uploads. Excluded paths that already exist on the
+# server are also never deleted, so secrets, uploads and logs are preserved.
+
+# Server-only state and secrets
+/.env
+/.env.*
+/storage/
+/public/storage
+/public/hot
+/bootstrap/cache/*.php
+/.well-known/
+
+# Source control, CI and local tooling
+/.git/
+/.github/
+/.claude/
+/.agents/
+/.runtime/
+/node_modules/
+/tests/
+/docs/
+/.editorconfig
+/.gitattributes
+/.gitignore
+/.phpunit.result.cache
+/phpunit.xml
+/phpstan.neon
+/vite.config.js
+/package.json
+/package-lock.json
+/*.md

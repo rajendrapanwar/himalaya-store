@@ -41,3 +41,100 @@ jobs:
           DB_DATABASE: ':memory:'
           MAIL_MAILER: array
           QUEUE_CONNECTION: sync
+
+  # Continuous deployment: every push to main that passes the tests is built
+  # for production and synced to Hostinger over SSH. See DEPLOYMENT.md for the
+  # one-time setup (SSH key and repository secrets).
+  deploy:
+    name: Deploy to Hostinger
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    env:
+      SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      DEPLOY_PATH: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+      PHP_BIN: ${{ vars.HOSTINGER_PHP_BIN || 'php' }}
+    steps:
+      - name: Check deployment settings
+        id: settings
+        run: |
+          missing=""
+          for name in SSH_HOST SSH_USER SSH_KEY DEPLOY_PATH; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::warning::Skipping deployment: Hostinger secrets are not configured (missing:$missing). See DEPLOYMENT.md."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.settings.outputs.configured == 'true'
+
+      - uses: shivammathur/setup-php@v2
+        if: steps.settings.outputs.configured == 'true'
+        with:
+          php-version: '8.2'
+          extensions: mbstring
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        if: steps.settings.outputs.configured == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install production PHP dependencies
+        if: steps.settings.outputs.configured == 'true'
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+
+      - name: Build front-end assets
+        if: steps.settings.outputs.configured == 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Configure SSH
+        if: steps.settings.outputs.configured == 'true'
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 644 ~/.ssh/known_hosts
+          echo "SSH_CMD=ssh -p ${SSH_PORT:-22} -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" >> "$GITHUB_ENV"
+
+      - name: Put the site into maintenance mode
+        if: steps.settings.outputs.configured == 'true'
+        run: $SSH_CMD "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && [ -f artisan ] && $PHP_BIN artisan down --retry=15 || true"
+
+      - name: Sync release to Hostinger
+        if: steps.settings.outputs.configured == 'true'
+        # --delete removes stale files inside the app directories, while
+        # "P /*" never deletes anything else at the top of the web root, and
+        # excluded paths (.env, storage/, public/storage, ...) are left alone.
+        run: |
+          rsync -az --delete --filter='P /*' --exclude-from=deploy/rsync-exclude.txt \
+            -e "$SSH_CMD" ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+      - name: Migrate and refresh caches
+        if: steps.settings.outputs.configured == 'true'
+        run: $SSH_CMD "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && PHP_BIN='$PHP_BIN' bash deploy/hostinger-post-deploy.sh"
+
+      - name: Bring the site back online
+        if: always() && steps.settings.outputs.configured == 'true'
+        run: $SSH_CMD "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && $PHP_BIN artisan up || true"
