@@ -1,13 +1,15 @@
 # Paths the CI deploy never uploads. Excluded paths that already exist on the
 # server are also never deleted, so secrets, uploads and logs are preserved.
 
+# bootstrap/cache is synced on purpose: CI's package manifest matches the
+# --no-dev vendor/, and a stale one from the server would break artisan.
+
 # Server-only state and secrets
 /.env
 /.env.*
 /storage/
 /public/storage
 /public/hot
-/bootstrap/cache/*.php
 /.well-known/
 
 # Source control, CI and local tooling
