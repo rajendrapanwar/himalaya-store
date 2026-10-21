@@ -58,18 +58,9 @@
 @endpush
 
 @section('content')
-{{-- ═══════════ Hero: layered Himalayan dawn with the seasonal campaign ═══════════ --}}
-<section class="landscape landscape-sky min-h-[100svh]" data-landscape data-hero-slider data-hero-delay="7000" aria-roledescription="carousel" aria-label="Featured Pahadi Roots campaigns">
-    <span class="landscape-sun" data-landscape-sun aria-hidden="true"></span>
-    <span class="landscape-mist top-[38%]" aria-hidden="true"></span>
-
-    {{-- Mountain ridges, far to near. The nearest is snow-coloured and flows into the page. --}}
-    <svg class="landscape-layer h-[80vh] min-h-[455px]" data-depth="0.15" viewBox="0 0 1440 700" preserveAspectRatio="none" aria-hidden="true"><path fill="#8b5d60" fill-opacity=".55" d="M0 260 120 190l90 40 120-110 100 90 130-120 130 110 110-60 130 90 130-120 120 100 120-60 140 80v170H0Z"/><path fill="#f6f0e4" fill-opacity=".55" d="M530 120 560 90 592 124 575 118 560 128 545 116ZM1030 130 1060 110 1088 140 1072 134 1060 142 1046 132ZM300 140 330 120 356 146 342 142 330 150 318 140Z"/><rect y="399" width="1440" height="301" fill="#8b5d60" fill-opacity=".55"/></svg>
-    <svg class="landscape-layer h-[74vh] min-h-[400px]" data-depth="0.3" viewBox="0 0 1440 700" preserveAspectRatio="none" aria-hidden="true"><path fill="#4a3a45" d="M0 300 140 230l120 50 120-90 140 80 120-70 130 90 130-80 130 70 130-60 140 70 140-50v160H0Z"/><rect y="399" width="1440" height="301" fill="#4a3a45"/></svg>
-    <svg class="landscape-layer h-[66vh] min-h-[350px]" data-depth="0.5" viewBox="0 0 1440 700" preserveAspectRatio="none" aria-hidden="true"><path fill="#1c2c26" d="M0 330 110 290l130 50 120-70 120 60 140-50 140 65 120-45 130 50 130-60 130 50 170-40v100H0Z"/><rect y="399" width="1440" height="301" fill="#1c2c26"/></svg>
-    <svg class="landscape-layer h-[42vh] min-h-[210px]" data-depth="0.8" viewBox="0 0 1440 700" preserveAspectRatio="none" aria-hidden="true"><path fill="#f6f0e4" d="M0 300c160-60 260-20 420-40s280 40 460 20 320-70 560-20v140H0Z"/><rect y="399" width="1440" height="301" fill="#f6f0e4"/></svg>
-
-    <div class="site-shell relative z-10 grid min-h-[100svh] items-center gap-10 pb-[21vh] pt-[calc(var(--header-height)+var(--ticker-height)+2.5rem)] lg:grid-cols-[1.15fr_.85fr]" data-landscape-fade>
+{{-- ═══════════ Hero: the seasonal campaign ═══════════ --}}
+<section class="landscape min-h-[100svh]" data-landscape data-hero-slider data-hero-delay="7000" aria-roledescription="carousel" aria-label="Featured Pahadi Roots campaigns">
+    <div class="site-shell relative z-10 grid min-h-[100svh] items-center gap-10 pb-20 pt-[calc(var(--header-height)+var(--ticker-height)+2.5rem)] lg:grid-cols-[1.15fr_.85fr]">
         <div>
             <div class="relative">
                 @foreach($heroSlides as $slide)
@@ -107,22 +98,7 @@
             <x-sticker class="absolute -right-4 top-10 rotate-12 text-night sm:-right-8" fill="#c8234e" size="6.5rem"><span class="text-paper">Packed in<br>Dehradun</span></x-sticker>
         </div>
     </div>
-
-    <a href="#home-intro" class="absolute bottom-[9vh] left-1/2 z-20 hidden -translate-x-1/2 flex-col items-center gap-3 text-[10px] font-black uppercase tracking-[.35em] text-paper md:flex" data-cursor="Scroll"><span>Scroll</span><span class="h-12 w-px overflow-hidden bg-paper/25"><span class="block h-full w-full animate-[scroll-line_2.2s_var(--ease-out-expo)_infinite] bg-buransh"></span></span></a>
 </section>
-
-{{-- ═══════════ Tilted ticker ═══════════ --}}
-<div class="relative z-10 -mt-6 overflow-hidden py-6" aria-label="Why shop with Pahadi Roots">
-    <div class="ticker ticker-tilt chapter-buransh py-5" style="--ticker-speed: 45s">
-        @foreach([false, true] as $duplicate)
-            <ul class="ticker-track" @if($duplicate) aria-hidden="true" @endif>
-                @foreach(['Traceable origin', 'Small-batch harvests', 'Packed by hand in Dehradun', 'Free delivery over '.$freeDeliveryThreshold, '30-day returns', 'Cards, UPI & cash on delivery'] as $value)
-                    <li class="ticker-item font-display text-3xl font-semibold italic sm:text-5xl" style="font-variation-settings: 'SOFT' 100, 'WONK' 1">{{ $value }}<span class="text-sun not-italic" aria-hidden="true">✺</span></li>
-                @endforeach
-            </ul>
-        @endforeach
-    </div>
-</div>
 
 {{-- ═══════════ (01) Manifesto + numbers ═══════════ --}}
 <section id="home-intro" class="chapter-snow section-space">
@@ -148,7 +124,6 @@
 
 {{-- ═══════════ (02) Collections: pinned horizontal gallery ═══════════ --}}
 @if($categories->isNotEmpty())
-<svg class="ridge text-night" viewBox="0 0 1440 90" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 90V60l120-34 90 24 150-48 110 40 120-26 140 44 100-30 140 30 110-50 120 42 90-20 150 36v82Z"/></svg>
 <section class="chapter-night overflow-hidden" data-hscroll aria-labelledby="collections-title">
     <div class="flex min-h-[100svh] flex-col justify-center py-16 lg:py-0">
         <div class="site-shell flex items-end justify-between gap-6">
@@ -158,7 +133,7 @@
         <div class="hscroll-viewport mt-12 pl-[max(1.25rem,calc((100vw-1360px)/2))]">
             <div class="hscroll-track pr-[max(1.25rem,calc((100vw-1360px)/2))]" data-hscroll-track>
                 @foreach($categories as $category)
-                    <a href="{{ route('products.index', ['category' => $category->slug]) }}" class="hscroll-panel group block h-[58vh] min-h-[380px] w-[78vw] sm:w-[46vw] lg:w-[26vw]" data-cursor="Explore">
+                    <a href="{{ route('products.index', ['category' => $category->slug]) }}" class="hscroll-panel group block h-[58vh] min-h-[380px] w-[78vw] sm:w-[46vw] lg:w-[26vw]">
                         <img src="{{ $category->image ? asset('storage/'.$category->image) : asset('assets/img/'.$fallbackImages[$loop->index % count($fallbackImages)]) }}" data-image-fallback alt="" class="absolute inset-0 -z-10 h-full w-[116%] max-w-none object-cover" data-hscroll-image loading="lazy" decoding="async" width="700" height="900">
                         <span class="absolute inset-0 -z-10 bg-gradient-to-t from-night via-night/20 to-transparent" aria-hidden="true"></span>
                         <span class="absolute left-6 top-6 font-display text-6xl italic text-snow/90" style="font-variation-settings: 'SOFT' 100, 'WONK' 1">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
@@ -177,7 +152,6 @@
         <div class="site-shell mt-10 hidden lg:block"><div class="h-[2px] w-full bg-snow/15"><span class="block h-full origin-left scale-x-0 bg-sun" data-hscroll-bar></span></div></div>
     </div>
 </section>
-<svg class="ridge rotate-180 text-night" viewBox="0 0 1440 90" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 90V60l120-34 90 24 150-48 110 40 120-26 140 44 100-30 140 30 110-50 120 42 90-20 150 36v82Z"/></svg>
 @endif
 
 {{-- ═══════════ Values strip ═══════════ --}}
@@ -230,7 +204,7 @@
         </div>
         <ol data-reveal-list>
             @foreach($regions as $region)
-                <li><a href="{{ route('products.index', ['origin' => $region['name']]) }}" class="reveal-row" @if($region['image']) data-preview-src="{{ $region['image'] }}" @endif data-cursor="Taste">
+                <li><a href="{{ route('products.index', ['origin' => $region['name']]) }}" class="reveal-row" @if($region['image']) data-preview-src="{{ $region['image'] }}" @endif>
                     <span class="font-display text-lg italic opacity-60">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                     <span><span class="row-title">{{ Str::before($region['name'], ',') }}</span>@if(Str::contains($region['name'], ','))<span class="ml-3 align-middle text-xs font-black uppercase tracking-[.16em] opacity-60">{{ trim(Str::after($region['name'], ',')) }}</span>@endif</span>
                     <span class="flex items-center gap-3 text-sm font-black"><span class="hidden sm:inline">{{ $region['count'] }} {{ Str::plural('product', $region['count']) }}</span><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
@@ -266,14 +240,14 @@
 
 {{-- ═══════════ Promotions ═══════════ --}}
 <section class="site-shell grid gap-6 pb-[clamp(4rem,9vw,8rem)] lg:grid-cols-[1.25fr_.75fr]" aria-label="Featured promotions">
-    <a href="{{ route('products.index', ['sale' => 1]) }}" rel="nofollow" class="chapter-buransh group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-12" data-cursor="Shop">
+    <a href="{{ route('products.index', ['sale' => 1]) }}" rel="nofollow" class="chapter-buransh group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-12">
         <span class="absolute inset-0 -z-10" data-reveal="clip"><img src="{{ asset('assets/img/products/wild-forest-honey.webp') }}" alt="Wild forest honey from the Himalayan region" class="h-full w-full object-cover opacity-60 mix-blend-luminosity transition duration-[1.4s] group-hover:scale-105" loading="lazy" decoding="async" width="960" height="720"></span>
         <span class="absolute inset-0 -z-10 bg-gradient-to-t from-buransh-deep via-buransh/40 to-transparent" aria-hidden="true"></span>
         <x-sticker class="absolute right-8 top-8" fill="#f5b51b" size="7rem"><span>Limited<br>time</span></x-sticker>
         <h2 class="font-display max-w-lg text-5xl font-semibold leading-[.95] sm:text-6xl">Mountain favourites, at <em class="italic text-sun">friendlier</em> prices.</h2>
         <span class="mt-7 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[.14em]">Shop current offers <span class="button-arrow" aria-hidden="true">→</span></span>
     </a>
-    <a href="{{ route('bundles.index') }}" class="chapter-night group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-10" data-cursor="Gift">
+    <a href="{{ route('bundles.index') }}" class="chapter-night group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-10">
         <span class="absolute inset-0 -z-10" data-reveal="clip"><img src="{{ asset('assets/img/products/munsiyari-rajma.webp') }}" alt="Munsiyari rajma, a traditional hill-grown pulse" class="h-full w-full object-cover opacity-55 transition duration-[1.4s] group-hover:scale-105" loading="lazy" decoding="async" width="800" height="800"></span>
         <span class="absolute inset-0 -z-10 bg-gradient-to-t from-night via-night/50 to-transparent" aria-hidden="true"></span>
         <p class="eyebrow text-sun">Made for sharing</p>
@@ -310,7 +284,7 @@
     <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"><div><div class="flex items-center gap-6"><p class="eyebrow">From the journal</p><span class="section-number">(07)</span></div><h2 id="journal-title" class="section-title mt-5" data-split>Stories from <em>the hills</em></h2></div><a href="{{ route('blog') }}" class="button-secondary self-start sm:self-auto">Explore the journal <span class="button-arrow" aria-hidden="true">→</span></a></div>
     <ol class="mt-12" data-reveal-list>
         @foreach($journalPosts as $post)
-            <li><a href="{{ route('blog.show', $post->slug) }}" class="reveal-row" @if($post->image_url) data-preview-src="{{ $post->image_url }}" @endif data-cursor="Read">
+            <li><a href="{{ route('blog.show', $post->slug) }}" class="reveal-row" @if($post->image_url) data-preview-src="{{ $post->image_url }}" @endif>
                 <span class="hidden text-xs font-black uppercase tracking-[.16em] opacity-60 sm:block sm:w-40">{{ $post->category }}</span>
                 <span class="row-title">{{ $post->title }}</span>
                 <span class="text-sm font-black whitespace-nowrap">{{ $post->reading_time }} min</span>

@@ -185,8 +185,7 @@
     <main id="main-content" tabindex="-1" class="{{ $fullBleed ? '' : 'site-shell py-10 sm:py-14' }} focus:outline-none">@yield('content')</main>
 
     {{-- Footer --}}
-    <svg class="ridge mt-24 text-night" viewBox="0 0 1440 90" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 90V58l80-26 70 20 120-44 100 36 80-18 130 40 90-30 110 28 100-46 110 40 80-20 120 32 90-24 80 16 80-20v94Z"/></svg>
-    <footer class="chapter-night relative overflow-hidden">
+    <footer class="chapter-night relative mt-24 overflow-hidden">
         <div class="site-shell pb-10 pt-10">
             <div class="grid gap-10 border-b border-snow/15 pb-14 lg:grid-cols-[1.4fr_1fr] lg:items-end">
                 <div>

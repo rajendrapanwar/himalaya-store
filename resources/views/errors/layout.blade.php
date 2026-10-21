@@ -23,8 +23,6 @@
             <p class="lead mt-5 max-w-xl animate-[rise-in_1s_var(--ease-out-expo)_.26s_both]">@yield('message')</p>
             <div class="mt-9 flex flex-wrap justify-center gap-3 animate-[rise-in_1s_var(--ease-out-expo)_.34s_both]">@yield('actions')</div>
         </section>
-        <svg class="pointer-events-none absolute inset-x-0 bottom-0 h-[38vh] w-full text-glacier" viewBox="0 0 1440 320" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 320V210l120-70 90 40 170-130 140 90 110-50 200 140 150-90 120 50 180-120 160 110v140Z"/></svg>
-        <svg class="pointer-events-none absolute inset-x-0 bottom-0 h-[24vh] w-full text-[#bcd6cb]" viewBox="0 0 1440 220" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 220V150l160-60 120 50 200-110 160 90 140-40 180 90 170-70 150 40 160-60v130Z"/></svg>
     </main>
 </body>
 </html>

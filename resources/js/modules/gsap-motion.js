@@ -180,27 +180,6 @@ const initStack = () => {
     });
 };
 
-/* ── Landscape hero: layered parallax on scroll and pointer ──────────── */
-const initLandscape = () => {
-    const hero = document.querySelector('[data-landscape]');
-    if (!hero || reduced) return;
-    const layers = [...hero.querySelectorAll('[data-depth]')];
-    const timeline = gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-    layers.forEach((layer) => timeline.to(layer, { yPercent: Number(layer.dataset.depth) * -40, ease: 'none' }, 0));
-    const fade = hero.querySelector('[data-landscape-fade]');
-    if (fade) timeline.to(fade, { y: -120, autoAlpha: 0, ease: 'none' }, 0);
-    const sun = hero.querySelector('[data-landscape-sun]');
-    if (sun) timeline.to(sun, { yPercent: 60, scale: 1.25, ease: 'none' }, 0);
-
-    if (hasFinePointer()) {
-        const movers = layers.map((layer) => ({ depth: Number(layer.dataset.depth), x: gsap.quickTo(layer, 'x', { duration: 1.2, ease: 'power3.out' }) }));
-        hero.addEventListener('pointermove', (event) => {
-            const offset = (event.clientX / window.innerWidth - 0.5) * 2;
-            movers.forEach(({ depth, x }) => x(offset * depth * -40));
-        });
-    }
-};
-
 /* ── Magnetic buttons ────────────────────────────────────────────────── */
 const initMagnetic = () => {
     if (reduced || !hasFinePointer()) return;
@@ -211,33 +190,6 @@ const initMagnetic = () => {
         });
         element.addEventListener('pointerleave', () => { element.style.translate = '0 0'; });
     });
-};
-
-/* ── Cursor follower ─────────────────────────────────────────────────── */
-const initCursor = () => {
-    if (reduced || !hasFinePointer() || !document.body.classList.contains('storefront')) return;
-    const cursor = document.createElement('div');
-    cursor.className = 'cursor';
-    cursor.setAttribute('aria-hidden', 'true');
-    const label = document.createElement('span');
-    cursor.appendChild(label);
-    document.body.appendChild(cursor);
-    const moveX = gsap.quickTo(cursor, 'x', { duration: 0.45, ease: 'power3.out' });
-    const moveY = gsap.quickTo(cursor, 'y', { duration: 0.45, ease: 'power3.out' });
-
-    window.addEventListener('pointermove', (event) => {
-        if (event.pointerType !== 'mouse') return;
-        moveX(event.clientX);
-        moveY(event.clientY);
-        cursor.classList.add('is-visible');
-        const target = event.target instanceof Element ? event.target : null;
-        const labelled = target?.closest('[data-cursor]');
-        cursor.classList.toggle('has-label', Boolean(labelled));
-        label.textContent = labelled?.dataset.cursor ?? '';
-        cursor.classList.toggle('is-link', !labelled && Boolean(target?.closest('a, button, summary, label, [role="tab"]')));
-        cursor.classList.toggle('on-dark', Boolean(target?.closest('.chapter-night, .chapter-buransh, .landscape, .menu-overlay, footer')));
-    }, { passive: true });
-    document.documentElement.addEventListener('pointerleave', () => cursor.classList.remove('is-visible'));
 };
 
 /* ── Lists that reveal an image under the pointer ────────────────────── */
@@ -290,9 +242,7 @@ export const initGsapMotion = () => {
     initManifesto();
     initHorizontal();
     initStack();
-    initLandscape();
     initMagnetic();
-    initCursor();
     initRevealLists();
     preloaderDone.then(() => ScrollTrigger.refresh());
 

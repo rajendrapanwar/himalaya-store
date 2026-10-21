@@ -12,7 +12,6 @@
     <div class="absolute inset-0 -z-20 bg-night/50" aria-hidden="true"></div>
     <div class="absolute inset-0 -z-10 bg-gradient-to-r from-night via-night/80 to-night/5" aria-hidden="true"></div>
     <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[#6b3b2c]/50 via-transparent to-transparent" aria-hidden="true"></div>
-    <svg class="pointer-events-none absolute inset-x-0 -bottom-px -z-10 h-20 w-full text-snow" viewBox="0 0 1440 90" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 90V62l90-28 80 22 120-46 110 40 90-24 130 42 100-30 120 30 110-48 120 42 90-20 150 34 130-24v94Z"/></svg>
     <x-rotating-badge class="absolute right-8 top-8 hidden md:inline-grid" size="7.5rem" text="From the hills • Packed in Dehradun • " />
 
     <div class="flex h-full {{ $compact ? 'min-h-[380px]' : 'min-h-[480px] sm:min-h-[560px]' }} items-center px-7 pb-20 pt-14 sm:px-12 lg:px-16">

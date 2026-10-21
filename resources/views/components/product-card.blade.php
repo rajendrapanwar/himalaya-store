@@ -12,7 +12,7 @@
 @endphp
 <article class="product-card group" data-product-card>
     <div class="relative">
-        <a href="{{ route('products.show', $product->slug) }}" class="product-media" aria-label="View {{ $product->name }}" data-product-media data-cursor="View">
+        <a href="{{ route('products.show', $product->slug) }}" class="product-media" aria-label="View {{ $product->name }}" data-product-media>
             @if($image)
                 <img src="{{ asset('storage/'.$image->image) }}" data-image-fallback alt="{{ $product->name }}" loading="lazy" decoding="async" width="600" height="750">
                 @if($alternateImage)<img src="{{ asset('storage/'.$alternateImage->image) }}" data-image-fallback alt="" class="media-alt" loading="lazy" decoding="async" width="600" height="750">@endif
