@@ -35,7 +35,7 @@ Every push to `main` runs the CI tests and, only if they pass, the `deploy` job 
 4. runs `deploy/hostinger-post-deploy.sh` on the server (migrations, `storage:link`, cache rebuild, `queue:restart`);
 5. brings the site back online, even if a step failed.
 
-Until the secrets below exist, the deploy job is skipped with a warning and CI still passes.
+Until the secrets below exist, the deploy job is skipped with a warning and CI still passes. Before anything is synced, the job checks that `HOSTINGER_DEPLOY_PATH` contains `artisan`, `.env` and `config/commerce.php`, so a wrong path can never `rsync --delete` into another site on the same hosting account.
 
 ### One-time setup
 

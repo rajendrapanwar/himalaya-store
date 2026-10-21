@@ -118,6 +118,17 @@ jobs:
           chmod 644 ~/.ssh/known_hosts
           echo "SSH_CMD=ssh -p ${SSH_PORT:-22} -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" >> "$GITHUB_ENV"
 
+      - name: Check the deploy path is this store
+        if: steps.settings.outputs.configured == 'true'
+        # The Hostinger account hosts other sites (including another Laravel
+        # app), so refuse to rsync --delete anywhere that is not this store's
+        # install with its production .env.
+        run: |
+          $SSH_CMD "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && [ -f artisan ] && [ -f .env ] && [ -f config/commerce.php ]" || {
+            echo "::error::HOSTINGER_DEPLOY_PATH does not contain this store (artisan, .env and config/commerce.php). Nothing was deployed."
+            exit 1
+          }
+
       - name: Put the site into maintenance mode
         if: steps.settings.outputs.configured == 'true'
         run: $SSH_CMD "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && [ -f artisan ] && $PHP_BIN artisan down --retry=15 || true"
