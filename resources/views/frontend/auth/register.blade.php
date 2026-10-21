@@ -11,6 +11,6 @@
         <div><label for="confirmPassword" class="field-label">Confirm password</label><x-password-input id="confirmPassword" name="password_confirmation" autocomplete="new-password" required /></div>
         <button class="button-primary w-full" type="submit">Create account <span class="button-arrow" aria-hidden="true">→</span></button>
     </form>
-    <p class="mt-7 text-center text-sm text-stone-600">Already registered? <a href="{{ route('login') }}" class="font-bold text-brand-700 hover:underline">Sign in</a></p>
+    <p class="mt-7 text-center text-sm text-stone-600">Already registered? <a href="{{ route('login') }}" class="font-bold text-buransh hover:underline">Sign in</a></p>
 </x-auth-shell>
 @endsection

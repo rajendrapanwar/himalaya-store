@@ -7,7 +7,7 @@
     <p class="mt-3 text-sm text-stone-500">Use the email address you registered with.</p>
     <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">@csrf
         <div><label for="loginEmail" class="field-label">Email address</label><input id="loginEmail" name="email" type="email" value="{{ old('email') }}" autocomplete="email" maxlength="255" class="field-control" required autofocus aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}">@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>
-        <div><div class="flex items-center justify-between"><label for="loginPassword" class="field-label">Password</label><a href="{{ route('password.request') }}" class="mb-2 text-xs font-bold text-brand-700 hover:underline">Forgot password?</a></div><x-password-input id="loginPassword" required /></div>
+        <div><div class="flex items-center justify-between"><label for="loginPassword" class="field-label">Password</label><a href="{{ route('password.request') }}" class="mb-2 text-xs font-bold text-buransh hover:underline">Forgot password?</a></div><x-password-input id="loginPassword" required /></div>
         <label class="flex items-center gap-2.5 text-sm text-stone-600"><input type="checkbox" name="remember" value="1" class="h-4 w-4 rounded"> Keep me signed in on this device</label>
         <button class="button-primary w-full" type="submit">Sign in <span class="button-arrow" aria-hidden="true">→</span></button>
     </form>

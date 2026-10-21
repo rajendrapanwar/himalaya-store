@@ -19,9 +19,11 @@ export const closeOverlay = () => {
     backdrop()?.classList.remove('is-open');
     document.documentElement.classList.remove('has-overlay');
     document.documentElement.style.overflow = '';
+    document.body.classList.remove('menu-is-open');
     active = null;
     returnFocus?.focus({ preventScroll: true });
     returnFocus = null;
+    document.dispatchEvent(new CustomEvent('overlay:close'));
 };
 
 export const openOverlay = (panel, trigger = null) => {
@@ -31,9 +33,12 @@ export const openOverlay = (panel, trigger = null) => {
     returnFocus = trigger ?? document.activeElement;
     panel.classList.add('is-open');
     if (panel.id) setTriggersExpanded(panel.id, true);
-    backdrop()?.classList.add('is-open');
+    // The full-screen menu covers everything, so it needs no dimmed backdrop.
+    if (panel.matches('[data-menu-overlay]')) document.body.classList.add('menu-is-open');
+    else backdrop()?.classList.add('is-open');
     document.documentElement.classList.add('has-overlay');
     document.documentElement.style.overflow = 'hidden';
+    document.dispatchEvent(new CustomEvent('overlay:open'));
     window.setTimeout(() => {
         const preferred = panel.querySelector('[data-autofocus], input[type="search"]') ?? panel.querySelector(FOCUSABLE);
         preferred?.focus({ preventScroll: true });
@@ -245,4 +250,15 @@ export const initOverlays = () => {
 
     const searchPanel = document.querySelector('[data-search-panel]');
     if (searchPanel) initSuggestions(searchPanel);
+
+    // Full-screen menu: hovering a link swaps the preview image beside it.
+    const menu = document.querySelector('[data-menu-overlay]');
+    if (menu) {
+        const previews = [...menu.querySelectorAll('[data-menu-preview] img')];
+        menu.querySelectorAll('[data-menu-image]').forEach((link) => {
+            const show = () => previews.forEach((image, index) => image.classList.toggle('is-active', index === Number(link.dataset.menuImage)));
+            link.addEventListener('pointerenter', show);
+            link.addEventListener('focus', show);
+        });
+    }
 };

@@ -1,6 +1,7 @@
 // Sticky header behaviour, dropdown menus, the announcement rotator, the
 // reading-progress bar and the back-to-top button.
-import { prefersReducedMotion, rafThrottle } from './ui';
+import { scrollTo } from './gsap-motion';
+import { rafThrottle } from './ui';
 
 const closeMenus = (except = null) => {
     document.querySelectorAll('[data-menu-group]').forEach((group) => {
@@ -25,6 +26,9 @@ export const initHeader = () => {
 
         if (header) {
             header.classList.toggle('is-scrolled', y > 8);
+            // Over a dark hero the header stays transparent until the hero is mostly passed.
+            const overlayHero = header.classList.contains('header-on-dark') ? document.querySelector('[data-landscape]') : null;
+            header.classList.toggle('is-solid', overlayHero ? y > overlayHero.offsetHeight * 0.72 : y > 8);
             const menuOpen = header.querySelector('[data-menu-group][data-open="true"]') || header.matches(':focus-within');
             if (y > 260 && y > lastY + 4 && !menuOpen && !isOverlayOpen()) header.classList.add('is-hidden');
             else if (y < lastY - 4 || y <= 260) header.classList.remove('is-hidden');
@@ -41,7 +45,7 @@ export const initHeader = () => {
     update();
 
     backToTop?.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+        scrollTo(0);
         document.getElementById('main-content')?.focus({ preventScroll: true });
     });
 

@@ -2,9 +2,9 @@ import './bootstrap';
 import './modules/actions';
 import { initCarousels } from './modules/carousel';
 import { initCommerce } from './modules/commerce';
+import { initGsapMotion } from './modules/gsap-motion';
 import { initHeader } from './modules/header';
 import { initHero } from './modules/hero';
-import { initMotion } from './modules/motion';
 import { initOverlays } from './modules/overlays';
 import { initProductPage } from './modules/product';
 import { initTabs } from './modules/tabs';
@@ -16,7 +16,7 @@ import { initImageFallbacks, initToasts } from './modules/ui';
     initToasts,
     initHeader,
     initOverlays,
-    initMotion,
+    initGsapMotion,
     initHero,
     initCarousels,
     initTabs,

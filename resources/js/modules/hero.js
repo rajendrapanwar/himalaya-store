@@ -1,12 +1,13 @@
 // Homepage hero slideshow. Each slide's progress bar is a CSS animation, and
 // its `animationend` advances the slideshow — so pausing the animation (hover,
 // focus, hidden tab or the pause button) pauses the slideshow in lockstep.
-import { playSplit } from './motion';
+import { playSplit } from './gsap-motion';
 import { prefersReducedMotion } from './ui';
 
 export const initHero = () => {
     document.querySelectorAll('[data-hero-slider]').forEach((slider) => {
         const slides = [...slider.querySelectorAll('[data-hero-slide]')];
+        const images = [...slider.querySelectorAll('[data-hero-image]')];
         const dots = [...slider.querySelectorAll('[data-hero-dot]')];
         const bars = dots.map((dot) => dot.querySelector('[data-hero-progress]'));
         const toggle = slider.querySelector('[data-hero-toggle]');
@@ -53,6 +54,7 @@ export const initHero = () => {
                 slide.inert = !active;
                 if (active) playSplit(slide.querySelector('[data-split]'));
             });
+            images.forEach((image, position) => image.classList.toggle('is-active', position === current));
             dots.forEach((dot, position) => dot.setAttribute('aria-selected', String(position === current)));
             bars.forEach((bar, position) => {
                 if (!bar) return;

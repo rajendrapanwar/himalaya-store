@@ -3,7 +3,7 @@
 @section('meta_description', 'Learn how Pahadi Roots researches, reviews, dates and corrects product guides and sourcing content.')
 @section('canonical', route('editorial.policy'))
 @section('content')
-<nav class="mb-7 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-brand-700">Home</a><span>/</span><span class="text-stone-800">Editorial policy</span></nav>
+<nav class="mb-7 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-buransh">Home</a><span>/</span><span class="text-stone-800">Editorial policy</span></nav>
 <x-page-hero compact eyebrow="Trust and accuracy" title="How we research and maintain our content." description="Our guides are written to help customers understand products—not to manufacture expertise or replace qualified professional advice." :image="asset('assets/img/editorial/tea-farmer-hillside.webp')" image-position="center 52%" />
 <div class="mx-auto mt-8 max-w-4xl space-y-4">
     @foreach([

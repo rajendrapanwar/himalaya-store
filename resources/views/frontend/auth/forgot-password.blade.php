@@ -9,6 +9,6 @@
         <div><label for="forgotEmail" class="field-label">Email address</label><input id="forgotEmail" name="email" type="email" value="{{ old('email') }}" autocomplete="email" required autofocus class="field-control">@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>
         <button class="button-primary w-full" type="submit">Send reset link <span class="button-arrow" aria-hidden="true">→</span></button>
     </form>
-    <p class="mt-7 text-center text-sm text-stone-600">Remembered it? <a href="{{ route('login') }}" class="font-bold text-brand-700 hover:underline">Back to sign in</a></p>
+    <p class="mt-7 text-center text-sm text-stone-600">Remembered it? <a href="{{ route('login') }}" class="font-bold text-buransh hover:underline">Back to sign in</a></p>
 </x-auth-shell>
 @endsection

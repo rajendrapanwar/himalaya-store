@@ -69,13 +69,13 @@
 @endpush
 
 @section('content')
-<nav class="mb-8 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="link-underline hover:text-brand-700">Home</a><span aria-hidden="true" class="text-stone-300">/</span>@if($selectedCategory)<a href="{{ route('products.index') }}" class="link-underline hover:text-brand-700">Shop</a><span aria-hidden="true" class="text-stone-300">/</span><span class="text-stone-800">{{ $selectedCategory->name }}</span>@else<span class="text-stone-800">Shop</span>@endif</nav>
+<nav class="mb-8 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="link-underline hover:text-buransh">Home</a><span aria-hidden="true" class="text-stone-300">/</span>@if($selectedCategory)<a href="{{ route('products.index') }}" class="link-underline hover:text-buransh">Shop</a><span aria-hidden="true" class="text-stone-300">/</span><span class="text-stone-800">{{ $selectedCategory->name }}</span>@else<span class="text-stone-800">Shop</span>@endif</nav>
 
-<header class="relative overflow-hidden rounded-[2rem] bg-brand-950 px-7 py-12 text-white sm:px-12 sm:py-16">
+<header class="relative overflow-hidden rounded-[2rem] bg-night px-7 py-12 text-white sm:px-12 sm:py-16">
     @if($selectedCategory?->image)<img src="{{ asset('storage/'.$selectedCategory->image) }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-35" width="1400" height="600" data-parallax="0.06">@else<img src="{{ asset('assets/img/editorial/uttarakhand-terrace-farming.webp') }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-30" width="1400" height="600" data-parallax="0.06">@endif
-    <div class="absolute inset-0 bg-gradient-to-r from-brand-950 via-brand-950/80 to-brand-950/20" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-night via-night/80 to-night/20" aria-hidden="true"></div>
     <div class="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-        <div><p class="eyebrow eyebrow-line !text-marigold-300">{{ $selectedCategory ? 'Himalayan collection' : 'The mountain pantry' }}</p><h1 class="display-title mt-5 max-w-4xl text-white">{{ $selectedCategory ? $selectedCategory->name : 'Produce with a place, a maker and a story.' }}</h1><p class="mt-5 max-w-2xl text-base leading-8 text-white/75">{{ $listingDescription }}</p></div>
+        <div><p class="eyebrow eyebrow-line !text-sun">{{ $selectedCategory ? 'Himalayan collection' : 'The mountain pantry' }}</p><h1 class="display-title mt-5 max-w-4xl text-white">{{ $selectedCategory ? $selectedCategory->name : 'Produce with a place, a maker and a story.' }}</h1><p class="mt-5 max-w-2xl text-base leading-8 text-white/75">{{ $listingDescription }}</p></div>
         <div class="surface-glass rounded-[1.5rem] px-6 py-5"><strong class="stat-number block text-white"><span data-count-to="{{ $products->total() }}">{{ $products->total() }}</span></strong><p class="mt-2 text-[11px] font-black uppercase tracking-[.16em] text-white/70">products available</p></div>
     </div>
 </header>
@@ -86,27 +86,27 @@
 </nav>
 
 <section class="catalogue-promos mt-6 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible md:pb-0" aria-label="Current offers">
-    <a href="{{ route('products.index', ['sale' => 1]) }}" rel="nofollow" class="hover-lift group relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-marigold-300 to-saffron px-6 py-6 text-brand-950"><p class="text-[10px] font-black uppercase tracking-[.18em] text-clay-900/70">Limited-price picks</p><h2 class="mt-2 font-display text-2xl font-medium">Shop products on sale</h2><span class="mt-3 inline-flex items-center gap-1 text-xs font-bold">See offers <span class="button-arrow" aria-hidden="true">→</span></span></a>
-    <a href="{{ route('bundles.index') }}" class="hover-lift group relative overflow-hidden rounded-[1.5rem] bg-brand-900 px-6 py-6 text-white"><p class="text-[10px] font-black uppercase tracking-[.18em] text-brand-200">Ready to share</p><h2 class="mt-2 font-display text-2xl font-medium">Himalayan gift boxes</h2><span class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-marigold-300">Explore bundles <span class="button-arrow" aria-hidden="true">→</span></span></a>
-    <a href="{{ auth()->check() ? route('profile') : route('register') }}" class="hover-lift group relative overflow-hidden rounded-[1.5rem] border border-brand-200 bg-brand-50 px-6 py-6 text-brand-950"><p class="text-[10px] font-black uppercase tracking-[.18em] text-brand-600">Member rewards</p><h2 class="mt-2 font-display text-2xl font-medium">Earn loyalty points</h2><span class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-brand-700">{{ auth()->check() ? 'View rewards' : 'Create an account' }} <span class="button-arrow" aria-hidden="true">→</span></span></a>
+    <a href="{{ route('products.index', ['sale' => 1]) }}" rel="nofollow" class="hover-lift group relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-sun to-sun px-6 py-6 text-ink"><p class="text-[10px] font-black uppercase tracking-[.18em] text-clay-900/70">Limited-price picks</p><h2 class="mt-2 font-display text-2xl font-medium">Shop products on sale</h2><span class="mt-3 inline-flex items-center gap-1 text-xs font-bold">See offers <span class="button-arrow" aria-hidden="true">→</span></span></a>
+    <a href="{{ route('bundles.index') }}" class="hover-lift group relative overflow-hidden rounded-[1.5rem] bg-night-2 px-6 py-6 text-white"><p class="text-[10px] font-black uppercase tracking-[.18em] text-brand-200">Ready to share</p><h2 class="mt-2 font-display text-2xl font-medium">Himalayan gift boxes</h2><span class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-sun">Explore bundles <span class="button-arrow" aria-hidden="true">→</span></span></a>
+    <a href="{{ auth()->check() ? route('profile') : route('register') }}" class="hover-lift group relative overflow-hidden rounded-[1.5rem] border border-brand-200 bg-brand-50 px-6 py-6 text-ink"><p class="text-[10px] font-black uppercase tracking-[.18em] text-buransh">Member rewards</p><h2 class="mt-2 font-display text-2xl font-medium">Earn loyalty points</h2><span class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-buransh">{{ auth()->check() ? 'View rewards' : 'Create an account' }} <span class="button-arrow" aria-hidden="true">→</span></span></a>
 </section>
 
 @if($filterChips->isNotEmpty())
     <div class="mt-5 flex flex-wrap items-center gap-2" aria-label="Active filters">
         <span class="mr-1 text-[10px] font-black uppercase tracking-widest text-stone-500">Active</span>
         @foreach($filterChips as $key => $label)<a href="{{ route('products.index', request()->except([$key, 'page'])) }}" rel="nofollow" class="active-filter-chip" aria-label="Remove {{ $label }} filter"><span>{{ $label }}</span><span aria-hidden="true">×</span></a>@endforeach
-        <a href="{{ route('products.index') }}" class="ml-1 text-xs font-black text-brand-700 underline underline-offset-4">Clear all</a>
+        <a href="{{ route('products.index') }}" class="ml-1 text-xs font-black text-buransh underline underline-offset-4">Clear all</a>
     </div>
 @endif
 
-<button type="button" class="button-secondary mt-6 w-full lg:hidden" data-drawer-open="mobileFilters" aria-controls="mobileFilters" aria-expanded="false"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M4 6h16M7 12h10M10 18h4"/></svg>Filter products @if($activeFilterCount)<span class="rounded-full bg-saffron px-2 py-0.5 text-[10px] text-white">{{ $activeFilterCount }}</span>@endif</button>
+<button type="button" class="button-secondary mt-6 w-full lg:hidden" data-drawer-open="mobileFilters" aria-controls="mobileFilters" aria-expanded="false"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M4 6h16M7 12h10M10 18h4"/></svg>Filter products @if($activeFilterCount)<span class="rounded-full bg-buransh px-2 py-0.5 text-[10px] text-white">{{ $activeFilterCount }}</span>@endif</button>
 <aside id="mobileFilters" class="drawer drawer-left lg:hidden" aria-label="Filter products" data-drawer>
-    <div class="flex items-center justify-between border-b border-stone-200/80 px-6 py-4"><p class="font-display text-2xl font-medium text-brand-950">Filters</p><button type="button" class="icon-button" aria-label="Close filters" data-drawer-close><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="1.8" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="flex items-center justify-between border-b border-stone-200/80 px-6 py-4"><p class="font-display text-2xl font-medium text-ink">Filters</p><button type="button" class="icon-button" aria-label="Close filters" data-drawer-close><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="1.8" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="flex-1 overflow-y-auto p-5"><x-catalogue-filters :categories="$categories" :origins="$origins" prefix="mobile-filter" /></div>
 </aside>
 
 <div class="mt-6 grid gap-7 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
-    <aside class="hidden lg:block" aria-label="Product filters"><div class="catalogue-filter-panel surface-card sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto p-5 xl:p-6"><div class="mb-5 flex items-start justify-between gap-3 border-b border-stone-200 pb-4"><div><p class="eyebrow !text-[10px]">Refine your shop</p><h2 class="font-display mt-1 text-2xl font-semibold">Filters</h2></div>@if($activeFilterCount)<span class="rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-black text-brand-700">{{ $activeFilterCount }} active</span>@endif</div><x-catalogue-filters :categories="$categories" :origins="$origins" prefix="desktop-filter" /></div></aside>
+    <aside class="hidden lg:block" aria-label="Product filters"><div class="catalogue-filter-panel surface-card sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto p-5 xl:p-6"><div class="mb-5 flex items-start justify-between gap-3 border-b border-stone-200 pb-4"><div><p class="eyebrow !text-[10px]">Refine your shop</p><h2 class="font-display mt-1 text-2xl font-semibold">Filters</h2></div>@if($activeFilterCount)<span class="rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-black text-buransh">{{ $activeFilterCount }} active</span>@endif</div><x-catalogue-filters :categories="$categories" :origins="$origins" prefix="desktop-filter" /></div></aside>
 
     <section id="products" class="min-w-0">
         <form method="GET" action="{{ route('products.index') }}" class="surface-card mb-6 grid gap-3 p-3 sm:grid-cols-[1fr_190px_auto]" aria-label="Search and sort products">
@@ -116,7 +116,7 @@
             <button class="button-primary" type="submit">Update</button>
         </form>
 
-        <div class="mb-5 flex flex-wrap items-end justify-between gap-4"><div><p class="eyebrow">{{ request('category') ? 'Selected collection' : 'All products' }}</p>@if(request('search'))<h2 class="mt-2 text-lg font-black">Results for “{{ request('search') }}”</h2>@elseif($activeFilterCount)<h2 class="mt-2 text-lg font-black">Filtered products</h2>@endif @if($activeFilterCount)<a href="{{ route('products.index') }}" class="mt-2 inline-flex text-xs font-bold text-brand-700 underline">Clear all filters</a>@endif</div><p class="text-xs font-semibold text-stone-500">{{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} of {{ $products->total() }}</p></div>
+        <div class="mb-5 flex flex-wrap items-end justify-between gap-4"><div><p class="eyebrow">{{ request('category') ? 'Selected collection' : 'All products' }}</p>@if(request('search'))<h2 class="mt-2 text-lg font-black">Results for “{{ request('search') }}”</h2>@elseif($activeFilterCount)<h2 class="mt-2 text-lg font-black">Filtered products</h2>@endif @if($activeFilterCount)<a href="{{ route('products.index') }}" class="mt-2 inline-flex text-xs font-bold text-buransh underline">Clear all filters</a>@endif</div><p class="text-xs font-semibold text-stone-500">{{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} of {{ $products->total() }}</p></div>
         @if($products->isNotEmpty())
             <div class="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3" data-reveal-stagger>@foreach($products as $product)<div data-reveal style="--i: {{ $loop->index % 3 }}"><x-product-card :product="$product" :wishlist-product-ids="$wishlistProductIds" /></div>@endforeach</div>
             @if($products->hasPages())<div class="mt-10 surface-card p-4">{{ $products->links() }}</div>@endif
@@ -128,7 +128,7 @@
 
 @if($selectedCategory)
 <section class="mt-12 grid gap-6 border-t border-stone-200 pt-10 lg:grid-cols-[1fr_1.3fr]">
-    <div><p class="eyebrow">About this collection</p><h2 class="font-display mt-3 text-3xl font-semibold text-brand-950">Choosing {{ strtolower($selectedCategory->name) }}</h2></div>
+    <div><p class="eyebrow">About this collection</p><h2 class="font-display mt-3 text-3xl font-semibold text-ink">Choosing {{ strtolower($selectedCategory->name) }}</h2></div>
     <div><p class="leading-8 text-stone-600">{{ $selectedCategory->description }} Product pages include available origin, ingredients, producer and pack information so you can compare the range clearly.</p><div class="mt-5 flex flex-wrap gap-3"><a href="{{ route('about') }}" class="button-quiet !px-0">How we source →</a><a href="{{ route('shipping.policy') }}" class="button-quiet">Delivery information →</a></div></div>
 </section>
 @endif

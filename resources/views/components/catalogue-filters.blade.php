@@ -22,8 +22,8 @@
     <details class="filter-group" open>
         <summary><span>Price range</span>{!! $chevron !!}</summary>
         <div class="filter-group-body grid grid-cols-2 gap-2.5">
-            <div><label for="{{ $prefix }}-min-price" class="field-label">Minimum</label><div class="relative"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-brand-700">₹</span><input id="{{ $prefix }}-min-price" name="min_price" type="number" min="0" step="1" value="{{ request('min_price') }}" placeholder="0" class="field-control !pl-7"></div></div>
-            <div><label for="{{ $prefix }}-max-price" class="field-label">Maximum</label><div class="relative"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-brand-700">₹</span><input id="{{ $prefix }}-max-price" name="max_price" type="number" min="0" step="1" value="{{ request('max_price') }}" placeholder="Any" class="field-control !pl-7"></div></div>
+            <div><label for="{{ $prefix }}-min-price" class="field-label">Minimum</label><div class="relative"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-buransh">₹</span><input id="{{ $prefix }}-min-price" name="min_price" type="number" min="0" step="1" value="{{ request('min_price') }}" placeholder="0" class="field-control !pl-7"></div></div>
+            <div><label for="{{ $prefix }}-max-price" class="field-label">Maximum</label><div class="relative"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-buransh">₹</span><input id="{{ $prefix }}-max-price" name="max_price" type="number" min="0" step="1" value="{{ request('max_price') }}" placeholder="Any" class="field-control !pl-7"></div></div>
         </div>
     </details>
 

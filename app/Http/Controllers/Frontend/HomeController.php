@@ -10,13 +10,14 @@ use App\Models\JournalPost;
 use App\Models\Product;
 use App\Models\Review;
 use App\Services\StorefrontCache;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $catalogue = Cache::remember('storefront:home:v4:'.StorefrontCache::version(), now()->addMinutes(5), function () {
+        $catalogue = Cache::remember('storefront:home:v5:'.StorefrontCache::version(), now()->addMinutes(5), function () {
             $categories = Category::where('status', 1)
                 ->whereHas('products', fn ($query) => $query->where('status', true))
                 ->withCount(['products' => fn ($query) => $query->where('status', true)])
@@ -40,13 +41,14 @@ class HomeController extends Controller
                 ->latest()
                 ->take(6)
                 ->get();
+            $regions = $this->originRegions();
             $stats = [
                 'products' => Product::where('status', 1)->count(),
                 'collections' => Category::where('status', 1)->whereHas('products', fn ($query) => $query->where('status', true))->count(),
                 'regions' => Product::where('status', 1)->whereNotNull('origin_region')->where('origin_region', '!=', '')->distinct()->count('origin_region'),
             ];
 
-            return compact('categories', 'featuredProducts', 'latestProducts', 'saleProducts', 'featuredBundle', 'journalPosts', 'heroSlides', 'testimonials', 'stats');
+            return compact('categories', 'featuredProducts', 'latestProducts', 'saleProducts', 'featuredBundle', 'journalPosts', 'heroSlides', 'testimonials', 'stats', 'regions');
         });
 
         $heroSlides = $catalogue['heroSlides'];
@@ -71,5 +73,35 @@ class HomeController extends Controller
             : [];
 
         return view('frontend.home', ['heroSlides' => $heroSlides, 'wishlistProductIds' => $wishlistProductIds] + $catalogue);
+    }
+
+    /**
+     * Origin regions for the homepage "where it grows" list, most stocked first,
+     * each with its product count and a photo from one of its products.
+     *
+     * @return list<array{name: string, count: int, image: string|null}>
+     */
+    private function originRegions(): array
+    {
+        return Product::with('images')
+            ->where('status', 1)
+            ->whereNotNull('origin_region')
+            ->where('origin_region', '!=', '')
+            ->get(['id', 'origin_region'])
+            ->groupBy('origin_region')
+            ->map(function (EloquentCollection $products, int|string $region): array {
+                $image = $products->flatMap(fn (Product $product) => $product->images)->sortByDesc('is_main')->first();
+
+                return [
+                    'name' => (string) $region,
+                    'count' => $products->count(),
+                    'image' => $image ? asset('storage/'.$image->image) : null,
+                ];
+            })
+            ->toBase()
+            ->sortByDesc('count')
+            ->take(6)
+            ->values()
+            ->all();
     }
 }
