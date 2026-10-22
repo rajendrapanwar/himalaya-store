@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuditAdminAction;
+use App\Http\Middleware\ClearStaleBrowserCache;
 use App\Http\Middleware\EnsureAdminPermission;
 use App\Http\Middleware\EnsureAdminSecondFactor;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Ends other sessions once the account password changes.
         $middleware->appendToGroup('web', AuthenticateSession::class);
         $middleware->appendToGroup('web', StorefrontMaintenanceMode::class);
+        $middleware->appendToGroup('web', ClearStaleBrowserCache::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);
         $middleware->alias([

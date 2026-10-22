@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\ClearStaleBrowserCache;
 use App\Models\Category;
 use App\Models\JournalPost;
 use App\Models\Product;
@@ -190,5 +191,23 @@ class SeoAndCacheTest extends TestCase
         Category::create(['name' => 'Fresh', 'slug' => 'fresh', 'status' => true]);
 
         $this->assertGreaterThan($before, StorefrontCache::version());
+    }
+
+    public function test_browsers_are_told_once_to_drop_stale_cached_redirects(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertHeader('Clear-Site-Data', '"cache"')
+            ->assertCookie(ClearStaleBrowserCache::COOKIE, ClearStaleBrowserCache::VERSION);
+
+        $this->withCookie(ClearStaleBrowserCache::COOKIE, ClearStaleBrowserCache::VERSION)
+            ->get(route('login'))
+            ->assertOk()
+            ->assertHeaderMissing('Clear-Site-Data');
+
+        $this->post(route('login'), ['email' => 'nobody@example.test', 'password' => 'wrong'])
+            ->assertHeaderMissing('Clear-Site-Data');
+        $this->getJson(route('products.suggestions', ['q' => 'honey']))
+            ->assertHeaderMissing('Clear-Site-Data');
     }
 }
