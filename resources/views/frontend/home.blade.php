@@ -250,9 +250,9 @@
     <a href="{{ route('bundles.index') }}" class="chapter-night group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-10">
         <span class="absolute inset-0 -z-10" data-reveal="clip"><img src="{{ asset('assets/img/products/munsiyari-rajma.webp') }}" alt="Munsiyari rajma, a traditional hill-grown pulse" class="h-full w-full object-cover opacity-55 transition duration-[1.4s] group-hover:scale-105" loading="lazy" decoding="async" width="800" height="800"></span>
         <span class="absolute inset-0 -z-10 bg-gradient-to-t from-night via-night/50 to-transparent" aria-hidden="true"></span>
-        <p class="eyebrow text-sun">Made for sharing</p>
+        <p class="eyebrow text-sun">Gift boxes</p>
         <h2 class="font-display mt-4 text-4xl font-semibold leading-[1]">{{ $featuredBundle?->name ?? 'Gift the taste of the hills.' }}</h2>
-        <p class="mt-3 text-sm leading-6 opacity-75">{{ Str::limit($featuredBundle?->description ?? 'Curated pantry boxes for celebrations, hosts and thoughtful everyday gestures.', 110) }}</p>
+        <p class="mt-3 text-sm leading-6 opacity-75">@if($featuredBundle && $featuredBundle->products->isNotEmpty()){{ $featuredBundle->products->count() }} hill favourites in one ready-made box{{ $featuredBundle->savings > 0 ? ', ₹'.number_format($featuredBundle->savings, 0).' less than buying them separately.' : '.' }}@else Ready-made sets of hill favourites, priced together for less than buying each item.@endif</p>
         <span class="mt-6 flex items-center justify-between gap-4"><span class="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[.14em]">Explore gift boxes <span class="button-arrow" aria-hidden="true">→</span></span>@if($featuredBundle)<span class="rounded-full bg-sun px-4 py-2 text-sm font-black text-night">₹{{ number_format((float) $featuredBundle->price, 0) }}</span>@endif</span>
     </a>
 </section>
