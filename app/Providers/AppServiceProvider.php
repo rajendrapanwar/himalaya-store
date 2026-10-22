@@ -88,6 +88,11 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('social-login', fn (Request $request) => [
+            Limit::perMinute(10)->by('social-login:minute:'.$this->ipKey($request)),
+            Limit::perHour(60)->by('social-login:hour:'.$this->ipKey($request)),
+        ]);
+
         RateLimiter::for('registration', fn (Request $request) => [
             Limit::perHour(10)->by('registration:hour:'.$this->ipKey($request)),
             Limit::perDay(50)->by('registration:day:'.$this->ipKey($request)),

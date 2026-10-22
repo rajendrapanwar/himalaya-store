@@ -73,6 +73,19 @@ Until the secrets below exist, the deploy job is skipped with a warning and CI s
   ```
   (Shared hosting has no Redis, so use `QUEUE_CONNECTION=database` and `CACHE_STORE=database` there.)
 
+### Google sign-in ("Continue with Google")
+
+The button appears on the sign-in and create-account pages once both keys are set; customers are matched by Google account, then by verified email, and new accounts are created already verified. Staff accounts are refused and keep using the administrator portal.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) create (or pick) a project, then open **APIs & Services → OAuth consent screen**: choose **External**, enter the app name, support email and your domain, and keep the default `openid`, `email` and `profile` scopes. Publish the app so any Google account can sign in.
+2. Open **APIs & Services → Credentials → Create credentials → OAuth client ID**, choose **Web application**, and add the authorised redirect URI `https://your-domain/auth/google/callback` (add `http://127.0.0.1:8000/auth/google/callback` too for local development).
+3. Put the client ID and secret in the server's `.env`, then rebuild the config cache (`php artisan config:cache`, or the next deploy does it):
+   ```dotenv
+   GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=...
+   ```
+   If the domain changes, update `APP_URL` and the redirect URI in Google Cloud together.
+
 ### Shared-hosting document root
 
 On Hostinger the project root is the web root. The root `.htaccess` serves every request from `public/` without showing it in the URL (`/about`, not `/public/about`), so files outside `public/` — `storage/logs`, `vendor/`, `.env`, `composer.json`, deploy scripts — can never be downloaded. `public/.htaccess` 301-redirects old `/public/...` links to the clean URL (GET/HEAD only, so form posts and webhooks still work). Set `APP_URL` without `/public`, and point the Stripe webhook at `https://your-domain/stripe/webhook`.

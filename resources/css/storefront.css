@@ -139,6 +139,10 @@
     .button-secondary { border: 1.5px solid #13201a; background: transparent; color: #13201a; }
     .button-secondary::before { background: #13201a; }
     .button-secondary:hover { color: #fffaf1; }
+    /* Google's sign-in button: neutral white with the full-colour mark. */
+    .google-button { display: flex; width: 100%; min-height: 3.25rem; align-items: center; justify-content: center; gap: .75rem; border: 1px solid #dadce0; border-radius: 999px; background: #fff; color: #1f1f1f; font-size: .95rem; font-weight: 700; transition: background-color .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .google-button:hover { border-color: #c6c9cc; background: #f8fafd; box-shadow: 0 1px 3px rgb(60 64 67 / .25); }
+    .google-button:focus-visible { outline: 2px solid #1a73e8; outline-offset: 3px; }
     .button-quiet { padding-inline: .9rem; color: #13201a; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
     .button-quiet:hover { color: #c8234e; }
     .button-arrow { display: inline-block; transition: transform .5s var(--ease-out-expo); }

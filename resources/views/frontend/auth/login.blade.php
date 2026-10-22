@@ -5,6 +5,7 @@
     <p class="eyebrow eyebrow-line md:hidden">Welcome back</p>
     <h1 class="font-display text-4xl font-medium text-ink md:mt-0 mt-4">Sign in to your account</h1>
     <p class="mt-3 text-sm text-stone-500">Use the email address you registered with.</p>
+    @include('partials.google-auth', ['label' => 'Continue with Google', 'note' => 'New here? This creates your account in one step.'])
     <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">@csrf
         <div><label for="loginEmail" class="field-label">Email address</label><input id="loginEmail" name="email" type="email" value="{{ old('email') }}" autocomplete="email" maxlength="255" class="field-control" required autofocus aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}">@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>
         <div><div class="flex items-center justify-between"><label for="loginPassword" class="field-label">Password</label><a href="{{ route('password.request') }}" class="mb-2 text-xs font-bold text-buransh hover:underline">Forgot password?</a></div><x-password-input id="loginPassword" required /></div>

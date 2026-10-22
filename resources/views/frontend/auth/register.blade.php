@@ -4,6 +4,7 @@
 <x-auth-shell eyebrow="Join Pahadi Roots" title="More value from every mountain order." description="Create an account to earn loyalty points, use referral rewards, save wishlists and submit verified reviews." image="assets/img/editorial/uttarakhand-terrace-farming.webp" :points="['Loyalty points on eligible orders', 'Referral rewards for you and friends', 'Faster checkout with saved details']">
     <p class="eyebrow eyebrow-line md:hidden">Join Pahadi Roots</p>
     <h1 class="font-display mt-4 text-4xl font-medium text-ink md:mt-0">Create your account</h1>
+    @include('partials.google-auth', ['label' => 'Sign up with Google'])
     <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-4">@csrf
         <div><label for="registerName" class="field-label">Full name</label><input id="registerName" name="name" value="{{ old('name') }}" autocomplete="name" maxlength="255" class="field-control" required autofocus>@error('name')<p class="field-error">{{ $message }}</p>@enderror</div>
         <div><label for="registerEmail" class="field-label">Email address</label><input id="registerEmail" name="email" type="email" value="{{ old('email') }}" autocomplete="email" maxlength="255" class="field-control" required>@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>

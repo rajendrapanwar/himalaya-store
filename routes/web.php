@@ -21,6 +21,7 @@ use App\Http\Controllers\Frontend\AccountController;
 use App\Http\Controllers\Frontend\AuthController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\GoogleAuthController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
@@ -37,6 +38,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'store'])->middleware('throttle:registration');
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'authenticate'])->middleware('throttle:login');
+    Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->middleware('throttle:social-login')->name('auth.google');
+    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:social-login')->name('auth.google.callback');
     Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->middleware('throttle:password-reset')->name('password.email');
     Route::get('/reset-password/{token}', [AuthController::class, 'resetPassword'])->name('password.reset');

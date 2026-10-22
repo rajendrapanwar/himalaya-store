@@ -89,6 +89,8 @@ class SecurityHeaders
             'stripe.checkout',
             'login',
             'register',
+            'auth.google',
+            'auth.google.callback',
             'logout',
             'password.*',
             'verification.*',

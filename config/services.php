@@ -11,6 +11,13 @@ return [
         'number' => env('WHATSAPP_NUMBER', '919999999999'),
     ],
 
+    // "Continue with Google" for customers; hidden until both keys are set.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
     'support_email' => env('SUPPORT_EMAIL', 'support@pahadiroots.in'),
 
     'social' => [
