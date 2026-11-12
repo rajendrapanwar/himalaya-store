@@ -148,9 +148,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/notifications/read-all', [NotificationController::class, 'readAll'])->middleware('throttle:notifications')->name('notifications.read-all');
     Route::patch('/notifications/{notification}', [NotificationController::class, 'update'])->middleware('throttle:notifications')->name('notifications.update');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->middleware('throttle:notifications')->name('notifications.destroy');
-    Route::get('/checkout', [CheckoutController::class, 'index'])->middleware('verified')->name('checkout.index');
-    Route::post('/checkout/quote', [CheckoutController::class, 'quote'])->middleware(['verified', 'throttle:checkout-quote'])->name('checkout.quote');
-    Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->middleware(['verified', 'throttle:checkout'])->name('checkout.placeOrder');
+    // No 'verified' gate: online payment works straight after sign-up. Cash on
+    // delivery still needs a verified email, enforced in placeOrder().
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/quote', [CheckoutController::class, 'quote'])->middleware('throttle:checkout-quote')->name('checkout.quote');
+    Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->middleware('throttle:checkout')->name('checkout.placeOrder');
     Route::get('/order-success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/stripe/checkout/{order}', [CheckoutController::class, 'stripeCheckout'])->middleware('throttle:payment')->name('stripe.checkout');
     Route::get('/account', [AccountController::class, 'show'])->name('profile');

@@ -83,6 +83,7 @@ class CheckoutController extends Controller
             'freeShippingThreshold' => $quote['freeShippingThreshold'],
             'destination' => $destination,
             'checkoutDefaults' => $checkoutDefaults,
+            'codNeedsVerifiedEmail' => ! $request->user()->hasVerifiedEmail(),
         ]);
     }
 
@@ -149,6 +150,11 @@ class CheckoutController extends Controller
         }
         if ($data['payment_method'] === 'cod' && ! $destination->cod_available) {
             throw ValidationException::withMessages(['payment_method' => 'Cash on delivery is not available for this pincode.']);
+        }
+        // A paid order proves the buyer is real. COD is packed and shipped on
+        // trust, so it stays limited to accounts with a verified email.
+        if ($data['payment_method'] === 'cod' && ! $request->user()->hasVerifiedEmail()) {
+            throw ValidationException::withMessages(['payment_method' => 'Verify your email address to use cash on delivery, or pay online by card or UPI.']);
         }
 
         $cart = $this->carts->current($request->user(), false);

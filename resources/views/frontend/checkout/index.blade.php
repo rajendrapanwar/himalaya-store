@@ -19,7 +19,7 @@
             <div class="grid gap-5 sm:grid-cols-3"><div><label for="city" class="field-label">City</label><input id="city" name="city" value="{{ old('city', $checkoutDefaults['city']) }}" autocomplete="address-level2" maxlength="255" class="field-control" required>@error('city')<p class="field-error">{{ $message }}</p>@enderror</div><div><label for="state" class="field-label">State</label><input id="state" name="state" value="{{ old('state', $checkoutDefaults['state']) }}" autocomplete="address-level1" maxlength="255" class="field-control" required>@error('state')<p class="field-error">{{ $message }}</p>@enderror</div><div><label for="checkoutPincode" class="field-label">Pincode</label><input id="checkoutPincode" name="pincode" value="{{ old('pincode', $checkoutDefaults['pincode']) }}" autocomplete="postal-code" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" class="field-control" required aria-invalid="{{ $errors->has('pincode') ? 'true' : 'false' }}">@error('pincode')<p class="field-error">{{ $message }}</p>@enderror</div></div>
             <div id="checkoutDeliveryStatus" role="status" aria-live="polite" class="rounded-lg p-3 text-xs leading-5 {{ $destination ? 'border border-brand-200 bg-brand-50 text-brand-800' : 'bg-stone-100 text-stone-600' }}">
                 @if($destination)
-                    <strong>Delivery available to {{ $destination->city }}, {{ $destination->state }}.</strong> Estimated {{ $destination->estimated_days_min }}–{{ $destination->estimated_days_max }} business days. {{ $destination->cod_available ? 'COD is available.' : 'Online payment is required.' }}
+                    <strong>Delivery available to {{ $destination->city }}, {{ $destination->state }}.</strong> Estimated {{ $destination->estimated_days_min }}–{{ $destination->estimated_days_max }} business days. {{ ! $destination->cod_available ? 'Online payment is required.' : ($codNeedsVerifiedEmail ? 'Verify your email to use COD.' : 'COD is available.') }}
                 @else
                     Enter a serviceable six-digit pincode to calculate delivery and your final total.
                 @endif
@@ -27,8 +27,9 @@
         </div></section>
 
         <section class="surface-card p-5 sm:p-7"><div class="flex items-center gap-3"><span class="grid h-8 w-8 place-items-center rounded-full bg-brand-800 text-sm font-black text-white">3</span><h2 class="font-display text-2xl font-semibold">Payment method</h2></div><div class="mt-6 grid gap-3" id="paymentOptions">
-            <label class="payment-option flex cursor-pointer items-start gap-4 rounded-xl border border-stone-200 p-4 transition hover:border-brand-400"><input type="radio" name="payment_method" value="stripe" class="mt-1" @checked(old('payment_method', 'stripe') === 'stripe') required><span><strong class="block text-sm">Pay online with Stripe</strong><span class="mt-1 block text-xs leading-5 text-stone-500">Use UPI, debit card or credit card through Stripe’s secure checkout.</span><span class="mt-3 inline-flex gap-2 text-[10px] font-black uppercase tracking-wider text-buransh"><span class="rounded bg-brand-50 px-2 py-1">UPI</span><span class="rounded bg-brand-50 px-2 py-1">Visa</span><span class="rounded bg-brand-50 px-2 py-1">Mastercard</span></span></span></label>
-            <label class="payment-option flex cursor-pointer items-start gap-4 rounded-xl border border-stone-200 p-4 transition hover:border-brand-400"><input type="radio" name="payment_method" value="cod" class="mt-1" @checked(old('payment_method') === 'cod') required><span><strong class="block text-sm">Cash on delivery</strong><span class="mt-1 block text-xs leading-5 text-stone-500">Available only for eligible delivery pincodes. Pay when the order arrives.</span></span></label>
+            <label class="payment-option flex cursor-pointer items-start gap-4 rounded-xl border border-stone-200 p-4 transition hover:border-brand-400"><input type="radio" name="payment_method" value="stripe" class="mt-1" @checked($codNeedsVerifiedEmail || old('payment_method', 'stripe') === 'stripe') required><span><strong class="block text-sm">Pay online with Stripe</strong><span class="mt-1 block text-xs leading-5 text-stone-500">Use UPI, debit card or credit card through Stripe’s secure checkout.</span><span class="mt-3 inline-flex gap-2 text-[10px] font-black uppercase tracking-wider text-buransh"><span class="rounded bg-brand-50 px-2 py-1">UPI</span><span class="rounded bg-brand-50 px-2 py-1">Visa</span><span class="rounded bg-brand-50 px-2 py-1">Mastercard</span></span></span></label>
+            <label class="payment-option flex cursor-pointer items-start gap-4 rounded-xl border border-stone-200 p-4 transition hover:border-brand-400"><input type="radio" name="payment_method" value="cod" class="mt-1" @checked(! $codNeedsVerifiedEmail && old('payment_method') === 'cod') @disabled($codNeedsVerifiedEmail) @if($codNeedsVerifiedEmail) aria-describedby="codVerificationNote" @endif required><span><strong class="block text-sm">Cash on delivery</strong><span class="mt-1 block text-xs leading-5 text-stone-500">Available only for eligible delivery pincodes. Pay when the order arrives.</span></span></label>
+            @if($codNeedsVerifiedEmail)<p id="codVerificationNote" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-900"><b>Cash on delivery needs a verified email.</b> Use the link we sent to {{ auth()->user()->email }}, or <a href="{{ route('verification.notice') }}" target="_blank" rel="noopener" class="font-bold underline">get a new link</a> (opens in a new tab). You can pay online by card or UPI right now.</p>@endif
             @error('payment_method')<p class="field-error">{{ $message }}</p>@enderror
         </div></section>
 
@@ -62,6 +63,8 @@
     const checkoutForm = placeOrder.closest('form');
     const cod = document.querySelector('input[name="payment_method"][value="cod"]');
     const stripe = document.querySelector('input[name="payment_method"][value="stripe"]');
+    // Unverified accounts cannot use COD, whatever the pincode allows.
+    const codLocked = @json($codNeedsVerifiedEmail);
     const money = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(Number(amount));
     let quoteTimer;
     let quoteRequest;
@@ -78,7 +81,7 @@
             shipping.textContent = 'Enter pincode';
             estimate.textContent = '—';
             placeOrder.disabled = true;
-            cod.disabled = false;
+            cod.disabled = codLocked;
             setStatus('Enter a valid six-digit pincode to calculate delivery and the total payable.');
             return;
         }
@@ -106,13 +109,14 @@
             row.classList.toggle('flex', loyalty > 0);
             value.textContent = loyalty > 0 ? `−${money(loyalty)}` : '';
             estimate.textContent = money(data.total);
-            cod.disabled = !data.cod_available;
-            if (!data.cod_available && cod.checked) {
+            cod.disabled = codLocked || !data.cod_available;
+            if (cod.disabled && cod.checked) {
                 stripe.checked = true;
                 refreshOptions();
             }
             const deliveryOffer = data.free_shipping ? ` Free delivery is applied for orders over ${money(data.free_shipping_threshold)}.` : '';
-            setStatus(`Delivery available to ${data.location}. Estimated ${data.estimate}.${deliveryOffer} ${data.cod_available ? 'COD is available.' : 'Online payment is required.'}`, 'success');
+            const codNote = !data.cod_available ? 'Online payment is required.' : codLocked ? 'Verify your email to use COD.' : 'COD is available.';
+            setStatus(`Delivery available to ${data.location}. Estimated ${data.estimate}.${deliveryOffer} ${codNote}`, 'success');
             placeOrder.disabled = false;
         } catch (error) {
             if (error.name === 'AbortError') return;

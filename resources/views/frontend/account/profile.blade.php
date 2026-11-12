@@ -22,7 +22,7 @@
     </section>
 
     @if(!$user->hasVerifiedEmail())
-        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900"><span><b>Verify your email to check out.</b> We will send a fresh secure link.</span><form method="POST" action="{{ route('verification.send') }}">@csrf<button class="rounded-xl bg-amber-700 px-4 py-2 font-bold text-white">Resend verification</button></form></div>
+        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900"><span><b>Verify your email to use cash on delivery.</b> We will send a fresh secure link.</span><form method="POST" action="{{ route('verification.send') }}">@csrf<button class="rounded-xl bg-amber-700 px-4 py-2 font-bold text-white">Resend verification</button></form></div>
     @endif
 
     <nav class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Account shortcuts">

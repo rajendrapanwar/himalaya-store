@@ -42,6 +42,65 @@ class CommerceFlowTest extends TestCase
         $this->assertSame(100, $user->fresh()->loyalty_points);
     }
 
+    public function test_unverified_customer_can_pay_online_but_not_by_cash_on_delivery(): void
+    {
+        // Never reach the real Stripe API, whatever key the local .env holds.
+        config(['services.stripe.secret' => null]);
+        [$user, $product] = $this->customerAndProduct();
+        $user->forceFill(['email_verified_at' => null])->save();
+        ServiceablePincode::create(['pincode' => '248001', 'city' => 'Dehradun', 'state' => 'Uttarakhand', 'shipping_amount' => 49, 'estimated_days_min' => 1, 'estimated_days_max' => 3, 'cod_available' => true, 'is_active' => true]);
+        $this->actingAs($user)->post(route('cart.add', $product), ['quantity' => 1])->assertRedirect(route('cart.index'));
+
+        $this->get(route('checkout.index'))
+            ->assertOk()
+            ->assertSee('Cash on delivery needs a verified email');
+        $this->postJson(route('checkout.quote'), ['pincode' => '248001', 'loyalty_points' => 0])
+            ->assertOk()
+            ->assertJson(['shipping' => 49.0, 'total' => 549.0, 'cod_available' => true]);
+
+        // COD is refused before anything is written: no order, no reserved stock, cart intact.
+        $this->post(route('checkout.placeOrder'), $this->checkoutData())
+            ->assertSessionHasErrors('payment_method');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('cart_items', 1);
+        $this->assertSame(0, $product->fresh()->reserved_quantity);
+        $this->assertSame(10, $product->fresh()->stock_quantity);
+
+        // Online payment goes ahead: the order waits for payment with its stock reserved.
+        $this->post(route('checkout.placeOrder'), $this->checkoutData(['payment_method' => 'stripe']))
+            ->assertRedirect(route('orders.show', Order::firstOrFail()));
+        $order = Order::firstOrFail();
+        $this->assertSame('stripe', $order->payment_method);
+        $this->assertSame('pending', $order->payment_status);
+        $this->assertNotNull($order->payment_expires_at);
+        $this->assertSame(1, $product->fresh()->reserved_quantity);
+        $this->assertDatabaseCount('cart_items', 0);
+    }
+
+    public function test_cash_on_delivery_opens_up_once_the_email_is_verified(): void
+    {
+        [$user, $product] = $this->customerAndProduct();
+        $user->forceFill(['email_verified_at' => null])->save();
+        ServiceablePincode::create(['pincode' => '248001', 'city' => 'Dehradun', 'state' => 'Uttarakhand', 'shipping_amount' => 49, 'estimated_days_min' => 1, 'estimated_days_max' => 3, 'cod_available' => true, 'is_active' => true]);
+        $this->actingAs($user)->post(route('cart.add', $product), ['quantity' => 1]);
+        $this->post(route('checkout.placeOrder'), $this->checkoutData())->assertSessionHasErrors('payment_method');
+
+        $user->markEmailAsVerified();
+
+        $this->get(route('checkout.index'))->assertOk()->assertDontSee('Cash on delivery needs a verified email');
+        $this->post(route('checkout.placeOrder'), $this->checkoutData())
+            ->assertRedirect(route('checkout.success', Order::firstOrFail()));
+        $this->assertSame('cod', Order::firstOrFail()->payment_method);
+        $this->assertSame(9, $product->fresh()->stock_quantity);
+    }
+
+    public function test_checkout_still_requires_an_account(): void
+    {
+        $this->get(route('checkout.index'))->assertRedirect(route('login'));
+        $this->post(route('checkout.placeOrder'), $this->checkoutData(['payment_method' => 'stripe']))->assertRedirect(route('login'));
+        $this->assertDatabaseCount('orders', 0);
+    }
+
     public function test_bundle_checkout_decrements_component_quantities(): void
     {
         [$user, $product] = $this->customerAndProduct();

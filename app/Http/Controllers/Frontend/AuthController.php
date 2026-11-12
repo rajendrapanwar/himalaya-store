@@ -40,7 +40,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         app(CartService::class)->transferGuestCart($guestSessionId, $user, $guestCartId);
 
-        return redirect()->route('home')->with('success', 'Welcome to Pahadi Roots. Please verify your email before checkout.');
+        return redirect()->route('home')->with('success', 'Welcome to Pahadi Roots. We have emailed you a link to verify your address, which you will need for cash on delivery.');
     }
 
     public function login()
