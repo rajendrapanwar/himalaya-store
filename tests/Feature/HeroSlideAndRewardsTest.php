@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\HeroSlide;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -28,6 +30,23 @@ class HeroSlideAndRewardsTest extends TestCase
             ->assertDontSee('Future mountain campaign')
             ->assertDontSee('Expired mountain campaign')
             ->assertSee('data-hero-slider', false);
+    }
+
+    public function test_homepage_regions_never_list_a_state_beside_places_inside_it(): void
+    {
+        $category = Category::create(['name' => 'Pantry', 'slug' => 'pantry', 'status' => true]);
+        $origins = ['Uttarakhand', 'Uttarakhand', 'Uttarakhand', 'Garhwal, Uttarakhand', 'Garhwal, Uttarakhand', 'Kinnaur, Himachal Pradesh', 'Sikkim'];
+        foreach ($origins as $index => $origin) {
+            Product::create(['category_id' => $category->id, 'name' => "Product {$index}", 'slug' => "product-{$index}", 'sku' => "SKU-{$index}", 'price' => 100, 'stock_quantity' => 5, 'status' => true, 'origin_region' => $origin]);
+        }
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee(route('products.index', ['origin' => 'Garhwal, Uttarakhand']))
+            ->assertSee(route('products.index', ['origin' => 'Kinnaur, Himachal Pradesh']))
+            // A state with no named places is still the best information we have.
+            ->assertSee(route('products.index', ['origin' => 'Sikkim']))
+            ->assertDontSee(route('products.index', ['origin' => 'Uttarakhand']).'"', false);
     }
 
     public function test_rewards_guide_explains_benefits_and_shows_signed_in_customers_link(): void

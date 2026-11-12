@@ -12,6 +12,7 @@ use App\Models\Review;
 use App\Services\StorefrontCache;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -79,16 +80,28 @@ class HomeController extends Controller
      * Origin regions for the homepage "where it grows" list, most stocked first,
      * each with its product count and a photo from one of its products.
      *
+     * Origins are free text ("Kinnaur, Himachal Pradesh" or just "Uttarakhand").
+     * A bare state is left out when products name places inside it, so the list
+     * never shows a state beside its own districts.
+     *
      * @return list<array{name: string, count: int, image: string|null}>
      */
     private function originRegions(): array
     {
-        return Product::with('images')
+        $byRegion = Product::with('images')
             ->where('status', 1)
             ->whereNotNull('origin_region')
             ->where('origin_region', '!=', '')
             ->get(['id', 'origin_region'])
-            ->groupBy('origin_region')
+            ->groupBy('origin_region');
+
+        $statesWithPlaces = $byRegion->keys()
+            ->filter(fn (int|string $region): bool => str_contains((string) $region, ','))
+            ->map(fn (int|string $region): string => Str::lower(trim(Str::afterLast((string) $region, ','))))
+            ->unique();
+
+        return $byRegion
+            ->reject(fn (EloquentCollection $products, int|string $region): bool => $statesWithPlaces->contains(Str::lower(trim((string) $region))))
             ->map(function (EloquentCollection $products, int|string $region): array {
                 $image = $products->flatMap(fn (Product $product) => $product->images)->sortByDesc('is_main')->first();
 
