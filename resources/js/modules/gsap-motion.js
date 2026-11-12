@@ -38,7 +38,7 @@ export const playSplit = (element) => {
     gsap.fromTo(split.lines, { yPercent: 110 }, { yPercent: 0, duration: 1.25, ease: 'expo.out', stagger: 0.09, overwrite: true });
 };
 
-const initSplitHeadlines = (preloaderDone) => {
+const initSplitHeadlines = () => {
     document.querySelectorAll('[data-split]').forEach((element) => {
         if (reduced) {
             element.classList.add('is-split');
@@ -50,7 +50,7 @@ const initSplitHeadlines = (preloaderDone) => {
         const heroSlide = element.closest('[data-hero-copy]');
         if (heroSlide) {
             gsap.set(split.lines, { yPercent: 110 });
-            if (heroSlide.classList.contains('is-active')) preloaderDone.then(() => playSplit(element));
+            if (heroSlide.classList.contains('is-active')) playSplit(element);
             return;
         }
         gsap.set(split.lines, { yPercent: 110 });
@@ -217,25 +217,9 @@ const initRevealLists = () => {
     });
 };
 
-/* ── Preloader (first page of a session) ─────────────────────────────── */
-const runPreloader = () => new Promise((resolve) => {
-    const root = document.documentElement;
-    const preloader = document.querySelector('[data-preloader]');
-    if (!preloader || !root.classList.contains('show-preloader')) {
-        resolve();
-        return;
-    }
-    const count = preloader.querySelector('[data-preloader-count]');
-    const state = { value: 0 };
-    gsap.timeline({ onComplete: () => { root.classList.remove('show-preloader'); resolve(); } })
-        .to(state, { value: 100, duration: 1.5, ease: 'power2.inOut', onUpdate: () => { if (count) count.textContent = String(Math.round(state.value)); } })
-        .to(preloader, { clipPath: 'inset(0% 0% 100% 0%)', duration: 1, ease: 'expo.inOut' }, '+=0.15');
-});
-
 export const initGsapMotion = () => {
-    const preloaderDone = runPreloader();
     initSmoothScroll();
-    initSplitHeadlines(preloaderDone);
+    initSplitHeadlines();
     initReveals();
     initCounters();
     initParallax();
@@ -244,7 +228,6 @@ export const initGsapMotion = () => {
     initStack();
     initMagnetic();
     initRevealLists();
-    preloaderDone.then(() => ScrollTrigger.refresh());
 
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener('load', refresh, { once: true });

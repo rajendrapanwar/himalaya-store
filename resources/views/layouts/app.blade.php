@@ -64,23 +64,13 @@
     @if(config('seo.twitter_site'))<meta name="twitter:site" content="{{ config('seo.twitter_site') }}">@endif
     <link rel="alternate" type="application/rss+xml" title="Pahadi Roots Journal" href="{{ route('blog.feed') }}">
     <title>{{ $seoTitle }}</title>
-    <script nonce="{{ Vite::cspNonce() }}">document.documentElement.classList.add('js');@if($overlayHeader)try{if(!sessionStorage.getItem('pr-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('show-preloader');sessionStorage.setItem('pr-intro','1');}}catch(e){}@endif</script>
+    <script nonce="{{ Vite::cspNonce() }}">document.documentElement.classList.add('js');</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
 <body class="storefront min-h-screen antialiased" data-image-fallback-src="{{ asset('assets/img/product-placeholder.svg') }}" data-suggestions-url="{{ route('products.suggestions') }}">
     <a href="#main-content" class="sr-only z-[120] rounded-full bg-paper px-5 py-3 font-bold text-ink shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
     <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
-
-    @if($overlayHeader)
-        <div class="preloader" data-preloader aria-hidden="true">
-            <div class="text-center">
-                <svg class="mx-auto h-16 w-16" viewBox="0 0 48 48" fill="none"><path class="draw" d="m6 34 11-16 7 9 7-14 11 21" stroke="#f5b51b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path class="draw" d="M8 39c9-3.5 23-3.5 32 0" stroke="#f6f0e4" stroke-width="2" stroke-linecap="round"/></svg>
-                <p class="preloader-count mt-4"><span data-preloader-count>0</span><span class="text-buransh">%</span></p>
-                <p class="mt-3 text-[11px] font-black uppercase tracking-[.4em] text-snow/60">Pahadi Roots · From the hills</p>
-            </div>
-        </div>
-    @endif
 
     {{-- Header --}}
     <header class="site-header {{ $overlayHeader ? 'header-on-dark' : '' }}" data-site-header>

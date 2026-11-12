@@ -273,12 +273,6 @@
     .back-to-top svg.ring { position: absolute; inset: 0; transform: rotate(-90deg); }
     .back-to-top svg.ring circle { stroke-dasharray: 138.2; stroke-dashoffset: calc(138.2 * (1 - var(--progress, 0))); }
 
-    /* Preloader (first visit per session) */
-    .preloader { position: fixed; inset: 0; z-index: 110; display: none; place-items: center; background: #0d1a14; color: #f6f0e4; }
-    .show-preloader .preloader { display: grid; animation: preloader-fallback 0s 4s forwards; }
-    .preloader-count { font-family: var(--font-display); font-size: clamp(4rem, 14vw, 11rem); font-weight: 600; font-variation-settings: 'SOFT' 100; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
-    .preloader path.draw { stroke-dasharray: 260; stroke-dashoffset: 260; animation: draw-line 1.4s var(--ease-out-expo) .1s forwards; }
-
     /* Hero */
     .landscape { position: relative; isolation: isolate; overflow: hidden; background: #0d1a14; color: #fffaf1; }
     .arch-frame { position: relative; overflow: hidden; border-radius: 999px 999px 2rem 2rem; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .6); }
@@ -478,8 +472,6 @@
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes split-fallback { to { opacity: 1; } }
 @keyframes reveal-fallback { to { visibility: visible; } }
-@keyframes preloader-fallback { to { visibility: hidden; opacity: 0; pointer-events: none; } }
-@keyframes draw-line { to { stroke-dashoffset: 0; } }
 @keyframes ken-burns { from { transform: scale(1.15); } to { transform: scale(1.02); } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
 @keyframes hero-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -512,11 +504,10 @@
     .ticker-track { animation: none !important; }
     .ticker-track[aria-hidden='true'] { display: none; }
     .menu-link > span.inner, .menu-fade { transform: none !important; opacity: 1 !important; }
-    .show-preloader .preloader { display: none !important; }
     @view-transition { navigation: none; }
 }
 
 @media print {
-    .site-header, footer, .toast-region, .back-to-top, .scroll-progress, .whatsapp-fab, .drawer, .search-overlay, .overlay-backdrop, .menu-overlay, .preloader { display: none !important; }
+    .site-header, footer, .toast-region, .back-to-top, .scroll-progress, .whatsapp-fab, .drawer, .search-overlay, .overlay-backdrop, .menu-overlay { display: none !important; }
     .storefront::before { display: none; }
 }
