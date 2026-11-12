@@ -149,10 +149,21 @@
     </div>
 </section>
 
+@php
+    // Only rows we have real data for: "Not specified" undercuts the traceability promise.
+    $productDetails = array_filter([
+        'SKU' => $product->sku,
+        'Batch' => $product->batch_number,
+        'Harvested' => $product->harvested_at?->format('d M Y'),
+        'Producer location' => $product->producer_location ?: $product->origin_region,
+        'Pack weight' => $packSize,
+    ]);
+    $hasBatchDetails = $product->batch_number || $product->harvested_at;
+@endphp
 <section class="section-space pb-0">
-    <div class="grid gap-6 lg:grid-cols-[1.35fr_.65fr]">
+    <div class="grid gap-6 {{ $productDetails ? 'lg:grid-cols-[1.35fr_.65fr]' : '' }}">
         <article class="surface-card p-7 sm:p-10" data-reveal><p class="eyebrow eyebrow-line">Product story</p><h2 class="section-title mt-4 !text-[clamp(2rem,3.4vw,2.9rem)]">What makes it <em>special</em></h2><div class="mt-6 space-y-4 text-base leading-8 text-stone-600">{!! nl2br(e($product->description ?: $product->short_description ?: 'More sourcing information will be added soon.')) !!}</div>@if($product->ingredients)<div class="mt-8 rounded-2xl bg-snow p-5"><h3 class="text-xs font-black uppercase tracking-[.16em] text-buransh">Ingredients</h3><p class="mt-2 text-sm leading-7 text-stone-700">{{ $product->ingredients }}</p></div>@endif</article>
-        <aside class="surface-card p-7 sm:p-8" data-reveal><p class="eyebrow eyebrow-line">Batch information</p><dl class="mt-5 divide-y divide-stone-100 text-sm"><div class="flex justify-between gap-5 py-3.5"><dt class="text-stone-500">SKU</dt><dd class="text-right font-bold">{{ $product->sku ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3.5"><dt class="text-stone-500">Batch</dt><dd class="text-right font-bold">{{ $product->batch_number ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3.5"><dt class="text-stone-500">Harvested</dt><dd class="text-right font-bold">{{ $product->harvested_at?->format('d M Y') ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3.5"><dt class="text-stone-500">Producer location</dt><dd class="text-right font-bold">{{ $product->producer_location ?: $product->origin_region ?: 'Not specified' }}</dd></div><div class="flex justify-between gap-5 py-3.5"><dt class="text-stone-500">Pack weight</dt><dd class="text-right font-bold">{{ $packSize ?: 'Not specified' }}</dd></div></dl></aside>
+        @if($productDetails)<aside class="surface-card p-7 sm:p-8" data-reveal><p class="eyebrow eyebrow-line">{{ $hasBatchDetails ? 'Batch information' : 'Product details' }}</p><dl class="mt-5 divide-y divide-stone-100 text-sm">@foreach($productDetails as $label => $value)<div class="flex justify-between gap-5 py-3.5"><dt class="text-stone-500">{{ $label }}</dt><dd class="text-right font-bold">{{ $value }}</dd></div>@endforeach</dl></aside>@endif
     </div>
 </section>
 
