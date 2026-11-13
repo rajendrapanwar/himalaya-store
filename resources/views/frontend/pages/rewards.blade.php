@@ -30,7 +30,7 @@
 
 <section class="-mt-6 relative z-10 mx-4 grid overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg sm:mx-8 md:grid-cols-3" aria-label="Rewards at a glance">
     <div class="p-6 sm:p-7"><p class="text-3xl font-black text-brand-800">{{ $referrerPoints }}</p><p class="mt-1 text-sm font-black text-stone-900">points for you</p><p class="mt-2 text-xs leading-5 text-stone-500">After your friend’s first qualifying order.</p></div>
-    <div class="border-y border-stone-200 p-6 sm:p-7 md:border-x md:border-y-0"><p class="text-3xl font-black text-buransh">{{ $friendPoints }}</p><p class="mt-1 text-sm font-black text-stone-900">points for your friend</p><p class="mt-2 text-xs leading-5 text-stone-500">A welcome reward after their first qualifying order.</p></div>
+    <div class="border-y border-stone-200 p-6 sm:p-7 md:border-x md:border-y-0"><p class="text-3xl font-black text-moss">{{ $friendPoints }}</p><p class="mt-1 text-sm font-black text-stone-900">points for your friend</p><p class="mt-2 text-xs leading-5 text-stone-500">A welcome reward after their first qualifying order.</p></div>
     <div class="p-6 sm:p-7"><p class="text-3xl font-black text-brand-800">₹{{ number_format($pointValue, 2) }}</p><p class="mt-1 text-sm font-black text-stone-900">value of each point</p><p class="mt-2 text-xs leading-5 text-stone-500">Redeem up to {{ $maximumRedemption }}% of eligible merchandise value.</p></div>
 </section>
 
@@ -42,7 +42,7 @@
             ['02', 'Your friend creates an account', 'They open the link and register in that same browser session. This connects the new account to you.'],
             ['03', 'Both balances are rewarded', 'After their first qualifying order is paid—or a COD order is delivered—the points appear automatically.'],
         ] as [$number, $title, $description])
-        <li class="relative overflow-hidden rounded-xl border border-stone-200 bg-white p-6"><span class="text-xs font-black tracking-widest text-buransh">{{ $number }}</span><h3 class="mt-8 text-lg font-black text-ink">{{ $title }}</h3><p class="mt-3 text-sm leading-7 text-stone-600">{{ $description }}</p></li>
+        <li class="relative overflow-hidden rounded-xl border border-stone-200 bg-white p-6"><span class="text-xs font-black tracking-widest text-moss">{{ $number }}</span><h3 class="mt-8 text-lg font-black text-ink">{{ $title }}</h3><p class="mt-3 text-sm leading-7 text-stone-600">{{ $description }}</p></li>
         @endforeach
     </ol>
     @auth
@@ -67,7 +67,7 @@
             ['What happens after a cancellation or refund?', 'Points awarded from that order are reversed automatically so balances and reports remain accurate.'],
             ['Can I combine points and a coupon?', 'Checkout calculates each eligible benefit and shows the complete order summary before you place the order. Coupon and points limits still apply.'],
         ] as [$question, $answer])
-        <details class="group p-5 sm:p-6"><summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-black text-ink"><span>{{ $question }}</span><span class="text-xl text-buransh transition group-open:rotate-45" aria-hidden="true">+</span></summary><p class="mt-4 max-w-2xl text-sm leading-7 text-stone-600">{{ $answer }}</p></details>
+        <details class="group p-5 sm:p-6"><summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-black text-ink"><span>{{ $question }}</span><span class="text-xl text-moss transition group-open:rotate-45" aria-hidden="true">+</span></summary><p class="mt-4 max-w-2xl text-sm leading-7 text-stone-600">{{ $answer }}</p></details>
         @endforeach
     </div>
 </section>

@@ -15,6 +15,9 @@
     ])->filter(fn ($tab) => $tab['products']->isNotEmpty())->values();
     $fallbackImages = ['editorial/uttarakhand-terrace-farming.webp', 'editorial/misty-tea-mountains.webp', 'editorial/tea-farmer-hillside.webp', 'editorial/rolling-cultivated-hills.webp', 'editorial/darjeeling-tea-garden.webp'];
     $freeDeliveryThreshold = '₹'.number_format((float) config('commerce.free_shipping_threshold'), 0);
+    // One definition, so the preload below and the hero image always agree.
+    $heroSizes = '(min-width: 1024px) 390px, (min-width: 640px) 74vw, 60vw';
+    $heroSrcset = app(\App\Services\ImageVariants::class)->srcset($heroSlides->first()->image_path);
     $homeFaqs = [
         ['Where do your products come from?', 'We focus on products connected to Uttarakhand and the wider Himalayan region. Origin, producer, ingredients and batch details are shown whenever the information is available.'],
         ['How long will my order take?', 'Orders are generally prepared within 1–2 business days. Delivery time varies by pincode, courier coverage, weather and road conditions.'],
@@ -24,7 +27,7 @@
 @endphp
 
 @push('head')
-<link rel="preload" as="image" href="{{ $heroSlides->first()->image_url }}" fetchpriority="high">
+<link rel="preload" as="image" href="{{ $heroSlides->first()->image_url }}" @if($heroSrcset) imagesrcset="{{ $heroSrcset }}" imagesizes="{{ $heroSizes }}" @endif fetchpriority="high">
 <x-structured-data :data="[
     '@context' => 'https://schema.org',
     '@graph' => [array_filter([
@@ -59,8 +62,8 @@
 
 @section('content')
 {{-- ═══════════ Hero: the seasonal campaign ═══════════ --}}
-<section class="landscape min-h-[100svh]" data-landscape data-hero-slider data-hero-delay="7000" aria-roledescription="carousel" aria-label="Featured Pahadi Roots campaigns">
-    <div class="site-shell relative z-10 grid min-h-[100svh] items-center gap-10 pb-20 pt-[calc(var(--header-height)+var(--ticker-height)+2.5rem)] lg:grid-cols-[1.15fr_.85fr]">
+<section class="landscape lg:min-h-[100svh]" data-landscape data-hero-slider data-hero-delay="7000" aria-roledescription="carousel" aria-label="Featured Pahadi Roots campaigns">
+    <div class="site-shell relative z-10 grid items-center gap-8 pb-12 pt-[calc(var(--header-height)+var(--ticker-height)+2rem)] lg:min-h-[100svh] lg:gap-10 lg:pb-20 lg:grid-cols-[1.15fr_.85fr]">
         <div>
             <div class="relative">
                 @foreach($heroSlides as $slide)
@@ -88,94 +91,40 @@
             @endif
         </div>
 
-        <div class="relative mx-auto w-[74%] max-w-[390px] lg:mx-0 lg:ml-auto lg:w-full">
+        <div class="relative mx-auto w-[60%] max-w-[390px] sm:w-[74%] lg:mx-0 lg:ml-auto lg:w-full">
             <div class="arch-frame aspect-[3/4] bg-night-2" data-reveal="scale">
                 @foreach($heroSlides as $slide)
-                    <div class="hero-slide {{ $loop->first ? 'is-active' : '' }}" data-hero-image aria-hidden="true"><img src="{{ $slide->image_url }}" data-image-fallback alt="" class="hero-media" width="880" height="1170" @if($loop->first) fetchpriority="high" @else loading="lazy" decoding="async" @endif></div>
+                    <div class="hero-slide {{ $loop->first ? 'is-active' : '' }}" data-hero-image aria-hidden="true"><x-responsive-image :path="$slide->image_path" :sizes="$heroSizes" data-image-fallback alt="" class="hero-media" width="880" height="1170" :fetchpriority="$loop->first ? 'high' : null" :loading="$loop->first ? null : 'lazy'" :decoding="$loop->first ? null : 'async'" /></div>
                 @endforeach
             </div>
-            <x-rotating-badge class="absolute -bottom-8 -left-8 sm:-left-12" size="9rem" text="Single origin • Small batch • Hand packed • " />
-            <x-sticker class="absolute -right-4 top-10 rotate-12 text-night sm:-right-8" fill="#c8234e" size="6.5rem"><span class="text-paper">Packed in<br>Dehradun</span></x-sticker>
+            <x-rotating-badge class="absolute -bottom-8 -left-8 max-sm:hidden sm:-left-12" size="9rem" text="Single origin • Small batch • Hand packed • " />
+            <x-sticker class="absolute -right-4 top-10 rotate-12 text-night sm:-right-8" fill="#2d5a3f" size="6.5rem"><span class="text-paper">Packed in<br>Dehradun</span></x-sticker>
         </div>
     </div>
 </section>
 
-{{-- ═══════════ (01) Manifesto + numbers ═══════════ --}}
-<section id="home-intro" class="chapter-snow section-space">
-    <div class="site-shell">
-        <div class="flex items-center justify-between gap-6"><p class="eyebrow">Rooted in the hills</p><span class="section-number">(01)</span></div>
-        <p class="manifesto mt-10 max-w-[22ch] sm:max-w-none" data-manifesto>Good food should never feel anonymous. We trace every jar, sack and basket back to the terraced slopes, the forest hives and the hands that tend them — <em>then pack it with care in Dehradun.</em></p>
-
-        <div class="mt-20 grid grid-cols-2 border-t-[1.5px] border-ink lg:grid-cols-4">
-            @foreach([
-                ['value' => $stats['products'], 'suffix' => '', 'label' => 'Products from mountain producers'],
-                ['value' => $stats['collections'], 'suffix' => '', 'label' => 'Curated pantry collections'],
-                ['value' => max($stats['regions'], 1), 'suffix' => '+', 'label' => 'Himalayan regions represented'],
-                ['value' => 30, 'suffix' => '', 'label' => 'Day returns on eligible orders'],
-            ] as $stat)
-                <div class="border-b-[1.5px] border-ink py-8 pr-6 {{ $loop->odd ? 'border-r-[1.5px]' : '' }} {{ $loop->index < 3 ? 'lg:border-r-[1.5px]' : '' }} lg:border-b-0 lg:pl-6 lg:first:pl-0">
-                    <p class="stat-number"><span data-count-to="{{ $stat['value'] }}">{{ $stat['value'] }}</span><span class="text-buransh">{{ $stat['suffix'] }}</span></p>
-                    <p class="mt-3 max-w-[16ch] text-sm font-semibold leading-5 opacity-70">{{ $stat['label'] }}</p>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════ (02) Collections: pinned horizontal gallery ═══════════ --}}
-@if($categories->isNotEmpty())
-<section class="chapter-night overflow-hidden" data-hscroll aria-labelledby="collections-title">
-    <div class="flex min-h-[100svh] flex-col justify-center py-16 lg:py-0">
-        <div class="site-shell flex items-end justify-between gap-6">
-            <div><p class="eyebrow">Browse the range</p><h2 id="collections-title" class="section-title mt-5" data-split>Shop by <em>collection</em></h2></div>
-            <span class="section-number hidden sm:inline">(02)</span>
-        </div>
-        <div class="hscroll-viewport mt-12 pl-[max(1.25rem,calc((100vw-1360px)/2))]">
-            <div class="hscroll-track pr-[max(1.25rem,calc((100vw-1360px)/2))]" data-hscroll-track>
-                @foreach($categories as $category)
-                    <a href="{{ route('products.index', ['category' => $category->slug]) }}" class="hscroll-panel group block h-[58vh] min-h-[380px] w-[78vw] sm:w-[46vw] lg:w-[26vw]">
-                        <img src="{{ $category->image ? asset('storage/'.$category->image) : asset('assets/img/'.$fallbackImages[$loop->index % count($fallbackImages)]) }}" data-image-fallback alt="" class="absolute inset-0 -z-10 h-full w-[116%] max-w-none object-cover" data-hscroll-image loading="lazy" decoding="async" width="700" height="900">
-                        <span class="absolute inset-0 -z-10 bg-gradient-to-t from-night via-night/20 to-transparent" aria-hidden="true"></span>
-                        <span class="absolute left-6 top-6 font-display text-6xl italic text-snow/90" style="font-variation-settings: 'SOFT' 100, 'WONK' 1">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                        <span class="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6">
-                            <span><span class="block text-[11px] font-black uppercase tracking-[.2em] text-sun">{{ $category->products_count }} {{ Str::plural('product', $category->products_count) }}</span><span class="font-display mt-2 block text-3xl font-semibold leading-none text-snow sm:text-4xl">{{ $category->name }}</span></span>
-                            <span class="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-snow text-night transition duration-500 group-hover:-rotate-45 group-hover:bg-sun" aria-hidden="true"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
-                        </span>
-                    </a>
-                @endforeach
-                <a href="{{ route('products.index') }}" class="hscroll-panel chapter-sun group flex h-[58vh] min-h-[380px] w-[78vw] flex-col justify-between p-8 sm:w-[46vw] lg:w-[26vw]">
-                    <x-sticker fill="#c8234e" size="6rem"><span class="text-paper">All {{ $stats['products'] }}</span></x-sticker>
-                    <span><span class="font-display block text-5xl font-semibold leading-[.95]">The whole <em class="italic text-buransh-deep">mountain pantry</em></span><span class="mt-6 inline-flex items-center gap-2 text-sm font-black uppercase tracking-[.14em]">Shop everything <span class="button-arrow" aria-hidden="true">→</span></span></span>
-                </a>
-            </div>
-        </div>
-        <div class="site-shell mt-10 hidden lg:block"><div class="h-[2px] w-full bg-snow/15"><span class="block h-full origin-left scale-x-0 bg-sun" data-hscroll-bar></span></div></div>
-    </div>
-</section>
-@endif
-
-{{-- ═══════════ Values strip ═══════════ --}}
-<section class="site-shell py-16" aria-label="The Pahadi Roots promise">
-    <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+{{-- ═══════════ Why Pahadi Roots: one compact strip ═══════════ --}}
+<section class="border-b border-[color:var(--border)] bg-paper" aria-label="The Pahadi Roots promise">
+    <ul class="site-shell grid grid-cols-2 gap-x-4 gap-y-5 py-7 lg:grid-cols-4 lg:gap-x-8 lg:py-10">
         @foreach([
-            ['title' => 'Named origins', 'copy' => 'Region and producer published for every product we can trace.', 'icon' => 'M12 21s7-5.4 7-11.5a7 7 0 1 0-14 0C5 15.6 12 21 12 21Zm0-8.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z', 'color' => 'bg-buransh text-paper'],
-            ['title' => 'Small batches', 'copy' => 'Harvest and batch notes, so each jar tastes of one season.', 'icon' => 'm12 3 8 4-8 4-8-4 8-4Zm-8 9 8 4 8-4M4 17l8 4 8-4', 'color' => 'bg-sun text-night'],
-            ['title' => 'Packed by hand', 'copy' => 'Checked, packed and dispatched by our team in Dehradun.', 'icon' => 'M4 10h16v10H4V10Zm-1-5h18v5H3V5Zm9 15V5', 'color' => 'bg-night text-sun'],
-            ['title' => 'Free over '.$freeDeliveryThreshold, 'copy' => 'Plus 30-day returns, UPI, cards and cash on delivery.', 'icon' => 'M3 7h11v10H3V7Zm11 3h4l3 3v4h-7v-7ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z', 'color' => 'bg-glacier text-night'],
+            ['title' => 'Named origins', 'copy' => 'Region and producer shown for every product we can trace.', 'icon' => 'M12 21s7-5.4 7-11.5a7 7 0 1 0-14 0C5 15.6 12 21 12 21Zm0-8.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'],
+            ['title' => 'Small batches', 'copy' => 'Batch and harvest details wherever we have them.', 'icon' => 'm12 3 8 4-8 4-8-4 8-4Zm-8 9 8 4 8-4M4 17l8 4 8-4'],
+            ['title' => 'Packed by hand', 'copy' => 'Checked and dispatched by our team in Dehradun.', 'icon' => 'M4 10h16v10H4V10Zm-1-5h18v5H3V5Zm9 15V5'],
+            ['title' => 'Free delivery over '.$freeDeliveryThreshold, 'copy' => '30-day returns. Pay by UPI, card or cash on delivery.', 'icon' => 'M3 7h11v10H3V7Zm11 3h4l3 3v4h-7v-7ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z'],
         ] as $value)
-            <li class="group flex items-start gap-5" data-reveal style="--i: {{ $loop->index }}">
-                <span class="grid h-16 w-16 shrink-0 place-items-center rounded-[1.4rem] {{ $value['color'] }} transition duration-500 group-hover:-rotate-6 group-hover:scale-110"><svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="{{ $value['icon'] }}"/></svg></span>
-                <span><strong class="font-display block text-2xl font-semibold">{{ $value['title'] }}</strong><span class="mt-1 block text-sm leading-6 opacity-70">{{ $value['copy'] }}</span></span>
+            <li class="flex items-center gap-3 sm:items-start sm:gap-4">
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-night text-sun" aria-hidden="true"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="{{ $value['icon'] }}"/></svg></span>
+                <span><strong class="block text-sm font-extrabold leading-5 text-ink">{{ $value['title'] }}</strong><span class="mt-1 hidden text-[13px] leading-5 text-stone-600 sm:block">{{ $value['copy'] }}</span></span>
             </li>
         @endforeach
     </ul>
 </section>
 
-{{-- ═══════════ (03) Favourites ═══════════ --}}
+{{-- ═══════════ Bestsellers ═══════════ --}}
 @if($productTabs->isNotEmpty())
-<section class="site-shell pb-[clamp(4rem,9vw,8rem)] pt-8" aria-labelledby="favourites-title">
-    <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-        <div><div class="flex items-center gap-6"><p class="eyebrow">Curated essentials</p><span class="section-number">(03)</span></div><h2 id="favourites-title" class="section-title mt-5" data-split>This season’s <em>favourites</em></h2></div>
+<section class="site-shell section-space" aria-labelledby="favourites-title">
+    <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div><p class="eyebrow">Curated essentials</p><h2 id="favourites-title" class="section-title mt-4" data-split>This season’s <em>favourites</em></h2></div>
         @if($productTabs->count() > 1)
             <div class="tabs self-start md:self-auto" role="tablist" aria-label="Product groups" data-tabs>
                 <span class="tab-indicator" aria-hidden="true"></span>
@@ -184,108 +133,91 @@
         @endif
     </div>
     @foreach($productTabs as $tab)
-        <div id="panel-{{ $tab['id'] }}" role="tabpanel" aria-labelledby="tab-{{ $tab['id'] }}" class="mt-12 grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 lg:grid-cols-4" @unless($loop->first) hidden @endunless @if($loop->first) data-reveal-stagger @endif>
+        {{-- Phones show the first four so the page stays short; the button below leads to the rest. --}}
+        <div id="panel-{{ $tab['id'] }}" role="tabpanel" aria-labelledby="tab-{{ $tab['id'] }}" class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4 max-lg:[&>*:nth-child(n+5)]:hidden" @unless($loop->first) hidden @endunless>
             @foreach($tab['products'] as $product)<x-product-card :product="$product" :wishlist-product-ids="$wishlistProductIds" />@endforeach
         </div>
     @endforeach
-    <div class="mt-16 flex justify-center"><a href="{{ route('products.index') }}" class="button-primary" data-magnetic>Shop all {{ $stats['products'] }} products <span class="button-arrow" aria-hidden="true">→</span></a></div>
+    <div class="mt-12 flex justify-center"><a href="{{ route('products.index') }}" class="button-primary">Shop all {{ $stats['products'] }} products <span class="button-arrow" aria-hidden="true">→</span></a></div>
 </section>
 @endif
 
-{{-- ═══════════ (04) Where it grows ═══════════ --}}
-@if($regions)
-<section class="chapter-glacier section-space" aria-labelledby="origins-title">
-    <div class="site-shell grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
-        <div class="lg:sticky lg:top-32 lg:self-start">
-            <div class="flex items-center gap-6"><p class="eyebrow">Where it grows</p><span class="section-number">(04)</span></div>
-            <h2 id="origins-title" class="section-title mt-5" data-split>Every product has a <em>place.</em></h2>
-            <p class="lead mt-6 max-w-md">From the apple valleys of Kinnaur to the terraces of Garhwal — choose a region and taste what grows there.</p>
-            <x-rotating-badge class="mt-10 hidden lg:inline-grid" size="8rem" color="#13201a" center="#d8e8e1" text="Taste the region • Know the maker • " />
-        </div>
-        <ol data-reveal-list>
-            @foreach($regions as $region)
-                <li><a href="{{ route('products.index', ['origin' => $region['name']]) }}" class="reveal-row" @if($region['image']) data-preview-src="{{ $region['image'] }}" @endif>
-                    <span class="font-display text-lg italic opacity-60">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                    <span><span class="row-title">{{ Str::before($region['name'], ',') }}</span>@if(Str::contains($region['name'], ','))<span class="ml-3 align-middle text-xs font-black uppercase tracking-[.16em] opacity-60">{{ trim(Str::after($region['name'], ',')) }}</span>@endif</span>
-                    <span class="flex items-center gap-3 text-sm font-black"><span class="hidden sm:inline">{{ $region['count'] }} {{ Str::plural('product', $region['count']) }}</span><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+{{-- ═══════════ Collections: a plain grid, no scroll-jacking ═══════════ --}}
+@if($categories->isNotEmpty())
+<section class="chapter-night section-space" aria-labelledby="collections-title">
+    <div class="site-shell">
+        <div><p class="eyebrow">Browse the range</p><h2 id="collections-title" class="section-title mt-4" data-split>Shop by <em>collection</em></h2></div>
+        <ul class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+            @foreach($categories as $category)
+                <li><a href="{{ route('products.index', ['category' => $category->slug]) }}" class="category-tile group">
+                    <x-responsive-image :path="$category->image ?: 'assets/img/'.$fallbackImages[$loop->index % count($fallbackImages)]" sizes="(min-width: 1024px) 19vw, (min-width: 640px) 31vw, 46vw" data-image-fallback alt="" loading="lazy" decoding="async" width="480" height="600" />
+                    <span class="category-tile-label"><span class="font-display block text-lg font-semibold leading-tight sm:text-xl">{{ $category->name }}</span><span class="mt-1 block text-[11px] font-bold uppercase tracking-[.14em] text-snow/75">{{ $category->products_count }} {{ Str::plural('product', $category->products_count) }}</span></span>
                 </a></li>
             @endforeach
-        </ol>
-    </div>
-</section>
-@endif
-
-{{-- ═══════════ (05) The Pahadi standard: stacked cards ═══════════ --}}
-<section class="site-shell section-space" aria-labelledby="standard-title">
-    <div class="flex items-end justify-between gap-6"><div><p class="eyebrow">The Pahadi standard</p><h2 id="standard-title" class="section-title mt-5 max-w-3xl" data-split>From a terraced field to <em>your kitchen.</em> Nothing hidden.</h2></div><span class="section-number hidden sm:inline">(05)</span></div>
-    <div class="mt-14 space-y-6 pb-10" data-stack>
-        @foreach([
-            ['chapter' => 'chapter-night', 'step' => 'Know where it comes from', 'copy' => 'Region and producer details are published whenever they are available — from Munsiyari rajma to Kinnaur walnuts. You always know which valley grew your food.', 'image' => 'assets/img/editorial/uttarakhand-terrace-farming.webp', 'points' => ['Origin region', 'Producer name', 'Pack weight & ingredients']],
-            ['chapter' => 'chapter-buransh', 'step' => 'Understand the batch', 'copy' => 'Harvest dates, batch numbers and preparation notes make each choice transparent. Small batches mean one season, one place, one honest flavour.', 'image' => 'assets/img/editorial/tea-farmer-hillside.webp', 'points' => ['Batch number', 'Harvest date', 'Preparation notes']],
-            ['chapter' => 'chapter-sun', 'step' => 'Packed by hand in Dehradun', 'copy' => 'Every order is checked and packed by our own team, then dispatched with tracking you can follow from your account.', 'image' => 'assets/img/products/ringal-basket.webp', 'points' => ['Hand-checked', 'Tracked delivery', 'Order updates by email']],
-            ['chapter' => 'chapter-glacier', 'step' => 'Delivered with care', 'copy' => 'Free delivery on orders over '.$freeDeliveryThreshold.', 30-day returns on eligible orders, and pay how you like — UPI, cards or cash on delivery.', 'image' => 'assets/img/products/multiflora-honey.webp', 'points' => ['Free over '.$freeDeliveryThreshold, '30-day returns', 'UPI, cards & COD']],
-        ] as $card)
-            <article class="stack-card {{ $card['chapter'] }} grid overflow-hidden rounded-[2rem] md:grid-cols-[1.1fr_.9fr]" style="--i: {{ $loop->index }}">
-                <div class="flex flex-col justify-between gap-10 p-8 sm:p-12">
-                    <div class="flex items-center justify-between"><span class="font-display text-7xl italic leading-none opacity-90" style="font-variation-settings: 'SOFT' 100, 'WONK' 1">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span class="text-[11px] font-black uppercase tracking-[.22em] opacity-70">Step {{ $loop->iteration }} of 4</span></div>
-                    <div><h3 class="font-display text-4xl font-semibold leading-[1] sm:text-5xl">{{ $card['step'] }}</h3><p class="mt-5 max-w-lg text-base leading-8 opacity-80">{{ $card['copy'] }}</p>
-                    <ul class="mt-7 flex flex-wrap gap-2">@foreach($card['points'] as $point)<li class="inline-flex items-center gap-2 rounded-full border-[1.5px] border-current px-4 py-2 text-xs font-black uppercase tracking-[.1em]"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="m5 12 4 4L19 6"/></svg>{{ $point }}</li>@endforeach</ul></div>
-                </div>
-                <div class="relative min-h-[280px] md:min-h-[460px]"><img src="{{ asset($card['image']) }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async"></div>
-            </article>
-        @endforeach
-    </div>
-    <div class="flex justify-center"><a href="{{ route('about') }}" class="button-secondary">Read our sourcing story <span class="button-arrow" aria-hidden="true">→</span></a></div>
-</section>
-
-{{-- ═══════════ Promotions ═══════════ --}}
-<section class="site-shell grid gap-6 pb-[clamp(4rem,9vw,8rem)] lg:grid-cols-[1.25fr_.75fr]" aria-label="Featured promotions">
-    <a href="{{ route('products.index', ['sale' => 1]) }}" rel="nofollow" class="chapter-buransh group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-12">
-        <span class="absolute inset-0 -z-10" data-reveal="clip"><img src="{{ asset('assets/img/products/wild-forest-honey.webp') }}" alt="Wild forest honey from the Himalayan region" class="h-full w-full object-cover opacity-60 mix-blend-luminosity transition duration-[1.4s] group-hover:scale-105" loading="lazy" decoding="async" width="960" height="720"></span>
-        <span class="absolute inset-0 -z-10 bg-gradient-to-t from-buransh-deep via-buransh/40 to-transparent" aria-hidden="true"></span>
-        <x-sticker class="absolute right-8 top-8" fill="#f5b51b" size="7rem"><span>Limited<br>time</span></x-sticker>
-        <h2 class="font-display max-w-lg text-5xl font-semibold leading-[.95] sm:text-6xl">Mountain favourites, at <em class="italic text-sun">friendlier</em> prices.</h2>
-        <span class="mt-7 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[.14em]">Shop current offers <span class="button-arrow" aria-hidden="true">→</span></span>
-    </a>
-    <a href="{{ route('bundles.index') }}" class="chapter-night group relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[2rem] p-8 sm:p-10">
-        <span class="absolute inset-0 -z-10" data-reveal="clip"><img src="{{ asset('assets/img/products/munsiyari-rajma.webp') }}" alt="Munsiyari rajma, a traditional hill-grown pulse" class="h-full w-full object-cover opacity-55 transition duration-[1.4s] group-hover:scale-105" loading="lazy" decoding="async" width="800" height="800"></span>
-        <span class="absolute inset-0 -z-10 bg-gradient-to-t from-night via-night/50 to-transparent" aria-hidden="true"></span>
-        <p class="eyebrow text-sun">Gift boxes</p>
-        <h2 class="font-display mt-4 text-4xl font-semibold leading-[1]">{{ $featuredBundle?->name ?? 'Gift the taste of the hills.' }}</h2>
-        <p class="mt-3 text-sm leading-6 opacity-75">@if($featuredBundle && $featuredBundle->products->isNotEmpty()){{ $featuredBundle->products->count() }} hill favourites in one ready-made box{{ $featuredBundle->savings > 0 ? ', ₹'.number_format($featuredBundle->savings, 0).' less than buying them separately.' : '.' }}@else Ready-made sets of hill favourites, priced together for less than buying each item.@endif</p>
-        <span class="mt-6 flex items-center justify-between gap-4"><span class="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[.14em]">Explore gift boxes <span class="button-arrow" aria-hidden="true">→</span></span>@if($featuredBundle)<span class="rounded-full bg-sun px-4 py-2 text-sm font-black text-night">₹{{ number_format((float) $featuredBundle->price, 0) }}</span>@endif</span>
-    </a>
-</section>
-
-{{-- ═══════════ Testimonials ═══════════ --}}
-@if($testimonials->isNotEmpty())
-<section class="chapter-night overflow-hidden py-[clamp(4rem,9vw,8rem)]" aria-labelledby="reviews-title">
-    <div class="site-shell flex items-end justify-between gap-6"><div><p class="eyebrow">Verified buyers</p><h2 id="reviews-title" class="section-title mt-5" data-split>Kind words from <em>our kitchen table</em></h2></div><span class="section-number hidden sm:inline">(06)</span></div>
-    <div class="ticker mt-14" style="--ticker-speed: 70s">
-        @foreach([false, true] as $duplicate)
-            <div class="ticker-track items-stretch" @if($duplicate) aria-hidden="true" @endif>
-                @foreach($testimonials as $review)
-                    <figure class="testimonial-card w-[min(82vw,420px)] whitespace-normal {{ $loop->even ? 'chapter-buransh' : 'chapter-snow' }}">
-                        <span class="quote-mark {{ $loop->even ? 'text-sun' : 'text-buransh' }}" aria-hidden="true">“</span>
-                        <p class="rating-stars mt-3" style="--rating: {{ $review->rating }}" aria-label="{{ $review->rating }} out of 5 stars"></p>
-                        <blockquote class="mt-4 flex-1 font-display text-xl leading-snug">{{ Str::limit($review->body, 180) }}</blockquote>
-                        <figcaption class="mt-6 text-sm"><strong class="block">{{ $review->user->name }}</strong>@if($review->product)<span class="opacity-70">on {{ $review->product->name }}</span>@endif</figcaption>
-                    </figure>
-                @endforeach
+            <li><a href="{{ route('products.index') }}" class="category-tile category-tile-all group">
+                <span class="category-tile-label"><span class="font-display block text-xl font-semibold leading-[1.05] sm:text-2xl">All {{ $stats['products'] }} products</span><span class="mt-2 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[.14em] sm:mt-3"><span class="max-sm:sr-only">Shop everything</span> <span class="button-arrow" aria-hidden="true">→</span></span></span>
+            </a></li>
+        </ul>
+        @if($regions)
+            <div class="mt-10 flex flex-wrap items-center gap-2 border-t border-snow/15 pt-8">
+                <h3 class="mr-2 text-[11px] font-black uppercase tracking-[.2em] text-snow/70">Or shop by origin</h3>
+                @foreach($regions as $region)<a href="{{ route('products.index', ['origin' => $region['name']]) }}" class="chip chip-light">{{ Str::before($region['name'], ',') }} <small>{{ $region['count'] }}</small></a>@endforeach
             </div>
-        @endforeach
+        @endif
     </div>
 </section>
 @endif
 
-{{-- ═══════════ (07) Journal ═══════════ --}}
+{{-- ═══════════ Offers and gift boxes ═══════════ --}}
+<section class="site-shell section-space grid gap-5 {{ $saleProducts->isNotEmpty() ? 'lg:grid-cols-2' : '' }}" aria-label="Featured promotions">
+    @if($saleProducts->isNotEmpty())
+        <a href="{{ route('products.index', ['sale' => 1]) }}" rel="nofollow" class="promo-card chapter-night group">
+            <x-responsive-image :path="$saleProducts->first()->images->sortByDesc('is_main')->first()?->image ?? 'assets/img/products/wild-forest-honey.webp'" sizes="(min-width: 1024px) 50vw, 100vw" data-image-fallback alt="" loading="lazy" decoding="async" width="960" height="720" />
+            <p class="eyebrow">On sale now</p>
+            <h2 class="font-display mt-4 max-w-md text-4xl font-semibold leading-[1] sm:text-5xl">Mountain favourites at friendlier prices.</h2>
+            <span class="mt-6 inline-flex items-center gap-2 text-sm font-black uppercase tracking-[.14em]">Shop current offers <span class="button-arrow" aria-hidden="true">→</span></span>
+        </a>
+    @endif
+    <a href="{{ route('bundles.index') }}" class="promo-card chapter-night group">
+        <x-responsive-image :path="$featuredBundle?->image ?: 'assets/img/products/munsiyari-rajma.webp'" sizes="(min-width: 1024px) 50vw, 100vw" data-image-fallback alt="" loading="lazy" decoding="async" width="800" height="800" />
+        <p class="eyebrow">Gift boxes</p>
+        <h2 class="font-display mt-4 max-w-md text-4xl font-semibold leading-[1] sm:text-5xl">{{ $featuredBundle?->name ?? 'Gift the taste of the hills.' }}</h2>
+        <p class="mt-3 max-w-md text-sm leading-6 text-snow/80">@if($featuredBundle && $featuredBundle->products->isNotEmpty()){{ $featuredBundle->products->count() }} hill favourites in one ready-made box{{ $featuredBundle->savings > 0 ? ', ₹'.number_format($featuredBundle->savings, 0).' less than buying them separately.' : '.' }}@else Ready-made sets of hill favourites, priced together for less than buying each item.@endif</p>
+        <span class="mt-6 flex flex-wrap items-center gap-4"><span class="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[.14em]">Explore gift boxes <span class="button-arrow" aria-hidden="true">→</span></span>@if($featuredBundle)<span class="rounded-full bg-sun px-4 py-2 text-sm font-black text-night">₹{{ number_format((float) $featuredBundle->price, 0) }}</span>@endif</span>
+    </a>
+</section>
+
+{{-- ═══════════ Reviews: each one shown once ═══════════ --}}
+@if($testimonials->isNotEmpty())
+@php
+    $shownReviews = $testimonials->take(3);
+    $reviewColumns = [1 => 'max-w-xl', 2 => 'md:grid-cols-2', 3 => 'md:grid-cols-3'][$shownReviews->count()];
+@endphp
+<section class="bg-paper section-space" aria-labelledby="reviews-title">
+    <div class="site-shell">
+        <p class="eyebrow">Customer reviews</p>
+        <h2 id="reviews-title" class="section-title mt-4" data-split>What customers <em>say</em></h2>
+        <div class="mt-10 grid gap-5 {{ $reviewColumns }}">
+            @foreach($shownReviews as $review)
+                <figure class="surface-card flex flex-col p-7">
+                    <p class="rating-stars text-base" style="--rating: {{ $review->rating }}" aria-label="{{ $review->rating }} out of 5 stars"></p>
+                    <blockquote class="mt-4 flex-1 font-display text-xl leading-snug text-ink">“{{ Str::limit($review->body, 180) }}”</blockquote>
+                    <figcaption class="mt-6 text-sm text-stone-600"><strong class="block text-ink">{{ $review->user->name }}</strong>@if($review->product)<a href="{{ route('products.show', $review->product->slug) }}" class="link-underline">on {{ $review->product->name }}</a>@endif</figcaption>
+                </figure>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ═══════════ Journal ═══════════ --}}
 @if($journalPosts->isNotEmpty())
 <section class="site-shell section-space" aria-labelledby="journal-title">
-    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"><div><div class="flex items-center gap-6"><p class="eyebrow">From the journal</p><span class="section-number">(07)</span></div><h2 id="journal-title" class="section-title mt-5" data-split>Stories from <em>the hills</em></h2></div><a href="{{ route('blog') }}" class="button-secondary self-start sm:self-auto">Explore the journal <span class="button-arrow" aria-hidden="true">→</span></a></div>
-    <ol class="mt-12" data-reveal-list>
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"><div><p class="eyebrow">From the journal</p><h2 id="journal-title" class="section-title mt-4" data-split>Stories from <em>the hills</em></h2></div><a href="{{ route('blog') }}" class="button-secondary self-start sm:self-auto">Explore the journal <span class="button-arrow" aria-hidden="true">→</span></a></div>
+    <ol class="mt-10" data-reveal-list>
         @foreach($journalPosts as $post)
             <li><a href="{{ route('blog.show', $post->slug) }}" class="reveal-row" @if($post->image_url) data-preview-src="{{ $post->image_url }}" @endif>
-                <span class="hidden text-xs font-black uppercase tracking-[.16em] opacity-60 sm:block sm:w-40">{{ $post->category }}</span>
+                <span class="hidden text-xs font-black uppercase tracking-[.16em] opacity-70 sm:block sm:w-40">{{ $post->category }}</span>
                 <span class="row-title">{{ $post->title }}</span>
                 <span class="text-sm font-black whitespace-nowrap">{{ $post->reading_time }} min</span>
             </a></li>
@@ -296,23 +228,22 @@
 
 {{-- ═══════════ FAQ + delivery check ═══════════ --}}
 <section class="site-shell grid gap-10 {{ $journalPosts->isEmpty() ? 'pt-[clamp(4rem,9vw,8rem)]' : '' }} lg:grid-cols-[1.15fr_.85fr]" aria-labelledby="faq-title">
-    <div>
+    <div class="min-w-0">
         <p class="eyebrow">Good to know</p>
-        <h2 id="faq-title" class="section-title mt-5" data-split>Questions, <em>answered</em></h2>
-        <div class="mt-10 border-b-[1.5px] border-ink">
+        <h2 id="faq-title" class="section-title mt-4" data-split>Questions, <em>answered</em></h2>
+        <div class="mt-8 border-b-[1.5px] border-ink">
             @foreach($homeFaqs as [$question, $answer])
                 <details class="details-accordion"><summary>{{ $question }}<span class="plus" aria-hidden="true"></span></summary><p class="accordion-body pb-6 pr-10 text-sm leading-7 opacity-75">{{ $answer }}</p></details>
             @endforeach
         </div>
         <a href="{{ route('faq') }}" class="button-quiet mt-6 !px-0">All frequently asked questions</a>
     </div>
-    <div class="chapter-sun relative self-start overflow-hidden rounded-[2rem] p-8 sm:p-10" aria-labelledby="delivery-title">
-        <svg class="pointer-events-none absolute -bottom-2 left-0 h-28 w-full text-buransh/20" viewBox="0 0 600 120" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 120 90 50l60 30 110-60 90 50 80-30 170 80Z"/></svg>
+    <div class="chapter-night min-w-0 self-start overflow-hidden rounded-[2rem] p-7 sm:p-10" aria-labelledby="delivery-title">
         <p class="eyebrow">Delivery check</p>
-        <h3 id="delivery-title" class="font-display mt-4 text-4xl font-semibold leading-[1]">Do we deliver <em class="italic text-buransh-deep">to you?</em></h3>
-        <p class="mt-4 text-sm leading-6 opacity-80">Enter your six-digit pincode for availability, delivery time and cash-on-delivery eligibility.</p>
-        <form method="POST" action="{{ route('pincode.check') }}" class="relative mt-7" data-pincode-form>@csrf<div class="flex gap-2 rounded-full bg-paper p-1.5"><label for="homePincode" class="sr-only">Delivery pincode</label><input id="homePincode" name="pincode" inputmode="numeric" autocomplete="postal-code" pattern="[1-9][0-9]{5}" maxlength="6" placeholder="Pincode" class="min-w-0 flex-1 !min-h-[48px] !rounded-full !border-0 !bg-transparent px-5 text-lg font-black tracking-[.25em] !shadow-none placeholder:font-semibold placeholder:tracking-normal" required><button class="button-primary shrink-0 !min-h-[48px]" type="submit" data-pincode-button>Check</button></div><div data-pincode-result role="status" aria-live="polite" class="mt-3 hidden rounded-2xl border p-4 text-sm"></div></form>
-        <p class="relative mt-4 text-xs opacity-70">We dispatch from Dehradun, Uttarakhand.</p>
+        <h3 id="delivery-title" class="font-display mt-4 text-4xl font-semibold leading-[1]">Do we deliver to you?</h3>
+        <p class="mt-4 text-sm leading-6 text-snow/80">Enter your six-digit pincode for availability, delivery time and cash-on-delivery eligibility.</p>
+        <form method="POST" action="{{ route('pincode.check') }}" class="mt-7" data-pincode-form>@csrf<div class="flex gap-2 rounded-full bg-paper p-1.5"><label for="homePincode" class="sr-only">Delivery pincode</label><input id="homePincode" name="pincode" inputmode="numeric" autocomplete="postal-code" pattern="[1-9][0-9]{5}" maxlength="6" placeholder="Pincode" class="min-w-0 flex-1 !min-h-[48px] !rounded-full !border-0 !bg-transparent px-5 text-lg font-black tracking-[.25em] text-ink !shadow-none placeholder:font-semibold placeholder:tracking-normal" required><button class="button-accent shrink-0 !min-h-[48px]" type="submit" data-pincode-button>Check</button></div><div data-pincode-result role="status" aria-live="polite" class="mt-3 hidden rounded-2xl border p-4 text-sm"></div></form>
+        <p class="mt-4 text-xs text-snow/70">We dispatch from Dehradun, Uttarakhand.</p>
     </div>
 </section>
 @endsection

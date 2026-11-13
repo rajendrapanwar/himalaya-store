@@ -83,12 +83,33 @@ export const initImageFallbacks = () => {
     const attach = (img) => {
         const replace = () => {
             img.removeAttribute('data-image-fallback');
+            // srcset wins over src, so it has to go for the placeholder to show.
+            img.removeAttribute('srcset');
+            img.removeAttribute('sizes');
             img.src = fallback;
         };
         img.addEventListener('error', replace, { once: true });
         if (img.complete && img.naturalWidth === 0) replace();
     };
     document.querySelectorAll('img[data-image-fallback]').forEach(attach);
+};
+
+/**
+ * Product cards carry a second photo that only shows on hover. Fetch it on the
+ * first hover or keyboard focus, so touch screens never download it.
+ */
+export const initHoverImages = () => {
+    const load = (event) => {
+        const card = event.target instanceof Element ? event.target.closest('[data-product-card]') : null;
+        const img = card?.querySelector('img[data-hover-src]');
+        if (!img) return;
+        if (img.dataset.hoverSrcset) img.srcset = img.dataset.hoverSrcset;
+        img.src = img.dataset.hoverSrc;
+        img.removeAttribute('data-hover-src');
+        img.removeAttribute('data-hover-srcset');
+    };
+    document.addEventListener('pointerover', load, { passive: true });
+    document.addEventListener('focusin', load);
 };
 
 /** Run `callback` at most once per animation frame. */

@@ -16,7 +16,7 @@
                 </div>
             </article>
         @empty
-            <div class="surface-card px-6 py-16 text-center"><span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-buransh"><svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M5 8h14l-1 12H6L5 8Zm3 0a4 4 0 0 1 8 0"/></svg></span><h2 class="font-display mt-5 text-3xl font-semibold">Your pantry is ready to be filled</h2><p class="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-500">Discover grains, pulses, preserves and gift boxes sourced from the hills.</p><a href="{{ route('products.index') }}" class="button-primary mt-6">Start shopping</a></div>
+            <div class="surface-card px-6 py-16 text-center"><span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-moss"><svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M5 8h14l-1 12H6L5 8Zm3 0a4 4 0 0 1 8 0"/></svg></span><h2 class="font-display mt-5 text-3xl font-semibold">Your pantry is ready to be filled</h2><p class="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-500">Discover grains, pulses, preserves and gift boxes sourced from the hills.</p><a href="{{ route('products.index') }}" class="button-primary mt-6">Start shopping</a></div>
         @endforelse
     </div>
     @if($orders->hasPages())<div class="surface-card mt-6 p-4">{{ $orders->links() }}</div>@endif

@@ -17,7 +17,7 @@
             <a href="{{ url('/products') }}" class="button-secondary hidden sm:inline-flex">Visit the shop</a>
         </header>
         <section class="site-shell relative z-10 flex flex-1 flex-col items-center justify-center py-12 text-center">
-            <p class="font-display select-none bg-gradient-to-b from-buransh to-sun bg-clip-text text-[clamp(7rem,24vw,15rem)] font-medium leading-[.85] tracking-[-.06em] text-transparent animate-[rise-in_1s_var(--ease-out-expo)_both]" aria-hidden="true">@yield('code')</p>
+            <p class="font-display select-none bg-gradient-to-b from-moss to-sun bg-clip-text text-[clamp(7rem,24vw,15rem)] font-medium leading-[.85] tracking-[-.06em] text-transparent animate-[rise-in_1s_var(--ease-out-expo)_both]" aria-hidden="true">@yield('code')</p>
             <p class="eyebrow eyebrow-line mt-6 animate-[rise-in_1s_var(--ease-out-expo)_.1s_both]">@yield('eyebrow')</p>
             <h1 class="font-display mt-4 max-w-2xl text-[clamp(2rem,4.5vw,3.25rem)] font-medium leading-[1.05] text-ink animate-[rise-in_1s_var(--ease-out-expo)_.18s_both]">@yield('heading')</h1>
             <p class="lead mt-5 max-w-xl animate-[rise-in_1s_var(--ease-out-expo)_.26s_both]">@yield('message')</p>

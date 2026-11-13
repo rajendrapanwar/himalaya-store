@@ -133,7 +133,7 @@ class ProductController extends Controller
             'weight' => $request->string('weight')->toString(),
             'page' => max(1, $request->integer('page', 1)),
         ], JSON_THROW_ON_ERROR));
-        $products = Cache::remember($cacheKey, now()->addMinutes(5), fn () => $productsQuery->paginate(12))->withQueryString();
+        $products = Cache::remember($cacheKey, now()->addMinutes(5), fn () => $productsQuery->paginate(24))->withQueryString();
         abort_if($products->currentPage() > $products->lastPage(), 404);
 
         $wishlistProductIds = auth()->check()

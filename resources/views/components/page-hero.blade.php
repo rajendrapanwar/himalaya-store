@@ -8,7 +8,12 @@
 ])
 
 <header {{ $attributes->class(['page-hero relative isolate overflow-hidden rounded-[2rem] bg-night text-paper', 'min-h-[380px]' => $compact, 'min-h-[480px] sm:min-h-[560px]' => ! $compact]) }}>
-    <img src="{{ $image }}" alt="" class="absolute inset-0 -z-30 h-full w-full scale-110 object-cover" style="object-position: {{ $imagePosition }}" width="1400" height="700" fetchpriority="high" data-parallax="0.12">
+    {{-- Call sites pass a full URL; site assets get smaller copies through srcset. --}}
+    @php
+        $assetRoot = asset('assets').'/';
+        $assetPath = str_starts_with($image, $assetRoot) ? 'assets/'.Str::after($image, $assetRoot) : null;
+    @endphp
+    @if($assetPath)<x-responsive-image :path="$assetPath" full sizes="(min-width: 1400px) 1360px, 100vw" alt="" class="absolute inset-0 -z-30 h-full w-full scale-110 object-cover" style="object-position: {{ $imagePosition }}" width="1400" height="700" fetchpriority="high" data-parallax="0.12" />@else<img src="{{ $image }}" alt="" class="absolute inset-0 -z-30 h-full w-full scale-110 object-cover" style="object-position: {{ $imagePosition }}" width="1400" height="700" fetchpriority="high" data-parallax="0.12">@endif
     <div class="absolute inset-0 -z-20 bg-night/50" aria-hidden="true"></div>
     <div class="absolute inset-0 -z-10 bg-gradient-to-r from-night via-night/80 to-night/5" aria-hidden="true"></div>
     <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[#6b3b2c]/50 via-transparent to-transparent" aria-hidden="true"></div>

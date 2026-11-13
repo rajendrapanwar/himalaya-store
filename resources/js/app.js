@@ -8,11 +8,12 @@ import { initHero } from './modules/hero';
 import { initOverlays } from './modules/overlays';
 import { initProductPage } from './modules/product';
 import { initTabs } from './modules/tabs';
-import { initImageFallbacks, initToasts } from './modules/ui';
+import { initHoverImages, initImageFallbacks, initToasts } from './modules/ui';
 
 // Each initialiser is independent; one failing must not take the others down.
 [
     initImageFallbacks,
+    initHoverImages,
     initToasts,
     initHeader,
     initOverlays,

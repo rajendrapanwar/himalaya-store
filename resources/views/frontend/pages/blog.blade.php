@@ -18,7 +18,7 @@
 ]" />
 @endpush
 @section('content')
-<nav class="mb-7 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-buransh">Home</a><span aria-hidden="true">/</span><span class="text-stone-800">Journal</span></nav>
+<nav class="mb-7 flex items-center gap-2 text-xs font-semibold text-stone-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-moss">Home</a><span aria-hidden="true">/</span><span class="text-stone-800">Journal</span></nav>
 
 <header class="overflow-hidden rounded-xl border border-stone-200 bg-white">
     <div class="grid lg:grid-cols-[.9fr_1.1fr] lg:items-center">
@@ -35,7 +35,7 @@
         @forelse($posts as $post)
             <article class="journal-card group overflow-hidden rounded-xl border border-stone-200 bg-white">
                 <a href="{{ route('blog.show', $post->slug) }}" class="block aspect-[16/10] w-full overflow-hidden bg-stone-100">@if($post->image_url)<img src="{{ $post->image_url }}" alt="{{ $post->image_alt }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]" loading="lazy" decoding="async" width="720" height="450">@endif</a>
-                <div class="flex min-h-[265px] flex-col p-6"><div class="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[.13em] text-buransh"><span>{{ $post->category ?: 'Journal' }}</span><span class="text-stone-400">{{ $post->reading_time }} min read</span></div><h3 class="font-display mt-4 text-2xl font-semibold leading-tight text-ink"><a href="{{ route('blog.show', $post->slug) }}" class="hover:text-buransh">{{ $post->title }}</a></h3><p class="mt-3 line-clamp-3 flex-1 text-sm leading-7 text-stone-600">{{ $post->excerpt }}</p><div class="mt-5 flex items-center justify-between border-t border-stone-100 pt-4"><span class="text-xs font-semibold text-stone-500">By {{ $post->author_name }}</span><a href="{{ route('blog.show', $post->slug) }}" class="text-sm font-black text-buransh">Read <span aria-hidden="true">→</span></a></div></div>
+                <div class="flex min-h-[265px] flex-col p-6"><div class="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[.13em] text-moss"><span>{{ $post->category ?: 'Journal' }}</span><span class="text-stone-400">{{ $post->reading_time }} min read</span></div><h3 class="font-display mt-4 text-2xl font-semibold leading-tight text-ink"><a href="{{ route('blog.show', $post->slug) }}" class="hover:text-moss">{{ $post->title }}</a></h3><p class="mt-3 line-clamp-3 flex-1 text-sm leading-7 text-stone-600">{{ $post->excerpt }}</p><div class="mt-5 flex items-center justify-between border-t border-stone-100 pt-4"><span class="text-xs font-semibold text-stone-500">By {{ $post->author_name }}</span><a href="{{ route('blog.show', $post->slug) }}" class="text-sm font-black text-moss">Read <span aria-hidden="true">→</span></a></div></div>
             </article>
         @empty<div class="surface-card col-span-full p-12 text-center"><h2 class="font-display text-2xl font-semibold">No stories found</h2><p class="mt-2 text-stone-500">Try another topic or return to all journal articles.</p></div>@endforelse
     </div>

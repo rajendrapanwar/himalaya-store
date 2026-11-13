@@ -11,7 +11,6 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
 
 let lenis = null;
 const reduced = prefersReducedMotion();
-const desktopPin = () => window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
 
 export const scrollTo = (target) => {
     if (lenis) lenis.scrollTo(target, { offset: -90 });
@@ -105,21 +104,6 @@ const initReveals = () => {
     });
 };
 
-/* ── Counters ────────────────────────────────────────────────────────── */
-const formatNumber = new Intl.NumberFormat('en-IN');
-const initCounters = () => {
-    if (reduced) return;
-    document.querySelectorAll('[data-count-to]').forEach((element) => {
-        const target = Number(element.dataset.countTo) || 0;
-        const state = { value: 0 };
-        element.textContent = '0';
-        ScrollTrigger.create({
-            trigger: element, start: 'top 90%', once: true,
-            onEnter: () => gsap.to(state, { value: target, duration: 2, ease: 'expo.out', onUpdate: () => { element.textContent = formatNumber.format(Math.round(state.value)); } }),
-        });
-    });
-};
-
 /* ── Parallax ────────────────────────────────────────────────────────── */
 const initParallax = () => {
     if (reduced) return;
@@ -128,54 +112,6 @@ const initParallax = () => {
         gsap.fromTo(element, { yPercent: -amount / 2 }, {
             yPercent: amount / 2, ease: 'none',
             scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
-        });
-    });
-};
-
-/* ── Manifesto: words brighten as you scroll through ─────────────────── */
-const initManifesto = () => {
-    document.querySelectorAll('[data-manifesto]').forEach((element) => {
-        if (reduced) return;
-        const split = SplitText.create(element, { type: 'words', wordsClass: 'mword', aria: 'auto' });
-        gsap.fromTo(split.words, { opacity: 0.14 }, {
-            opacity: 1, ease: 'none', stagger: 0.1,
-            scrollTrigger: { trigger: element, start: 'top 80%', end: 'bottom 45%', scrub: true },
-        });
-    });
-};
-
-/* ── Pinned horizontal gallery ───────────────────────────────────────── */
-const initHorizontal = () => {
-    document.querySelectorAll('[data-hscroll]').forEach((section) => {
-        const track = section.querySelector('[data-hscroll-track]');
-        const bar = section.querySelector('[data-hscroll-bar]');
-        if (!track || reduced || !desktopPin()) return;
-        const distance = () => Math.max(0, track.scrollWidth - track.parentElement.clientWidth);
-        gsap.to(track, {
-            x: () => -distance(), ease: 'none',
-            scrollTrigger: {
-                trigger: section, start: 'top top', end: () => `+=${distance()}`, pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1,
-                onUpdate: (self) => bar?.style.setProperty('transform', `scaleX(${self.progress.toFixed(4)})`),
-            },
-        });
-        track.querySelectorAll('[data-hscroll-image]').forEach((image) => {
-            gsap.fromTo(image, { xPercent: -8 }, { xPercent: 8, ease: 'none', scrollTrigger: { trigger: section, start: 'top top', end: () => `+=${distance()}`, scrub: true } });
-        });
-    });
-};
-
-/* ── Stacked cards ───────────────────────────────────────────────────── */
-const initStack = () => {
-    if (reduced) return;
-    document.querySelectorAll('[data-stack]').forEach((stack) => {
-        const cards = [...stack.querySelectorAll('.stack-card')];
-        cards.forEach((card, index) => {
-            const next = cards[index + 1];
-            if (!next) return;
-            gsap.fromTo(card, { scale: 1, filter: 'brightness(1)' }, {
-                scale: 0.92 + index * 0.015, filter: 'brightness(0.78)', ease: 'none',
-                scrollTrigger: { trigger: next, start: 'top 85%', end: 'top top+=160', scrub: true },
-            });
         });
     });
 };
@@ -221,11 +157,7 @@ export const initGsapMotion = () => {
     initSmoothScroll();
     initSplitHeadlines();
     initReveals();
-    initCounters();
     initParallax();
-    initManifesto();
-    initHorizontal();
-    initStack();
     initMagnetic();
     initRevealLists();
 

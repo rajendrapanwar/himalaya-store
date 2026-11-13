@@ -1,5 +1,5 @@
 // Product page: thumbnail gallery, hover zoom, full-screen lightbox and the
-// sticky "add to cart" bar that appears once the main buy box scrolls away.
+// sticky "add to cart" bar that shows whenever the main buy box is off screen.
 import { hasFinePointer } from './ui';
 
 export const initProductPage = () => {
@@ -12,6 +12,9 @@ export const initProductPage = () => {
         if (!mainImage || !sources.length) return;
         current = (index + sources.length) % sources.length;
         mainImage.animate?.([{ opacity: 0.25, transform: 'scale(1.02)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 450, easing: 'cubic-bezier(.16,1,.3,1)' });
+        // srcset takes priority over src, so switch both to the chosen photo.
+        const srcset = thumbnails[current]?.dataset.srcset;
+        if (srcset) mainImage.srcset = srcset; else mainImage.removeAttribute('srcset');
         mainImage.src = sources[current];
         thumbnails.forEach((thumb, position) => thumb.setAttribute('aria-current', String(position === current)));
     };
@@ -19,7 +22,11 @@ export const initProductPage = () => {
 
     const zoom = document.querySelector('[data-zoom]');
     if (zoom && mainImage && hasFinePointer()) {
-        zoom.addEventListener('pointerenter', () => zoom.classList.add('is-zooming'));
+        zoom.addEventListener('pointerenter', () => {
+            // Zooming needs the full photo, not the smaller srcset copy.
+            mainImage.removeAttribute('srcset');
+            zoom.classList.add('is-zooming');
+        });
         zoom.addEventListener('pointerleave', () => zoom.classList.remove('is-zooming'));
         zoom.addEventListener('pointermove', (event) => {
             const rect = zoom.getBoundingClientRect();
@@ -52,10 +59,12 @@ export const initProductPage = () => {
     const buyBox = document.querySelector('[data-buy-box]');
     const stickyBar = document.querySelector('[data-sticky-buy]');
     if (buyBox && stickyBar && 'IntersectionObserver' in window) {
+        // Show the bar whenever the buy box is off screen. On phones it starts
+        // below the gallery, so the price and button are reachable at once.
         new IntersectionObserver(([entry]) => {
-            const passed = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-            stickyBar.classList.toggle('is-visible', passed);
-            stickyBar.inert = !passed;
+            const offScreen = !entry.isIntersecting;
+            stickyBar.classList.toggle('is-visible', offScreen);
+            stickyBar.inert = !offScreen;
         }).observe(buyBox);
         stickyBar.inert = true;
     }

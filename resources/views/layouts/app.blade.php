@@ -12,13 +12,13 @@
     $overlayHeader = trim($__env->yieldContent('header_overlay')) !== '';
     $user = auth()->user();
     $menuImages = [
-        asset('assets/img/editorial/uttarakhand-terrace-farming.webp'),
-        asset('assets/img/products/wild-forest-honey.webp'),
-        asset('assets/img/products/ringal-basket.webp'),
-        asset('assets/img/editorial/tea-farmer-hillside.webp'),
-        asset('assets/img/editorial/misty-tea-mountains.webp'),
-        asset('assets/img/products/multiflora-honey.webp'),
-        asset('assets/img/editorial/rolling-cultivated-hills.webp'),
+        'assets/img/editorial/uttarakhand-terrace-farming.webp',
+        'assets/img/products/wild-forest-honey.webp',
+        'assets/img/products/ringal-basket.webp',
+        'assets/img/editorial/tea-farmer-hillside.webp',
+        'assets/img/editorial/misty-tea-mountains.webp',
+        'assets/img/products/multiflora-honey.webp',
+        'assets/img/editorial/rolling-cultivated-hills.webp',
     ];
     $menuLinks = [
         ['label' => 'Shop all', 'route' => 'products.index', 'active' => 'products.*'],
@@ -65,6 +65,22 @@
     <link rel="alternate" type="application/rss+xml" title="Pahadi Roots Journal" href="{{ route('blog.feed') }}">
     <title>{{ $seoTitle }}</title>
     <script nonce="{{ Vite::cspNonce() }}">document.documentElement.classList.add('js');</script>
+    @php
+        // Every page sets its headline and body text in these two files. Preloading
+        // lets the browser fetch them with the stylesheet instead of after parsing it.
+        $preloadFonts = [];
+        if (! Vite::isRunningHot()) {
+            foreach (['fraunces/files/fraunces-latin-full-normal.woff2', 'manrope/files/manrope-latin-wght-normal.woff2'] as $font) {
+                try {
+                    $preloadFonts[] = Vite::asset('node_modules/@fontsource-variable/'.$font);
+                } catch (\Throwable) {
+                    // No build manifest (or a renamed font file): the stylesheet still loads the font.
+                }
+            }
+        }
+    @endphp
+    @foreach($preloadFonts as $font)<link rel="preload" as="font" type="font/woff2" href="{{ $font }}" crossorigin>
+    @endforeach
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
@@ -128,12 +144,12 @@
             </nav>
             <div class="menu-fade hidden lg:block">
                 <div class="menu-preview aspect-[4/5] w-full max-w-md justify-self-end" data-menu-preview aria-hidden="true">
-                    @foreach($menuImages as $image)<img src="{{ $image }}" alt="" class="{{ $loop->first ? 'is-active' : '' }}" loading="lazy">@endforeach
+                    @foreach($menuImages as $image)<x-responsive-image :path="$image" sizes="(min-width: 1024px) 40vw, 100vw" alt="" class="{{ $loop->first ? 'is-active' : '' }}" loading="lazy" decoding="async" />@endforeach
                 </div>
             </div>
         </div>
         <div class="site-shell menu-fade flex flex-wrap items-center justify-between gap-4 border-t border-snow/15 py-6 text-sm">
-            <div class="flex flex-wrap gap-5">@auth<a href="{{ route('profile') }}" class="link-underline">My account</a><a href="{{ route('orders') }}" class="link-underline">Orders</a><a href="{{ route('wishlist.index') }}" class="link-underline">Wishlist</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="link-underline text-buransh-soft">Sign out</button></form>@else<a href="{{ route('login') }}" class="link-underline">Sign in</a><a href="{{ route('register') }}" class="link-underline">Create account</a>@endauth</div>
+            <div class="flex flex-wrap gap-5">@auth<a href="{{ route('profile') }}" class="link-underline">My account</a><a href="{{ route('orders') }}" class="link-underline">Orders</a><a href="{{ route('wishlist.index') }}" class="link-underline">Wishlist</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="link-underline text-glacier">Sign out</button></form>@else<a href="{{ route('login') }}" class="link-underline">Sign in</a><a href="{{ route('register') }}" class="link-underline">Create account</a>@endauth</div>
             <a href="mailto:support@pahadiroots.in" class="link-underline text-sun">support@pahadiroots.in</a>
         </div>
     </div>
@@ -144,7 +160,7 @@
             <div class="flex items-center justify-between"><p class="eyebrow">Search the pantry</p><button type="button" class="icon-button" aria-label="Close search" data-search-close><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
             <form method="GET" action="{{ route('products.index') }}" class="relative mt-6" role="search" data-search-form>
                 <label for="globalSearch" class="sr-only">Search products</label>
-                <svg class="pointer-events-none absolute left-0 top-1/2 h-8 w-8 -translate-y-1/2 text-buransh" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2.2" d="m21 21-4.4-4.4m2.4-5.6a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+                <svg class="pointer-events-none absolute left-0 top-1/2 h-8 w-8 -translate-y-1/2 text-moss" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2.2" d="m21 21-4.4-4.4m2.4-5.6a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
                 <input id="globalSearch" name="search" type="search" autocomplete="off" placeholder="Honey, rajma, Kinnaur…" class="search-input" aria-controls="searchResults" aria-autocomplete="list">
             </form>
             <div class="mt-9 grid gap-10 lg:grid-cols-[1fr_1.6fr]">
@@ -169,7 +185,7 @@
 
     @unless($overlayHeader)<div class="header-spacer" aria-hidden="true"></div>@endunless
     @if($errors->any())
-        <div class="site-shell pt-6"><div role="alert" class="rounded-[1.5rem] bg-buransh px-6 py-5 text-sm text-paper" data-dismissible><div class="flex items-start justify-between gap-4"><strong>Please check the highlighted information.</strong><button type="button" class="text-lg leading-none" aria-label="Dismiss message" data-dismiss>×</button></div><ul class="mt-1 list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div></div>
+        <div class="site-shell pt-6"><div role="alert" class="rounded-[1.5rem] bg-moss px-6 py-5 text-sm text-paper" data-dismissible><div class="flex items-start justify-between gap-4"><strong>Please check the highlighted information.</strong><button type="button" class="text-lg leading-none" aria-label="Dismiss message" data-dismiss>×</button></div><ul class="mt-1 list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div></div>
     @endif
 
     <main id="main-content" tabindex="-1" class="{{ $fullBleed ? '' : 'site-shell py-10 sm:py-14' }} focus:outline-none">@yield('content')</main>
@@ -216,7 +232,7 @@
         </div>
     </footer>
 
-    <button type="button" class="back-to-top" aria-label="Back to top" data-back-to-top><svg class="ring h-12 w-12" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="none" stroke="#c8234e" stroke-width="2.5" stroke-linecap="round"/></svg><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 15 6-6 6 6"/></svg></button>
+    <button type="button" class="back-to-top" aria-label="Back to top" data-back-to-top><svg class="ring h-12 w-12" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="none" stroke="#f5b51b" stroke-width="2.5" stroke-linecap="round"/></svg><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 15 6-6 6 6"/></svg></button>
     <a href="https://wa.me/{{ config('commerce.whatsapp_number', '919876543210') }}?text={{ urlencode('Hello Pahadi Roots, I need help with an order.') }}" target="_blank" rel="noopener noreferrer" class="whatsapp-fab group fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_14px_30px_-10px_rgb(37_211_102/.7)] transition duration-300 hover:-translate-y-1 hover:scale-105" aria-label="Chat with Pahadi Roots on WhatsApp"><svg class="relative h-7 w-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2A9.84 9.84 0 0 0 3.6 16.9L2 22l5.25-1.53A9.96 9.96 0 1 0 12.04 2Zm5.82 14.08c-.24.68-1.4 1.3-1.93 1.37-.5.06-1.12.08-1.81-.14-.42-.13-.96-.31-1.65-.61-2.9-1.26-4.8-4.2-4.94-4.39-.14-.19-1.18-1.57-1.18-3 0-1.44.74-2.14 1.01-2.43.27-.3.6-.37.8-.37h.57c.18 0 .43-.07.67.51.24.58.82 2 .9 2.14.07.14.12.31.02.5-.1.2-.14.32-.29.49-.14.17-.3.38-.43.51-.14.15-.29.3-.12.59.17.29.75 1.24 1.61 2 .1.09 1.75 1.54 3.22 2.14.29.12.52.1.71-.12.2-.21.84-.98 1.06-1.32.22-.34.44-.29.74-.17.31.12 1.94.92 2.27 1.09.34.17.56.25.65.39.08.15.08.83-.16 1.51Z"/></svg></a>
 
     @stack('scripts')
