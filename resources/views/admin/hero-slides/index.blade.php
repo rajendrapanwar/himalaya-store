@@ -2,9 +2,9 @@
 @section('title', 'Homepage slider')
 @section('content')
 <div class="space-y-6">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-        <div><p class="text-sm font-bold uppercase tracking-widest text-brand-700">Storefront marketing</p><h2 class="mt-1 text-3xl font-black">Hero slides</h2><p class="mt-2 max-w-2xl text-sm text-stone-500">Control homepage campaigns, links, display order and publishing windows. The lowest display order appears first.</p></div>
-        <a href="{{ route('admin.hero-slides.create') }}" class="button-primary">+ New slide</a>
+    <div class="admin-page-intro">
+        <div><p class="eyebrow">Storefront marketing</p><h2>Hero slides</h2><p class="max-w-2xl">Control homepage campaigns, links, display order and publishing windows. The lowest display order appears first.</p></div>
+        <a href="{{ route('admin.hero-slides.create') }}" class="admin-action admin-action-primary">+ New slide</a>
     </div>
 
     <div class="grid gap-5 lg:grid-cols-2">
@@ -21,11 +21,11 @@
                 </div>
                 <div class="flex flex-wrap items-center justify-between gap-3 p-4">
                     <p class="text-xs text-stone-500">@if($slide->starts_at)Starts {{ $slide->starts_at->format('d M Y, g:i A') }}@else Always available @endif @if($slide->ends_at) · Ends {{ $slide->ends_at->format('d M Y, g:i A') }}@endif</p>
-                    <div class="flex gap-2"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="button-secondary !min-h-9 !px-3 !py-1.5">Edit</a><form method="POST" action="{{ route('admin.hero-slides.destroy', $slide) }}" data-confirm="Delete this homepage slide permanently?">@csrf @method('DELETE')<button class="min-h-9 rounded-lg border border-red-200 px-3 text-xs font-black text-red-700 hover:bg-red-50">Delete</button></form></div>
+                    <div class="flex gap-2"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="admin-action admin-action-secondary admin-action-sm">Edit</a><form method="POST" action="{{ route('admin.hero-slides.destroy', $slide) }}" data-confirm="Delete this homepage slide permanently?">@csrf @method('DELETE')<button class="admin-action admin-action-danger admin-action-sm">Delete</button></form></div>
                 </div>
             </article>
         @empty
-            <div class="rounded-xl border border-dashed border-stone-300 bg-white p-12 text-center lg:col-span-2"><h3 class="text-lg font-black">No homepage slides yet</h3><p class="mt-2 text-sm text-stone-500">Create a slide to publish your first homepage campaign.</p><a href="{{ route('admin.hero-slides.create') }}" class="button-primary mt-5">Create a slide</a></div>
+            <div class="rounded-xl border border-dashed border-stone-300 bg-white p-12 text-center lg:col-span-2"><h3 class="text-lg font-black">No homepage slides yet</h3><p class="mt-2 text-sm text-stone-500">Create a slide to publish your first homepage campaign.</p><a href="{{ route('admin.hero-slides.create') }}" class="admin-action admin-action-primary mt-5">Create a slide</a></div>
         @endforelse
     </div>
 </div>

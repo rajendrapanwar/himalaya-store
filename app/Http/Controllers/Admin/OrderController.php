@@ -13,6 +13,15 @@ use Throwable;
 
 class OrderController extends Controller
 {
+    /** Which statuses an order may move to from its current one. */
+    private const TRANSITIONS = [
+        'pending' => ['pending', 'processing', 'cancelled'],
+        'processing' => ['processing', 'shipped', 'delivered', 'cancelled'],
+        'shipped' => ['shipped', 'delivered', 'cancelled'],
+        'delivered' => ['delivered'],
+        'cancelled' => ['cancelled'],
+    ];
+
     public function __construct(private readonly OrderLifecycleService $lifecycle) {}
 
     public function index(Request $request)
@@ -33,7 +42,11 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        return view('admin.orders.show', ['order' => $order->load(['items.product', 'items.bundle', 'address', 'user', 'statusHistory.user'])]);
+        return view('admin.orders.show', [
+            'order' => $order->load(['items.product', 'items.bundle', 'address', 'user', 'statusHistory.user']),
+            // The form only offers moves update() will accept, so staff never hit its 422.
+            'allowedStatuses' => self::TRANSITIONS[$order->order_status] ?? [$order->order_status],
+        ]);
     }
 
     public function update(Request $request, Order $order)
@@ -45,14 +58,7 @@ class OrderController extends Controller
             'tracking_number' => 'nullable|required_if:order_status,shipped|string|max:255',
         ]);
 
-        $transitions = [
-            'pending' => ['pending', 'processing', 'cancelled'],
-            'processing' => ['processing', 'shipped', 'delivered', 'cancelled'],
-            'shipped' => ['shipped', 'delivered', 'cancelled'],
-            'delivered' => ['delivered'],
-            'cancelled' => ['cancelled'],
-        ];
-        abort_unless(in_array($data['order_status'], $transitions[$order->order_status] ?? [], true), 422, 'That order status transition is not allowed.');
+        abort_unless(in_array($data['order_status'], self::TRANSITIONS[$order->order_status] ?? [], true), 422, 'That order status transition is not allowed.');
 
         $order->update(['courier_name' => $data['courier_name'] ?? null, 'tracking_number' => $data['tracking_number'] ?? null]);
         if ($data['order_status'] === 'cancelled') {

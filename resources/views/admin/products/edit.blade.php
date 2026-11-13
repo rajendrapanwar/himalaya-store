@@ -17,11 +17,11 @@
         @include('admin.products.form')
 
         <div class="mt-8 flex justify-end gap-3">
-            <a href="{{ route('admin.products.index') }}" class="button-secondary">
+            <a href="{{ route('admin.products.index') }}" class="admin-action admin-action-secondary">
                 Cancel
             </a>
 
-            <button class="button-primary">
+            <button class="admin-action admin-action-primary">
                 Update Product
             </button>
         </div>

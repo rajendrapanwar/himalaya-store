@@ -1,11 +1,11 @@
 <div class="space-y-6">
 
     <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label for="categoryName" class="block text-sm font-semibold text-gray-700 mb-2">
             Category Name
         </label>
 
-        <input
+        <input id="categoryName"
             type="text"
             name="name"
             value="{{ old('name', $category->name ?? '') }}"
@@ -19,11 +19,11 @@
     </div>
 
     <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label for="categoryDescription" class="block text-sm font-semibold text-gray-700 mb-2">
             Description
         </label>
 
-        <textarea
+        <textarea id="categoryDescription"
             name="description"
             rows="5"
             placeholder="Category description..."
@@ -32,14 +32,14 @@
     </div>
 
     <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label for="categoryImage" class="block text-sm font-semibold text-gray-700 mb-2">
             Category Image
         </label>
 
-        <input
+        <input id="categoryImage"
             type="file"
             name="image"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             class="block w-full text-sm border rounded-xl p-3"
         >
 
@@ -47,6 +47,7 @@
             <div class="mt-4">
                 <img
                     src="{{ asset('storage/'.$category->image) }}"
+                    alt="Current category image"
                     class="w-32 h-32 rounded-xl object-cover border"
                 >
             </div>
@@ -58,16 +59,16 @@
     </div>
 
     <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
+        <label for="categoryStatus" class="block text-sm font-semibold text-gray-700 mb-2">
             Status
         </label>
 
-        <select
+        <select id="categoryStatus"
             name="status"
             class="w-full rounded-xl border border-gray-300 px-4 py-3"
         >
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
+            <option value="1" @selected((int) old('status', $category->status ?? 1) === 1)>Active</option>
+            <option value="0" @selected((int) old('status', $category->status ?? 1) === 0)>Hidden</option>
         </select>
     </div>
 

@@ -35,7 +35,7 @@ class BundleController extends Controller
             $bundle->products()->sync($this->items($request));
         });
 
-        return redirect()->route('admin.bundles.index')->with('success', 'Bundle created.');
+        return redirect()->route('admin.bundles.index')->with('success', 'Gift box created.');
     }
 
     public function update(Request $request, Bundle $bundle)
@@ -45,7 +45,7 @@ class BundleController extends Controller
             $bundle->products()->sync($this->items($request));
         });
 
-        return redirect()->route('admin.bundles.index')->with('success', 'Bundle updated.');
+        return redirect()->route('admin.bundles.index')->with('success', 'Gift box updated.');
     }
 
     public function destroy(Bundle $bundle)
@@ -55,7 +55,7 @@ class BundleController extends Controller
         }
         $bundle->delete();
 
-        return back()->with('success', 'Bundle deleted.');
+        return back()->with('success', 'Gift box deleted.');
     }
 
     private function form(Bundle $bundle)

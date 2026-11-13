@@ -27,7 +27,7 @@
                     <td><strong>₹{{ number_format($order->total_amount, 2) }}</strong><span class="mt-1 block text-[11px] uppercase text-stone-500">{{ $order->payment_method }}</span></td>
                     <td><span class="admin-badge {{ $orderTone }}">{{ ucfirst($order->order_status) }}</span></td>
                     <td><span class="admin-badge {{ $paymentTone }}">{{ ucfirst($order->payment_status) }}</span></td>
-                    <td class="text-right"><a href="{{ route('admin.orders.show', $order) }}" class="admin-action admin-action-secondary !min-h-9 !px-3">View order <span aria-hidden="true">→</span></a></td>
+                    <td class="text-right"><a href="{{ route('admin.orders.show', $order) }}" class="admin-action admin-action-secondary admin-action-sm">View order <span aria-hidden="true">→</span></a></td>
                 </tr>
             @empty<tr><td colspan="6" class="py-16 text-center"><strong class="text-lg text-brand-950">No orders match these filters</strong><p class="mt-2 text-sm text-stone-500">Clear a filter to widen the results.</p></td></tr>@endforelse
         </tbody></table></div>

@@ -28,14 +28,14 @@
 
                 <a
                     href="{{ route('admin.categories.index') }}"
-                    class="px-5 py-3 rounded-xl border"
+                    class="admin-action admin-action-secondary"
                 >
                     Cancel
                 </a>
 
                 <button
                     type="submit"
-                    class="rounded-xl bg-brand-800 px-5 py-3 font-bold text-white hover:bg-brand-900"
+                    class="admin-action admin-action-primary"
                 >
                     Update Category
                 </button>

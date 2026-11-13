@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0e2119"><link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}"><title>@yield('title') | Pahadi Roots Admin</title>@vite(['resources/css/app.css','resources/js/app.js'])</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0e2119"><link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}"><title>@yield('title') | Pahadi Roots Admin</title>@vite(['resources/css/app.css','resources/js/admin.js'])</head>
 <body class="admin-ui text-stone-800 antialiased">
 @php
 $adminSections = [
@@ -13,7 +13,7 @@ $adminSections = [
   ['admin.products.index','admin.products.*','Products','m3 6 9-4 9 4-9 4-9-4Zm0 0v12l9 4 9-4V6M12 10v12'],
   ['admin.inventory.index','admin.inventory.*','Inventory','M4 7h16M5 7l1-4h12l1 4M6 7v14h12V7M9 11h6'],
   ['admin.categories.index','admin.categories.*','Categories','M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z'],
- ['admin.bundles.index','admin.bundles.*','Gift bundles','M20 12v9H4v-9M2 7h20v5H2V7Zm10 14V7m0 0c-2.5 0-5-1-5-3 0-1.1.9-2 2-2 2 0 3 3 3 5Zm0 0c2.5 0 5-1 5-3 0-1.1-.9-2-2-2-2 0-3 3-3 5Z'],
+ ['admin.bundles.index','admin.bundles.*','Gift boxes','M20 12v9H4v-9M2 7h20v5H2V7Zm10 14V7m0 0c-2.5 0-5-1-5-3 0-1.1.9-2 2-2 2 0 3 3 3 5Zm0 0c2.5 0 5-1 5-3 0-1.1-.9-2-2-2-2 0-3 3-3 5Z'],
   ['admin.journals.index','admin.journals.*','Journal','M5 4h14a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Zm1 0v13a3 3 0 0 1-3 3m7-11h7m-7 4h7'],
   ['admin.hero-slides.index','admin.hero-slides.*','Homepage slider','M4 5h16v14H4V5Zm3 11 4-4 3 3 3-4 3 3M8 9h.01'],
  ],

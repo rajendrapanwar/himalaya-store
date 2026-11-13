@@ -75,6 +75,10 @@
 .admin-ui .admin-content .admin-action-secondary:hover { border-color: #6f927d; background: #f1f6f3; }
 .admin-ui .admin-content .admin-action-danger { border: 1px solid #f1c7c4; background: white; color: #b3322d; }
 .admin-ui .admin-content .admin-action-danger:hover { background: #fff2f1; }
+.admin-ui .admin-content .admin-action:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+/* Compact buttons for table rows; they grow back to a full tap target on touch screens. */
+.admin-ui .admin-content .admin-action-sm { min-height: 36px; padding: .4rem .75rem; }
+@media (pointer: coarse) { .admin-ui .admin-content .admin-action-sm { min-height: 44px; } }
 .admin-ui .admin-content .admin-badge { display: inline-flex; min-height: 26px; align-items: center; border-radius: 999px; padding: .25rem .65rem; font-size: .68rem; font-weight: 850; }
 .admin-ui .admin-content .admin-page-intro { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; }
 .admin-ui .admin-content .admin-page-intro h2 { color: #172f24; font-family: var(--font-display); font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 650; letter-spacing: -.025em; }
