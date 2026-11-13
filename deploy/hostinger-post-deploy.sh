@@ -17,6 +17,9 @@ echo "Using $("$PHP" -r 'echo PHP_VERSION;') at $(pwd)"
 "$PHP" artisan config:cache
 "$PHP" artisan event:cache
 "$PHP" artisan view:cache
+# Smaller WebP copies for srcset. Only missing ones are written, and a failure
+# just means full-size images keep being served, so it must not stop a release.
+"$PHP" artisan images:variants || echo "Image variants skipped."
 "$PHP" artisan queue:restart
 
 echo "Release is live."

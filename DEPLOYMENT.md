@@ -86,6 +86,10 @@ The button appears on the sign-in and create-account pages once both keys are se
    ```
    If the domain changes, update `APP_URL` and the redirect URI in Google Cloud together.
 
+### Responsive images
+
+Catalogue photos are served through `srcset`: the store keeps 480px and 960px WebP copies of each image under `storage/app/public/variants/` and lets the browser pick one that fits. Copies are made automatically when staff upload or replace an image, and `php artisan images:variants` (run by every deploy) fills in any that are missing. It needs PHP GD with WebP support; without it, or if a photo cannot be processed, the full-size image is simply served as before. Add `--force` to rebuild existing copies. Nothing under `variants/` is committed, and deleting the folder is safe.
+
 ### Shared-hosting document root
 
 On Hostinger the project root is the web root. The root `.htaccess` serves every request from `public/` without showing it in the URL (`/about`, not `/public/about`), so files outside `public/` — `storage/logs`, `vendor/`, `.env`, `composer.json`, deploy scripts — can never be downloaded. `public/.htaccess` 301-redirects old `/public/...` links to the clean URL (GET/HEAD only, so form posts and webhooks still work). Set `APP_URL` without `/public`, and point the Stripe webhook at `https://your-domain/stripe/webhook`.

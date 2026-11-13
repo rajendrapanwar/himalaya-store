@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Observers\ImageVariantObserver;
+use App\Services\ImageVariants;
 use App\Services\MaintenanceModeService;
 use App\Services\MiniCartService;
 use App\Services\StorefrontCache;
@@ -23,7 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One instance per request, so its list of existing variants is read once.
+        $this->app->singleton(ImageVariants::class);
     }
 
     /**
@@ -38,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->configureRateLimiters();
+
+        foreach (array_keys(ImageVariantObserver::ATTRIBUTES) as $model) {
+            $model::observe(ImageVariantObserver::class);
+        }
 
         view()->composer('layouts.app', function ($view) {
             $miniCart = app(MiniCartService::class)->summary();
