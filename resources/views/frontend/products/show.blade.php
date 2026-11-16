@@ -224,4 +224,5 @@
     </div>
 </dialog>
 @endif
+<x-analytics-event name="view_item" :params="['currency' => 'INR', 'value' => (float) $displayPrice, 'items' => [app(\App\Services\Analytics::class)->productItem($product)]]" />
 @endsection

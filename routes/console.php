@@ -9,4 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('commerce:expire-reservations')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+Schedule::command('carts:send-reminders')->hourly()->withoutOverlapping()->onOneServer();
 Schedule::command('queue:prune-failed --hours=168')->daily()->withoutOverlapping()->onOneServer();

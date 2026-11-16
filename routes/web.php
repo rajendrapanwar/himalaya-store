@@ -47,6 +47,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.login');
     Route::post('/admin/login', [AuthController::class, 'authenticateAdmin'])->middleware('throttle:admin-login')->name('admin.login.store');
 });
+// The link in basket reminder emails; signed, so it works without signing in.
+Route::get('/email/basket-reminders/unsubscribe/{user}', [AccountController::class, 'unsubscribeCartReminders'])->middleware(['signed', 'throttle:verification'])->name('cart-reminders.unsubscribe');
 Route::post('/logout', [AuthController::class, 'destroy'])->middleware(['auth', 'throttle:logout'])->name('logout');
 Route::get('/refer/{code}', [AuthController::class, 'refer'])->middleware('throttle:referrals')->name('refer');
 Route::middleware('auth')->group(function () {
@@ -58,6 +60,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [PageController::class, 'sendContact'])->middleware('throttle:contact')->name('contact.send');
+Route::view('/bulk-orders', 'frontend.pages.bulk-orders')->name('bulk-orders');
+Route::post('/bulk-orders', [PageController::class, 'sendBulkEnquiry'])->middleware('throttle:contact')->name('bulk-orders.send');
 Route::get('/blog', [PageController::class, 'blog']);
 Route::get('/blog/{slug}', fn (string $slug) => redirect()->route('blog.show', $slug, 301));
 Route::get('/journal', [PageController::class, 'blog'])->name('blog');
@@ -160,6 +164,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('/my-orders/{order}/track', [AccountController::class, 'track'])->name('orders.track');
     Route::get('/my-orders/{order}', [AccountController::class, 'order'])->name('orders.show');
+    Route::post('/my-orders/{order}/buy-again', [CartController::class, 'buyAgain'])->middleware('throttle:cart-actions')->name('orders.buy-again');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{product}', [WishlistController::class, 'store'])->middleware('throttle:wishlist')->name('wishlist.store');
     Route::delete('/wishlist/{product}', [WishlistController::class, 'destroy'])->middleware('throttle:wishlist')->name('wishlist.destroy');

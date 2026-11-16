@@ -20,6 +20,12 @@ return [
 
     'support_email' => env('SUPPORT_EMAIL', 'support@pahadiroots.in'),
 
+    // Visitor and sales tracking; each stays off until its ID is set.
+    'analytics' => [
+        'ga4_id' => env('GA4_MEASUREMENT_ID'),
+        'meta_pixel_id' => env('META_PIXEL_ID'),
+    ],
+
     'social' => [
         'instagram' => env('SOCIAL_INSTAGRAM_URL', 'https://www.instagram.com/pahadiroots/'),
         'facebook' => env('SOCIAL_FACEBOOK_URL', 'https://www.facebook.com/pahadiroots/'),

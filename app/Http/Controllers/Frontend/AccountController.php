@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Notifications\AccountActivityNotification;
 use App\Notifications\EmailAddressChangedNotification;
 use Illuminate\Http\Request;
@@ -115,6 +116,15 @@ class AccountController extends Controller
         }
 
         return back()->with('success', 'Your profile has been updated.');
+    }
+
+    public function unsubscribeCartReminders(User $user)
+    {
+        if (! $user->cart_reminders_unsubscribed_at) {
+            $user->forceFill(['cart_reminders_unsubscribed_at' => now()])->save();
+        }
+
+        return redirect()->route('home')->with('success', 'Done. You will not get basket reminder emails any more.');
     }
 
     public function orders(Request $request)

@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+{{-- Counted once per order, and only when the order is real: paid online, or placed as cash on delivery. --}}
+@if($order->payment_status === 'paid' || $order->payment_method === 'cod')
+<x-analytics-event name="purchase" :params="app(\App\Services\Analytics::class)->purchase($order)" :dedupe="'purchase:'.$order->order_number" />
+@endif
 
 <div class="mx-auto max-w-3xl">
 

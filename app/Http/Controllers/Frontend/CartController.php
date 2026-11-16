@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\CartBundleItem;
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\Product;
+use App\Services\Analytics;
 use App\Services\CartService;
 use App\Services\CouponService;
 use App\Services\MiniCartService;
@@ -74,12 +76,16 @@ class CartController extends Controller
         }
 
         return $request->expectsJson()
-            ? $this->addedResponse("{$product->name} was added to your cart.")
+            ? $this->addedResponse("{$product->name} was added to your cart.", app(Analytics::class)->productItem($product, (int) $data['quantity']))
             : redirect()->route('cart.index')->with('success', 'Product added to cart.');
     }
 
-    /** JSON for the storefront's in-place add-to-cart: new badge count plus the re-rendered drawer. */
-    private function addedResponse(string $message)
+    /**
+     * JSON for the storefront's in-place add-to-cart: new badge count plus the re-rendered drawer.
+     *
+     * @param  array{item_id: string, item_name: string, price: float, quantity: int}  $item
+     */
+    private function addedResponse(string $message, array $item)
     {
         $miniCart = app(MiniCartService::class)->summary();
 
@@ -88,6 +94,10 @@ class CartController extends Controller
             'message' => $message,
             'cart_count' => $miniCart['count'],
             'drawer' => view('partials.cart-drawer-body', ['miniCart' => $miniCart])->render(),
+            // Sent to Google Analytics / Meta as an "add to cart" event when tracking is switched on.
+            'analytics' => app(Analytics::class)->enabled()
+                ? ['currency' => config('commerce.currency', 'INR'), 'value' => round($item['price'] * $item['quantity'], 2), 'items' => [$item]]
+                : null,
         ]);
     }
 
@@ -120,8 +130,61 @@ class CartController extends Controller
         }
 
         return $request->expectsJson()
-            ? $this->addedResponse("{$bundle->name} was added to your cart.")
+            ? $this->addedResponse("{$bundle->name} was added to your cart.", ['item_id' => 'bundle-'.$bundle->id, 'item_name' => $bundle->name, 'item_category' => 'Gift boxes', 'price' => (float) $bundle->price, 'quantity' => (int) $data['quantity']])
             : redirect()->route('cart.index')->with('success', 'Gift bundle added to cart.');
+    }
+
+    /**
+     * "Buy again": put everything from a past order back in the cart at today's
+     * prices, limited to what is in stock. Items no longer sold are skipped.
+     */
+    public function buyAgain(Request $request, Order $order)
+    {
+        abort_unless($order->user_id === $request->user()->id, 403);
+
+        [$added, $skipped] = DB::transaction(function () use ($request, $order) {
+            $cart = $this->carts->current($request->user());
+            $added = 0;
+            $skipped = 0;
+
+            foreach ($order->items as $orderItem) {
+                if ($orderItem->bundle_id) {
+                    $bundle = Bundle::with('products')->lockForUpdate()->find($orderItem->bundle_id);
+                    $stock = $bundle && $bundle->is_active ? $bundle->available_stock : 0;
+                    $item = $stock > 0
+                        ? CartBundleItem::where(['cart_id' => $cart->id, 'bundle_id' => $bundle->id])->lockForUpdate()->first() ?? new CartBundleItem(['cart_id' => $cart->id, 'bundle_id' => $bundle->id])
+                        : null;
+                    $price = $bundle?->price;
+                } else {
+                    $product = $orderItem->product_id ? Product::lockForUpdate()->find($orderItem->product_id) : null;
+                    $stock = $product && $product->status ? $product->available_stock : 0;
+                    $item = $stock > 0
+                        ? CartItem::where(['cart_id' => $cart->id, 'product_id' => $product->id])->lockForUpdate()->first() ?? new CartItem(['cart_id' => $cart->id, 'product_id' => $product->id])
+                        : null;
+                    $price = $product ? ($product->sale_price ?? $product->price) : null;
+                }
+
+                if (! $item) {
+                    $skipped++;
+
+                    continue;
+                }
+                $item->quantity = min(($item->exists ? $item->quantity : 0) + $orderItem->quantity, $stock);
+                $item->price = $price;
+                $item->save();
+                $added++;
+            }
+
+            return [$added, $skipped];
+        });
+
+        if ($added === 0) {
+            return back()->with('error', 'Sorry, none of the items from this order are available right now.');
+        }
+
+        return redirect()->route('cart.index')->with('success', $skipped === 0
+            ? 'Everything from that order is back in your cart, at today\'s prices.'
+            : "{$added} ".($added === 1 ? 'item is' : 'items are')." back in your cart. {$skipped} could not be added because ".($skipped === 1 ? 'it is' : 'they are').' out of stock or no longer sold.');
     }
 
     public function update(Request $request, CartItem $cartItem)

@@ -69,6 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'cart_reminders_unsubscribed_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
         ];

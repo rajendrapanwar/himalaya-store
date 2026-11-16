@@ -1,6 +1,7 @@
 // Shopping interactions: in-place add to cart (with a fly-to-basket animation),
 // wishlist toggles, delivery pincode checks, sharing and quantity steppers.
 // Every form still works as a normal POST when JavaScript or a request fails.
+import { track } from './analytics';
 import { openDrawer } from './overlays';
 import { prefersReducedMotion, toast } from './ui';
 
@@ -73,6 +74,7 @@ const initAddToCart = () => {
             const source = card?.querySelector('[data-product-media] img') ?? document.getElementById('mainProductImage');
             await flyToCart(source);
             updateCart(data);
+            if (data.analytics) track('add_to_cart', data.analytics);
 
             if (button?.classList.contains('add-to-cart-chip')) {
                 button.classList.add('is-added');

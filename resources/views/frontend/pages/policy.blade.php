@@ -27,6 +27,7 @@ $sections = match($kind) {
   ['How we use information','We use information to provide accounts, fulfil orders, process payments, prevent misuse, respond to support, improve the store, administer loyalty and referrals, and meet legal obligations.'],
   ['Payments and service providers','Stripe processes online payment information; we do not store complete card details. We may share necessary details with couriers, hosting providers and service partners solely to provide the requested service.'],
   ['Cookies and sessions','Essential cookies keep you signed in, maintain your cart, protect forms and remember preferences. Disabling them may prevent important store functions from working.'],
+  ['Analytics and reminder emails','We may use Google Analytics and Meta (Facebook and Instagram) tools to count visits and to learn which pages and adverts lead to orders; these tools set their own cookies. They are not loaded when your browser sends a "Do Not Track" or Global Privacy Control signal. If you leave items in your basket while signed in, we may email you one reminder, and every reminder includes a link to stop them.'],
   ['Your choices','You may request correction or deletion of eligible account data by contacting us. Some transaction records must be retained for tax, fraud-prevention or legal reasons.'],
   ['Security and retention','We apply reasonable safeguards and retain information only as long as needed for operations, legal requirements, dispute resolution and legitimate business records.'],
  ],

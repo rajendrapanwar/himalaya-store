@@ -11,6 +11,7 @@ use App\Models\JournalPost;
 use App\Models\Product;
 use App\Services\StorefrontCache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 class PageController extends Controller
@@ -35,6 +36,44 @@ class PageController extends Controller
         ContactMessageSubmitted::dispatch($message->id);
 
         return back()->with('success', 'Thank you — your message has been received. We will reply shortly.');
+    }
+
+    /**
+     * A bulk or corporate gifting enquiry. It is stored as a contact request, so
+     * staff see it in Admin → Contact requests and get the usual alert email.
+     */
+    public function sendBulkEnquiry(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:120',
+            'company' => 'nullable|string|max:120',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'quantity' => 'required|integer|min:10|max:100000',
+            'budget' => 'nullable|integer|min:100|max:100000',
+            'needed_by' => 'nullable|date|after:today',
+            'message' => 'nullable|string|max:2000',
+            'website' => 'nullable|max:0',
+        ]);
+
+        $lines = array_filter([
+            'Quantity: '.$data['quantity'].' gifts',
+            filled($data['budget'] ?? null) ? 'Budget per gift: ₹'.number_format((int) $data['budget']) : null,
+            filled($data['company'] ?? null) ? 'Company or event: '.$data['company'] : null,
+            filled($data['needed_by'] ?? null) ? 'Needed by: '.Carbon::parse($data['needed_by'])->format('d M Y') : null,
+            filled($data['message'] ?? null) ? "\n".$data['message'] : null,
+        ]);
+        $message = ContactMessage::create([
+            'user_id' => $request->user()?->id,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'subject' => 'Bulk order enquiry',
+            'message' => implode("\n", $lines),
+        ]);
+        ContactMessageSubmitted::dispatch($message->id);
+
+        return back()->with('success', 'Thank you. We have your request and will send a quote within one business day.')->with('bulk_enquiry_sent', true);
     }
 
     public function blog(Request $request)
@@ -122,7 +161,7 @@ class PageController extends Controller
         $entries = Cache::remember('storefront:sitemap-pages:v'.StorefrontCache::version(), now()->addHour(), function () {
             $entries = collect([
                 route('home'), route('products.index'), route('about'), route('blog'), route('rewards'),
-                route('contact'), route('faq'), route('shipping.policy'), route('returns.policy'),
+                route('contact'), route('bulk-orders'), route('faq'), route('shipping.policy'), route('returns.policy'),
                 route('privacy.policy'), route('terms'), route('editorial.policy'),
             ])->map(fn ($url) => ['loc' => $url]);
 

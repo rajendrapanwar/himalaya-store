@@ -72,6 +72,6 @@
         <h2 id="gift-custom-title" class="font-display text-3xl font-medium text-snow">Want a different mix, or gifts in bulk?</h2>
         <p class="mt-3 text-sm leading-7 text-snow/75">Boxes come ready-made, which is how we keep the price lower. To choose every item yourself, add individual products to your cart. For festive, wedding or corporate orders, tell us what you need.</p>
     </div>
-    <div class="flex flex-wrap gap-3"><a href="{{ route('products.index') }}" class="button-accent">Shop individual products</a><a href="{{ route('contact') }}" class="button-ghost-light">Ask about bulk gifting</a></div>
+    <div class="flex flex-wrap gap-3"><a href="{{ route('products.index') }}" class="button-accent">Shop individual products</a><a href="{{ route('bulk-orders') }}" class="button-ghost-light">Get a bulk gifting quote</a></div>
 </section>
 @endsection

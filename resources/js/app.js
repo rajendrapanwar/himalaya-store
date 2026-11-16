@@ -1,5 +1,6 @@
 import './bootstrap';
 import './modules/actions';
+import { initAnalytics } from './modules/analytics';
 import { initCarousels } from './modules/carousel';
 import { initCommerce } from './modules/commerce';
 import { initGsapMotion } from './modules/gsap-motion';
@@ -23,6 +24,7 @@ import { initHoverImages, initImageFallbacks, initToasts } from './modules/ui';
     initTabs,
     initCommerce,
     initProductPage,
+    initAnalytics,
 ].forEach((init) => {
     try {
         init();

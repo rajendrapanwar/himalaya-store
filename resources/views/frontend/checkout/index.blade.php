@@ -44,6 +44,8 @@
         <button id="placeOrderButton" class="button-primary mt-6 w-full" type="submit">Place order securely</button><p class="mt-4 text-center text-[11px] leading-5 text-stone-500">This total includes the delivery charge for your pincode. It is recalculated securely on the server when the order is placed.</p>
     </div></aside>
 </form>
+@php($analyticsItems = $cart->items->map(fn ($item) => app(\App\Services\Analytics::class)->productItem($item->product, (int) $item->quantity))->concat($cart->bundleItems->map(fn ($item) => ['item_id' => 'bundle-'.$item->bundle_id, 'item_name' => $item->bundle->name, 'item_category' => 'Gift boxes', 'price' => (float) $item->bundle->price, 'quantity' => (int) $item->quantity]))->values()->all())
+<x-analytics-event name="begin_checkout" :params="['currency' => 'INR', 'value' => (float) $total, 'items' => $analyticsItems]" />
 @endsection
 
 @push('scripts')

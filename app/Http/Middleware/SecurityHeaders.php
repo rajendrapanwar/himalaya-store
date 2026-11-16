@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Analytics;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -49,6 +50,18 @@ class SecurityHeaders
         $scriptSources = ["'self'", "'nonce-{$nonce}'"];
         $styleSources = ["'self'", "'unsafe-inline'"];
         $connectSources = ["'self'", 'https://api.stripe.com'];
+
+        // The analytics hosts are only allowed once their IDs are configured.
+        $analytics = app(Analytics::class);
+        if ($analytics->ga4Id()) {
+            // The hosts Google documents for GA4 under a Content-Security-Policy.
+            $scriptSources[] = 'https://*.googletagmanager.com';
+            array_push($connectSources, 'https://*.googletagmanager.com', 'https://*.google-analytics.com', 'https://*.analytics.google.com');
+        }
+        if ($analytics->metaPixelId()) {
+            $scriptSources[] = 'https://connect.facebook.net';
+            array_push($connectSources, 'https://connect.facebook.net', 'https://www.facebook.com');
+        }
 
         if (Vite::isRunningHot()) {
             $devServer = rtrim(trim((string) file_get_contents(Vite::hotFile())), '/');
