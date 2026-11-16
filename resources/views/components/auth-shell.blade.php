@@ -9,7 +9,7 @@
     <aside class="relative isolate hidden min-h-[560px] flex-col justify-between overflow-hidden bg-night p-10 text-white md:flex">
         <x-responsive-image :path="$image" sizes="(min-width: 768px) 40vw, 100vw" alt="" class="absolute inset-0 -z-20 h-full w-full object-cover opacity-60" width="800" height="1000" data-parallax="0.05" />
         <span class="absolute inset-0 -z-10 bg-gradient-to-t from-night via-night/60 to-night/20" aria-hidden="true"></span>
-        <a href="{{ route('home') }}" class="flex items-center gap-2.5"><svg class="h-10 w-10" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#F8F4EB"/><path d="m8 31 9-13 6 8 6-12 11 17H8Z" fill="#1d362b"/><path d="m13 31 7-7 4 5 6-8 7 10H13Z" fill="#D78A18"/></svg><span class="font-display text-xl">Pahadi Roots</span></a>
+        <a href="{{ route('home') }}" aria-label="Pahadi Roots home"><x-logo variant="dark" class="h-11" alt="" /></a>
         <div>
             <p class="eyebrow eyebrow-line !text-sun">{{ $eyebrow }}</p>
             <p class="font-display mt-4 text-4xl font-medium leading-[1.05]">{{ $title }}</p>

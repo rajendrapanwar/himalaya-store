@@ -15,7 +15,7 @@
 @section('meta_description', Str::limit($productMetaDescription, 155, ''))
 @section('canonical', route('products.show', $product->slug))
 @section('og_type', 'product')
-@section('og_image', $mainImage ? asset('storage/'.$mainImage->image) : asset('assets/img/logo.png'))
+@section('og_image', $mainImage ? asset('storage/'.$mainImage->image) : asset('assets/img/brand/og-logo.png'))
 @section('og_image_alt', $product->name.' from Pahadi Roots')
 
 @push('head')

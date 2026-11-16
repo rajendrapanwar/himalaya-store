@@ -45,8 +45,7 @@
     <link rel="alternate" hreflang="en-IN" href="{{ $canonicalUrl }}">
     <link rel="alternate" hreflang="x-default" href="{{ $canonicalUrl }}">
     @yield('pagination_links')
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.png') }}">
+    <x-favicons />
     <meta property="og:site_name" content="Pahadi Roots">
     <meta property="og:locale" content="{{ config('seo.locale', 'en_IN') }}">
     <meta property="og:type" content="@yield('og_type', 'website')">
@@ -109,8 +108,10 @@
                 </div>
 
                 <a href="{{ route('home') }}" class="group flex items-center gap-2.5 justify-self-center" aria-label="Pahadi Roots home">
-                    <svg class="h-9 w-9 transition duration-700 group-hover:rotate-[-8deg] sm:h-10 sm:w-10" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="24" fill="currentColor"/><path d="m9 32 9-13 6 8 6-12 9 17H9Z" fill="#f5b51b"/><path d="M11 36c8-3 18-3 26 0" stroke="#c8234e" stroke-width="2.4" stroke-linecap="round"/></svg>
-                    <span class="font-display whitespace-nowrap text-[1.2rem] font-semibold leading-none tracking-tight sm:text-[1.7rem]">Pahadi Roots</span>
+                    {{-- Both colour versions are in the page; storefront.css shows the one that suits the header's current background. --}}
+                    <x-logo class="brand-logo-light h-[30px] min-[420px]:h-9 sm:h-11" alt="" />
+                    {{-- Only pages whose header starts over a dark hero ever show the dark version, so other pages never download it. --}}
+                    <x-logo variant="dark" class="brand-logo-dark h-[30px] min-[420px]:h-9 sm:h-11" alt="" :loading="$overlayHeader ? 'eager' : 'lazy'" />
                 </a>
 
                 <div class="flex items-center justify-end gap-0.5 sm:gap-1">
@@ -127,7 +128,7 @@
     {{-- Full-screen menu --}}
     <div id="siteMenu" class="menu-overlay" role="dialog" aria-modal="true" aria-label="Site menu" data-menu-overlay data-drawer>
         <div class="site-shell flex h-[var(--header-height)] shrink-0 items-center justify-between">
-            <a href="{{ route('home') }}" class="font-display text-2xl font-semibold">Pahadi Roots</a>
+            <a href="{{ route('home') }}" aria-label="Pahadi Roots home"><x-logo variant="dark" class="h-10" alt="" loading="lazy" /></a>
             <button type="button" class="menu-toggle !bg-snow/10 text-snow" aria-label="Close menu" data-drawer-close><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2.4" d="M6 6l12 12M18 6 6 18"/></svg>Close</button>
         </div>
         <div class="site-shell grid flex-1 gap-10 py-8 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:py-4">
@@ -205,7 +206,7 @@
             </div>
 
             <div class="grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
-                <div class="lg:pr-10"><p class="font-display text-3xl font-semibold">Pahadi Roots</p><p class="mt-4 text-sm leading-7 text-snow/70">Traceable mountain produce and thoughtful gifts, sourced with care from Uttarakhand and neighbouring Himalayan communities.</p><p class="mt-4 text-sm text-snow/50">Rajpur Road, Dehradun<br>Uttarakhand 248001</p><div class="mt-7"><p class="text-[10px] font-black uppercase tracking-[.2em] text-sun">Follow our journey</p><div class="mt-3 flex items-center gap-2" aria-label="Pahadi Roots social media">@foreach([
+                <div class="lg:pr-10"><x-logo variant="dark" :tagline="true" class="h-20" loading="lazy" /><p class="mt-5 text-sm leading-7 text-snow/70">Traceable mountain produce and thoughtful gifts, sourced with care from Uttarakhand and neighbouring Himalayan communities.</p><p class="mt-4 text-sm text-snow/50">Rajpur Road, Dehradun<br>Uttarakhand 248001</p><div class="mt-7"><p class="text-[10px] font-black uppercase tracking-[.2em] text-sun">Follow our journey</p><div class="mt-3 flex items-center gap-2" aria-label="Pahadi Roots social media">@foreach([
                     ['instagram', 'Instagram', 'M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2Zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4H7.8ZM17.3 5.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z'],
                     ['facebook', 'Facebook', 'M13.5 22v-9h3l.5-3.5h-3.5V7.3c0-1 .3-1.8 1.8-1.8H17V2.4c-.5-.1-1.7-.2-3-.2-3 0-5 1.8-5 5V9.5H6V13h3v9h4.5Z'],
                     ['youtube', 'YouTube', 'M21.6 7.2a3 3 0 0 0-2.1-2.1C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.5.5a3 3 0 0 0-2.1 2.1C2 9.1 2 12 2 12s0 2.9.4 4.8a3 3 0 0 0 2.1 2.1c1.9.5 7.5.5 7.5.5s5.6 0 7.5-.5a3 3 0 0 0 2.1-2.1c.4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z'],

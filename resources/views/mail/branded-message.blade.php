@@ -12,8 +12,7 @@
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e5e1d8;border-radius:18px;overflow:hidden">
     <tr><td style="background:#17382b;padding:26px 34px">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
-            <td style="width:58px"><img src="{{ asset('assets/img/logo.png') }}" width="48" height="48" alt="Pahadi Roots" style="display:block;border:0;border-radius:14px"></td>
-            <td><div style="color:#ffffff;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700">Pahadi Roots</div><div style="margin-top:4px;color:#cfddd5;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">From the hills</div></td>
+            <td><img src="{{ asset('assets/img/brand/logo-email.png') }}" width="275" height="64" alt="Pahadi Roots — pure, natural, from the hills" style="display:block;border:0;max-width:100%;height:auto"></td>
         </tr></table>
     </td></tr>
     <tr><td style="padding:38px 34px 34px">

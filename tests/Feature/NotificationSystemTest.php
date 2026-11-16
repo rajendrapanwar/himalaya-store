@@ -52,7 +52,7 @@ class NotificationSystemTest extends TestCase
             'intro' => 'A branded email preview.',
         ])->render();
         $this->assertStringContainsString('Pahadi Roots', $html);
-        $this->assertStringContainsString('assets/img/logo.png', $html);
+        $this->assertStringContainsString('assets/img/brand/logo-email.png', $html);
     }
 
     public function test_customer_can_manage_only_their_own_database_notifications(): void

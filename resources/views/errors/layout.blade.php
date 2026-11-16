@@ -6,14 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0e2119">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <x-favicons />
     <title>@yield('title') | Pahadi Roots</title>
     @vite(['resources/css/app.css'])
 </head>
 <body class="storefront min-h-screen bg-snow text-ink antialiased">
     <main class="relative flex min-h-screen flex-col overflow-hidden">
         <header class="site-shell flex items-center justify-between py-6">
-            <a href="{{ url('/') }}" class="flex items-center gap-2.5" aria-label="Pahadi Roots home"><svg class="h-11 w-11" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#0e2119"/><path d="m8 31 9-13 6 8 6-12 11 17H8Z" fill="#F8F4EB"/><path d="m13 31 7-7 4 5 6-8 7 10H13Z" fill="#D78A18"/><path d="M10 35c8-3 20-3 28 0" stroke="#F8F4EB" stroke-width="2" stroke-linecap="round"/></svg><span class="font-display text-2xl font-semibold text-ink">Pahadi Roots</span></a>
+            <a href="{{ url('/') }}" class="flex items-center gap-2.5" aria-label="Pahadi Roots home"><x-logo class="h-11" alt="" /></a>
             <a href="{{ url('/products') }}" class="button-secondary hidden sm:inline-flex">Visit the shop</a>
         </header>
         <section class="site-shell relative z-10 flex flex-1 flex-col items-center justify-center py-12 text-center">
